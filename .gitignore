@@ -1,0 +1,5 @@
+/.vscode/*
+/venv/*
+*.pyc
+/api_key.py
+/data/*

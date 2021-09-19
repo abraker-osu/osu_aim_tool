@@ -1,0 +1,7 @@
+-r osu_analysis/requirements.txt
+
+setuptools>41.2.0
+numpy
+pyqt5
+pyqtgraph>=0.12.1
+watchdog

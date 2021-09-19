@@ -1,0 +1,128 @@
+* {
+    background: #1c1c20;  /* pane color */
+    color:      #e9e9e9;  /* text color */
+    border:          none;  /* pane border */
+}
+
+QWidget::item:selected {
+    background: #5a5b77;
+}
+
+QScrollBar {
+    border:     none;
+    background: solid #353646;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+QScrollBar::handle {
+    background: #5a5b77;
+    border:          none;
+    width:           10px;
+    border-radius:   10px;
+}
+
+QScrollBar::handle:hover {
+    background: #75769b;
+}
+
+QScrollBar::add-line:horizontal {
+    border:     none;
+    background: none;
+}
+
+QScrollBar::sub-line:horizontal {
+    border:     none;
+    background: none;
+}
+
+QSplitter::handle {
+    background:           #c2c2c2;
+    width:      1px;
+    border:     1px solid #c2c2c2;
+}
+
+QPushButton:hover {
+    background: #353646;
+}
+
+QPushButton {
+    min-height: 24px;
+    max-height: 24px;
+    background: #2e2e36;
+}
+
+QPushButton:pressed {
+    background: #222227;
+}
+
+QSlider::handle {
+    background: #007AD9;
+}
+
+QSlider::handle:hover {
+    background: #0091ff;
+}
+
+QLineEdit {
+    max-width: 32px;
+    background: #353646;
+}
+
+QLineEdit[Error=true] {
+    background: #be5316;
+}
+
+QLineEdit[Unsaved=true] {
+    border-bottom: 2px solid qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0, stop: 0 #fffb00, stop: 1 rgba(255, 220, 0, 0%));
+}
+
+DockLabel[orientation='vertical'] {
+    border-top-right-radius: 0px;
+    border-top-left-radius: 3px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 3px;
+    border-width: 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 14px;
+}
+
+DockLabel[orientation='horizontal'] {
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-width: 0px;
+    padding-left: 13px;
+    padding-right: 13px;
+    font-size: 14px;
+}
+
+DockLabel[selected=true] {
+    background-color : #66c;
+    color : #fff;
+}
+
+DockLabel[selected=true][orientation='horizontal'] {
+    border-right: 2px solid #55B;
+}
+
+DockLabel[selected=true][orientation='vertical'] {
+    border-bottom: 2px solid #55B;
+}
+
+DockLabel[selected=false] {
+    background-color : #44a;
+    color : #aaa;
+}
+
+DockLabel[selected=false][orientation='horizontal'] {
+    border-right: 2px solid #339;
+}
+
+DockLabel[selected=false][orientation='vertical'] {
+    border-bottom: 2px solid #339;
+}
