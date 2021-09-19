@@ -64,15 +64,13 @@ class App(QtGui.QMainWindow):
 
         self.__init_gui()
         self.__build_layout()
-        self.__load_settings()
-        
-        try:
-            self.monitor = App.Monitor(self.osu_path)
-            self.monitor.create_replay_monitor('back_and_forth_monitor', self.__record_results)
-        except FileNotFoundError:
-            pass  # Already handled by `load_settings`
-        except Exception as e:
-            self.status_txt.setText(str(e))
+
+        if self.__load_settings():    
+            try:
+                self.monitor = App.Monitor(self.osu_path)
+                self.monitor.create_replay_monitor('back_and_forth_monitor', self.__record_results)
+            except Exception as e:
+                self.status_txt.setText(str(e) + ' Is osu! path correct?')
 
         App.StddevGraphBpm.plot_data(self, self.data_x)
         App.StddevGraphDx.plot_data(self, self.data_x)
@@ -156,8 +154,8 @@ class App(QtGui.QMainWindow):
                 json.dump(cfg, f, indent=4)
 
         if not os.path.isdir(self.osu_path):
-            self.status_txt.setText('Invalid osu! path in config.json')
-            return
+            self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.')
+            return False
 
         # Load saved settings
         try: self.bpm_edit.set_value(cfg['bpm'])
@@ -180,6 +178,8 @@ class App(QtGui.QMainWindow):
         self.angle = self.angle_edit.get_value()
         self.num   = self.num_edit.get_value()
         self.cs    = self.cs_edit.get_value()
+
+        return True
 
 
     def __record_results(self, replay_path):
