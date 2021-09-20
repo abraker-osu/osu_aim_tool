@@ -336,7 +336,7 @@ class App(QtGui.QMainWindow):
         map_path = f'{self.osu_path}/Songs/aim_tool'
 
         self.status_txt.setText('Generating map...')
-        self.__generate_map(map_path, self.bpm, self.dx, self.num, self.cs, self.ar)
+        self.__generate_map(map_path)
         self.__monitor_replay()
 
         # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
@@ -365,7 +365,7 @@ class App(QtGui.QMainWindow):
         self.action_btn.setText('Start')
 
 
-    def __generate_map(self, map_path, bpm, px, num_notes, cs, ar):
+    def __generate_map(self, map_path):
         beatmap_data = textwrap.dedent(
             f"""\
             osu file format v14
@@ -393,7 +393,7 @@ class App(QtGui.QMainWindow):
             Artist:abraker
             ArtistUnicode:abraker
             Creator:abraker
-            Version:back_and_forth_{bpm}_{px}
+            Version:aim__bpm-{self.bpm}_dx-{self.dx}_rot-{self.rot}_deg-{self.angle}
             Source:
             Tags:
             BeatmapID:0
@@ -401,9 +401,9 @@ class App(QtGui.QMainWindow):
 
             [Difficulty]
             HPDrainRate:8
-            CircleSize:{cs}
+            CircleSize:{self.cs}
             OverallDifficulty:10
-            ApproachRate:{ar}
+            ApproachRate:{self.ar}
             SliderMultiplier:1.4
             SliderTickRate:1
 
@@ -425,25 +425,40 @@ class App(QtGui.QMainWindow):
             """
         )
 
-        px_cx = 256
-        px_cy = 192
-        v_m   = 0.75
-
-        ms_t = 60*1000/bpm
+        ms_t = 60*1000/self.bpm
         rad  = math.pi/180
 
-        p1x = int((px/2)*math.cos(rad*self.rot) + px_cx)
-        p1y = int((px/2)*math.sin(rad*self.rot) + px_cy)
+        p1x = (self.dx/2)*math.cos(rad*self.rot)
+        p1y = (self.dx/2)*math.sin(rad*self.rot)
 
-        p2x = int(-(px/2)*math.cos(rad*self.rot) + px_cx)
-        p2y = int(-(px/2)*math.sin(rad*self.rot) + px_cy)
+        p2x = -(self.dx/2)*math.cos(rad*self.rot)
+        p2y = -(self.dx/2)*math.sin(rad*self.rot)
+
+        p3x = self.dx*math.cos(rad*self.rot + rad*self.angle) + p2x
+        p3y = self.dx*math.sin(rad*self.rot + rad*self.angle) + p2y
+
+        px_cx = 1/3*(p1x + p2x + p3x)
+        px_cy = 1/3*(p1y + p2y + p3y)
+
+        p1x = int(p1x + 256 - px_cx)
+        p1y = int(p1y + 192 - px_cy)
+        
+        p2x = int(p2x + 256 - px_cx)
+        p2y = int(p2y + 192 - px_cy)
+
+        p3x = int(p3x + 256 - px_cx)
+        p3y = int(p3y + 192 - px_cy)
+
+        print(f'p1: ({p1x}, {p1y})   p2: ({p2x}, {p2y})   p3: ({p3x}, {p3y})')
 
         # Generate notes
-        for i in range(0, num_notes, 2):
+        for i in range(0, self.num, 4):
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(p1x)},{int(p1y)},{int((i + 0)*ms_t)},5,0,0:0:0:0:
-                {int(p2x)},{int(p2y)},{int((i + 1)*ms_t)},1,0,0:0:0:0:\
+                {int(p1x)},{int(p1y)},{int((i + 0)*ms_t)},1,0,0:0:0:0:
+                {int(p2x)},{int(p2y)},{int((i + 1)*ms_t)},1,0,0:0:0:0:
+                {int(p3x)},{int(p3y)},{int((i + 2)*ms_t)},1,0,0:0:0:0:
+                {int(p2x)},{int(p2y)},{int((i + 3)*ms_t)},1,0,0:0:0:0:\
                 """
             )
 
