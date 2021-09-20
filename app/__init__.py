@@ -89,9 +89,9 @@ class App(QtGui.QMainWindow):
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
 
         self.edit_layout = QtGui.QHBoxLayout()
-        self.bpm_edit    = App.ValueEdit(1, 400, 400, 'BPM')
-        self.dx_edit     = App.ValueEdit(0, 500, 512, 'Spacing')
         self.angle_edit  = App.ValueEdit(0, 360, 360, 'Deg')
+        self.bpm_edit    = App.ValueEdit(1, 1200, 1200, 'BPM')
+        self.dx_edit     = App.ValueEdit(0, 512, 512, 'Spacing')
         self.num_edit    = App.ValueEdit(0, 1000, 1000, '# Notes')
         self.cs_edit     = App.ValueEdit(0, 10, 100, 'CS', is_float=True)
 
