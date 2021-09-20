@@ -402,7 +402,7 @@ class App(QtGui.QMainWindow):
             [Difficulty]
             HPDrainRate:8
             CircleSize:{cs}
-            OverallDifficulty:0
+            OverallDifficulty:10
             ApproachRate:{ar}
             SliderMultiplier:1.4
             SliderTickRate:1
