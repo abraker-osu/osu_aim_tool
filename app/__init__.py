@@ -355,7 +355,7 @@ class App(QtGui.QMainWindow):
             return
 
         # Update deviation data and plots
-        self.__write_data(aim_x_offsets, aim_y_offsets, self.bpm, self.dx, self.num, self.cs, self.ar)
+        self.__write_data(aim_x_offsets, aim_y_offsets)
         
         App.StddevGraphBpm.plot_data(self, self.data_x)
         App.StddevGraphDx.plot_data(self, self.data_x)
@@ -519,7 +519,7 @@ class App(QtGui.QMainWindow):
         return aim_x_offsets, aim_y_offsets
 
 
-    def __write_data(self, aim_offsets_x, aim_offsets_y, bpm, px, angle, num_notes):
+    def __write_data(self, aim_offsets_x, aim_offsets_y):
         stddev_x = np.std(aim_offsets_x)
 
         # Close data file for writing
@@ -527,19 +527,19 @@ class App(QtGui.QMainWindow):
         #self.data_file_y.close()
 
         # Find record based on bpm and spacing
-        data_filter = (self.data_x[:, App.COL_BPM] == bpm) & (self.data_x[:, App.COL_PX] == px)
+        data_filter = (self.data_x[:, App.COL_BPM] == self.bpm) & (self.data_x[:, App.COL_PX] == self.px)
 
         if np.any(data_filter):
             # A record exists, update it
-            print(f'bpm: {bpm}   dx: {px}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
+            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.px}   rot: {self.rot}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
             #print(f'aim stddev (y-axis): {stddev_y}')
 
             self.data_x[data_filter, App.COL_STDEV] = min(stddev_x, np.min(self.data_x[data_filter, App.COL_STDEV]))
         else:
             # Create a new record
-            print(f'bpm: {bpm}   dx: {px}   aim stddev (x-axis): {stddev_x}')
+            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.px}   rot: {self.rot}  aim stddev (x-axis): {stddev_x}')
             #print(f'aim stddev (y-axis): {stddev_y}')
-            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, bpm , px, angle, num_notes ]), axis=0)
+            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.px, self.angle, self.num_notes ]), axis=0)
         
         # Save data to file
         np.save(App.SAVE_FILE_X, self.data_x, allow_pickle=False)
