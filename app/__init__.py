@@ -481,7 +481,7 @@ class App(QtGui.QMainWindow):
 
         if np.any(data_filter):
             # A record exists, update it
-            print(f'bpm: {bpm}   dx: {px}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]}')
+            print(f'bpm: {bpm}   dx: {px}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
             #print(f'aim stddev (y-axis): {stddev_y}')
 
             self.data_x[data_filter, App.COL_STDEV] = min(stddev_x, np.min(self.data_x[data_filter, App.COL_STDEV]))
