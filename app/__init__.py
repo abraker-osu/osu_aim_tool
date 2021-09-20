@@ -319,7 +319,7 @@ class App(QtGui.QMainWindow):
         map_path = f'{self.osu_path}/Songs/aim_tool'
 
         self.status_txt.setText('Generating map...')
-        self.__generate_map(map_path, self.bpm, self.dx, self.num, self.cs)
+        self.__generate_map(map_path, self.bpm, self.dx, self.num, self.cs, self.ar)
         self.__monitor_replay()
 
         # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
@@ -338,7 +338,7 @@ class App(QtGui.QMainWindow):
             return
 
         # Update deviation data and plots
-        self.__write_data(aim_x_offsets, aim_y_offsets, self.bpm, self.dx, self.num, self.cs. self.ar)
+        self.__write_data(aim_x_offsets, aim_y_offsets, self.bpm, self.dx, self.num, self.cs, self.ar)
         
         App.StddevGraphBpm.plot_data(self, self.data_x)
         App.StddevGraphDx.plot_data(self, self.data_x)
