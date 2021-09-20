@@ -539,7 +539,7 @@ class App(QtGui.QMainWindow):
             # Create a new record
             print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   rot: {self.rot}  aim stddev (x-axis): {stddev_x}')
             #print(f'aim stddev (y-axis): {stddev_y}')
-            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.dx, self.angle, self.num_notes ]), axis=0)
+            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.dx, self.angle, self.num ]), axis=0)
         
         # Save data to file
         np.save(App.SAVE_FILE_X, self.data_x, allow_pickle=False)
