@@ -26,20 +26,20 @@ class AimGraph():
 
 
     def __init__(self):
-        self.win_hits = pyqtgraph.GraphicsLayoutWidget(show=False, title='osu! analyzer hit visualization')
+        self.win_hits = pyqtgraph.PlotWidget(show=False, title='osu! analyzer hit visualization')
         self.win_hits.setFixedSize(2*140, 2*140 + 32)
 
-        self.plot_hits = self.win_hits.addPlot(title='Hit scatter')
-        self.plot_hits.hideAxis('left')
-        self.plot_hits.hideAxis('bottom')
-        self.plot_hits.setXRange(-70, 70)
-        self.plot_hits.setYRange(-70, 70)
-        self.plot_hits.getViewBox().setMouseEnabled(x=False, y=False)
-        self.plot_hits.enableAutoRange(axis='x', enable=False)
-        self.plot_hits.enableAutoRange(axis='y', enable=False)
+        self.plot_hits = self.win_hits.plot(title='Hit scatter')
+        self.win_hits.hideAxis('left')
+        self.win_hits.hideAxis('bottom')
+        self.win_hits.setXRange(-70, 70)
+        self.win_hits.setYRange(-70, 70)
+        self.win_hits.getViewBox().setMouseEnabled(x=False, y=False)
+        self.win_hits.enableAutoRange(axis='x', enable=False)
+        self.win_hits.enableAutoRange(axis='y', enable=False)
         
         self.circle_item = AimGraph.HitCircle((0, 0))
-        self.plot_hits.addItem(self.circle_item)
+        self.win_hits.addItem(self.circle_item)
 
 
     def show(self):
@@ -57,6 +57,5 @@ class AimGraph():
 
 
     def plot_data(self, aim_x_offsets, aim_y_offsets):
-        self.win_hits.clearPlots()
-        self.plot_hits.plot(aim_x_offsets, aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
+        self.plot_hits.setData(aim_x_offsets, aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
 
