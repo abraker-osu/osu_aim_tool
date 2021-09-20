@@ -57,5 +57,6 @@ class AimGraph():
 
 
     def plot_data(self, aim_x_offsets, aim_y_offsets):
+        self.win_hits.clearPlots()
         self.plot_hits.plot(aim_x_offsets, aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
 
