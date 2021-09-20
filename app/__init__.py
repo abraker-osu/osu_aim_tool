@@ -159,19 +159,19 @@ class App(QtGui.QMainWindow):
 
         # Load saved settings
         try: self.bpm_edit.set_value(cfg['bpm'])
-        except KeyError: self.bpm_edit.set_value(0)
+        except KeyError: self.bpm_edit.set_value(60)
 
         try: self.dx_edit.set_value(cfg['dx'])
-        except KeyError: self.dx_edit.set_value(0)
+        except KeyError: self.dx_edit.set_value(100)
 
         try: self.angle_edit.set_value(cfg['angle'])
         except KeyError: self.angle_edit.set_value(0)
 
         try: self.num_edit.set_value(cfg['num'])
-        except KeyError: self.num_edit.set_value(0)
+        except KeyError: self.num_edit.set_value(60)
         
         try: self.cs_edit.set_value(cfg['cs'])
-        except KeyError: self.cs_edit.set_value(0)
+        except KeyError: self.cs_edit.set_value(4)
 
         self.bpm   = self.bpm_edit.get_value()
         self.dx    = self.dx_edit.get_value()
