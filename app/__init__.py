@@ -425,6 +425,7 @@ class App(QtGui.QMainWindow):
             """
         )
 
+        # Desmos demo: https://www.desmos.com/calculator/bp9scvcssw
         ms_t = 60*1000/self.bpm
         rad  = math.pi/180
 
@@ -448,8 +449,6 @@ class App(QtGui.QMainWindow):
 
         p3x = int(p3x + 256 - px_cx)
         p3y = int(p3y + 192 - px_cy)
-
-        print(f'p1: ({p1x}, {p1y})   p2: ({p2x}, {p2y})   p3: ({p3x}, {p3y})')
 
         # Generate notes
         for i in range(0, self.num, 4):
