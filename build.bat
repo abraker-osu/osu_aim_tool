@@ -1,0 +1,1 @@
+python -O -m PyInstaller --onefile run.py
