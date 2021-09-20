@@ -2,6 +2,7 @@ import numpy as np
 import textwrap
 import json
 import time
+import math
 import os
 
 import pyqtgraph
@@ -424,15 +425,25 @@ class App(QtGui.QMainWindow):
             """
         )
 
-        px_c = 256
+        px_cx = 256
+        px_cy = 192
+        v_m   = 0.75
+
         ms_t = 60*1000/bpm
+        rad  = math.pi/180
+
+        p1x = int((px/2)*math.cos(rad*self.rot) + px_cx)
+        p1y = int((px/2)*math.sin(rad*self.rot) + px_cy)
+
+        p2x = int(-(px/2)*math.cos(rad*self.rot) + px_cx)
+        p2y = int(-(px/2)*math.sin(rad*self.rot) + px_cy)
 
         # Generate notes
         for i in range(0, num_notes, 2):
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(px_c - px/2)},192,{int((i + 0)*ms_t)},5,0,0:0:0:0:
-                {int(px_c + px/2)},192,{int((i + 1)*ms_t)},1,0,0:0:0:0:\
+                {int(p1x)},{int(p1y)},{int((i + 0)*ms_t)},5,0,0:0:0:0:
+                {int(p2x)},{int(p2y)},{int((i + 1)*ms_t)},1,0,0:0:0:0:\
                 """
             )
 
