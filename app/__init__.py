@@ -310,7 +310,7 @@ class App(QtGui.QMainWindow):
         # Data from map and replay -> score
         aim_x_offsets, aim_y_offsets = self.__get_data(map_path)
         if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None):
-            self.status_txt.setText('Set settings and click start!')
+            self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
             self.action_btn.setText('Start')
             return
 
