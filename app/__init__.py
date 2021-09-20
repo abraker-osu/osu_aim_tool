@@ -95,6 +95,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit     = App.ValueEdit(0, 512, 512, 'Spacing')
         self.num_edit    = App.ValueEdit(0, 1000, 1000, '# Notes')
         self.cs_edit     = App.ValueEdit(0, 10, 100, 'CS', is_float=True)
+        self.ar_edit     = App.ValueEdit(0, 10, 100, 'AR', is_float=True)
 
         self.action_btn = QtGui.QPushButton('Start')
         self.status_txt = QtGui.QLabel('Set settings and click start!')
@@ -109,6 +110,7 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.angle_edit)
         self.edit_layout.addWidget(self.num_edit)
         self.edit_layout.addWidget(self.cs_edit)
+        self.edit_layout.addWidget(self.ar_edit)
 
         self.main_layout.addWidget(self.perf_chkbx)
         self.main_layout.addWidget(self.aim_chkbx)
@@ -131,6 +133,7 @@ class App(QtGui.QMainWindow):
         self.angle_edit.value_changed.connect(self.__angle_edit)
         self.num_edit.value_changed.connect(self.__num_edit)
         self.cs_edit.value_changed.connect(self.__cs_edit)
+        self.ar_edit.value_changed.connect(self.__ar_edit)
 
         self.action_btn.pressed.connect(self.__action_event)
 
@@ -173,6 +176,9 @@ class App(QtGui.QMainWindow):
         
         try: self.cs_edit.set_value(cfg['cs'])
         except KeyError: self.cs_edit.set_value(4)
+
+        try: self.ar_edit.set_value(cfg['ar'])
+        except KeyError: self.ar_edit.set_value(8)
 
         self.bpm   = self.bpm_edit.get_value()
         self.dx    = self.dx_edit.get_value()
@@ -266,6 +272,20 @@ class App(QtGui.QMainWindow):
             json.dump(cfg, f, indent=4)
 
 
+
+
+    def __ar_edit(self, value):
+        with open('config.json') as f:
+            cfg = json.load(f)
+        
+        cfg['ar'] = value
+        self.ar = self.ar_edit.get_value()
+        self.aim_graph.set_ar(value)
+
+        with open('config.json', 'w') as f:
+            json.dump(cfg, f, indent=4)
+
+
     def __action_event(self):
         # If we are waiting for replay, this means we are aborting
         if self.engaged:
@@ -281,6 +301,7 @@ class App(QtGui.QMainWindow):
         self.angle_edit.value_enter()
         self.num_edit.value_enter()
         self.cs_edit.value_enter()
+        self.ar_edit.value_enter()
 
         # Check if all settings are proper
         is_error = \
@@ -288,7 +309,8 @@ class App(QtGui.QMainWindow):
             self.dx_edit.is_error() or    \
             self.angle_edit.is_error() or \
             self.num_edit.is_error() or   \
-            self.cs_edit.is_error()
+            self.cs_edit.is_error() or    \
+            self.ar_edit.is_error()
 
         if is_error:
             return
@@ -316,7 +338,7 @@ class App(QtGui.QMainWindow):
             return
 
         # Update deviation data and plots
-        self.__write_data(aim_x_offsets, aim_y_offsets, self.bpm, self.dx, self.num, self.cs)
+        self.__write_data(aim_x_offsets, aim_y_offsets, self.bpm, self.dx, self.num, self.cs. self.ar)
         
         App.StddevGraphBpm.plot_data(self, self.data_x)
         App.StddevGraphDx.plot_data(self, self.data_x)
@@ -326,7 +348,7 @@ class App(QtGui.QMainWindow):
         self.action_btn.setText('Start')
 
 
-    def __generate_map(self, map_path, bpm, px, num_notes, cs):
+    def __generate_map(self, map_path, bpm, px, num_notes, cs, ar):
         beatmap_data = textwrap.dedent(
             f"""\
             osu file format v14
@@ -364,7 +386,7 @@ class App(QtGui.QMainWindow):
             HPDrainRate:8
             CircleSize:{cs}
             OverallDifficulty:0
-            ApproachRate:8
+            ApproachRate:{ar}
             SliderMultiplier:1.4
             SliderTickRate:1
 
