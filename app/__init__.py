@@ -527,19 +527,19 @@ class App(QtGui.QMainWindow):
         #self.data_file_y.close()
 
         # Find record based on bpm and spacing
-        data_filter = (self.data_x[:, App.COL_BPM] == self.bpm) & (self.data_x[:, App.COL_PX] == self.px)
+        data_filter = (self.data_x[:, App.COL_BPM] == self.bpm) & (self.data_x[:, App.COL_PX] == self.dx)
 
         if np.any(data_filter):
             # A record exists, update it
-            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.px}   rot: {self.rot}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
+            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   rot: {self.rot}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
             #print(f'aim stddev (y-axis): {stddev_y}')
 
             self.data_x[data_filter, App.COL_STDEV] = min(stddev_x, np.min(self.data_x[data_filter, App.COL_STDEV]))
         else:
             # Create a new record
-            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.px}   rot: {self.rot}  aim stddev (x-axis): {stddev_x}')
+            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   rot: {self.rot}  aim stddev (x-axis): {stddev_x}')
             #print(f'aim stddev (y-axis): {stddev_y}')
-            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.px, self.angle, self.num_notes ]), axis=0)
+            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.dx, self.angle, self.num_notes ]), axis=0)
         
         # Save data to file
         np.save(App.SAVE_FILE_X, self.data_x, allow_pickle=False)
