@@ -1,1 +1,1 @@
-python -O -m PyInstaller --onefile run.py
+python -O -m PyInstaller -n osu-aim-tool --onefile run.py
