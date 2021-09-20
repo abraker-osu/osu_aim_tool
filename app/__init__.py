@@ -89,10 +89,10 @@ class App(QtGui.QMainWindow):
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
 
         self.edit_layout = QtGui.QHBoxLayout()
-        self.angle_edit  = App.ValueEdit(0, 360, 360, 'Deg')
-        self.bpm_edit    = App.ValueEdit(1, 1200, 1200, 'BPM')
         self.bpm_edit    = App.ValueEdit(1, 1200, 1199, 'BPM')
         self.dx_edit     = App.ValueEdit(0, 512, 512, 'Spacing')
+        self.angle_edit  = App.ValueEdit(0, 360, 360, 'Note deg')
+        self.rot_edit    = App.ValueEdit(0, 360, 360, 'Rot deg')
         self.num_edit    = App.ValueEdit(0, 1000, 1000, '# Notes')
         self.cs_edit     = App.ValueEdit(0, 10, 100, 'CS', is_float=True)
         self.ar_edit     = App.ValueEdit(0, 10, 100, 'AR', is_float=True)
@@ -108,6 +108,7 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
         self.edit_layout.addWidget(self.angle_edit)
+        self.edit_layout.addWidget(self.rot_edit)
         self.edit_layout.addWidget(self.num_edit)
         self.edit_layout.addWidget(self.cs_edit)
         self.edit_layout.addWidget(self.ar_edit)
@@ -131,6 +132,7 @@ class App(QtGui.QMainWindow):
         self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
         self.dx_edit.value_changed.connect(self.__dx_edit)
         self.angle_edit.value_changed.connect(self.__angle_edit)
+        self.rot_edit.value_changed.connect(self.__rot_edit)
         self.num_edit.value_changed.connect(self.__num_edit)
         self.cs_edit.value_changed.connect(self.__cs_edit)
         self.ar_edit.value_changed.connect(self.__ar_edit)
@@ -171,6 +173,9 @@ class App(QtGui.QMainWindow):
         try: self.angle_edit.set_value(cfg['angle'])
         except KeyError: self.angle_edit.set_value(0)
 
+        try: self.rot_edit.set_value(cfg['rot'])
+        except KeyError: self.rot_edit.set_value(0)
+
         try: self.num_edit.set_value(cfg['num'])
         except KeyError: self.num_edit.set_value(60)
         
@@ -183,6 +188,7 @@ class App(QtGui.QMainWindow):
         self.bpm   = self.bpm_edit.get_value()
         self.dx    = self.dx_edit.get_value()
         self.angle = self.angle_edit.get_value()
+        self.rot   = self.rot_edit.get_value()
         self.num   = self.num_edit.get_value()
         self.cs    = self.cs_edit.get_value()
 
@@ -238,24 +244,23 @@ class App(QtGui.QMainWindow):
             json.dump(cfg, f, indent=4)
 
 
-    def __cs_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['cs'] = value
-        self.cs = self.cs_edit.get_value()
-        self.aim_graph.set_cs(value)
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
     def __angle_edit(self, value):
         with open('config.json') as f:
             cfg = json.load(f)
         
         cfg['angle'] = value
         self.angle = self.angle_edit.get_value()
+
+        with open('config.json', 'w') as f:
+            json.dump(cfg, f, indent=4)
+
+
+    def __rot_edit(self, value):
+        with open('config.json') as f:
+            cfg = json.load(f)
+        
+        cfg['rot'] = value
+        self.rot = self.rot_edit.get_value()
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -272,6 +277,16 @@ class App(QtGui.QMainWindow):
             json.dump(cfg, f, indent=4)
 
 
+    def __cs_edit(self, value):
+        with open('config.json') as f:
+            cfg = json.load(f)
+        
+        cfg['cs'] = value
+        self.cs = self.cs_edit.get_value()
+        self.aim_graph.set_cs(value)
+
+        with open('config.json', 'w') as f:
+            json.dump(cfg, f, indent=4)
 
 
     def __ar_edit(self, value):
@@ -280,7 +295,6 @@ class App(QtGui.QMainWindow):
         
         cfg['ar'] = value
         self.ar = self.ar_edit.get_value()
-        self.aim_graph.set_ar(value)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -299,6 +313,7 @@ class App(QtGui.QMainWindow):
         self.bpm_edit.value_enter()
         self.dx_edit.value_enter()
         self.angle_edit.value_enter()
+        self.rot_edit.value_enter()
         self.num_edit.value_enter()
         self.cs_edit.value_enter()
         self.ar_edit.value_enter()
@@ -308,6 +323,7 @@ class App(QtGui.QMainWindow):
             self.bpm_edit.is_error() or   \
             self.dx_edit.is_error() or    \
             self.angle_edit.is_error() or \
+            self.rot_edit.is_error() or   \
             self.num_edit.is_error() or   \
             self.cs_edit.is_error() or    \
             self.ar_edit.is_error()
