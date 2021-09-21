@@ -60,6 +60,8 @@ class PatternVisual():
         #self.visual.getViewBox().setMouseEnabled(x=False, y=False)
         self.visual.enableAutoRange(axis='x', enable=False)
         self.visual.enableAutoRange(axis='y', enable=False)
+
+        self.plot_approach = self.visual.plot(pen=None, symbol='o', symbolPen=(100, 100, 255, 200), symbolBrush=None, symbolSize=100, pxMode=False)
         
         #self.circle_item = AimGraph.HitCircle((0, 0))
         #self.visual.addItem(self.circle_item)
@@ -69,7 +71,7 @@ class PatternVisual():
 
         # Interactive region item
         self.timeline_marker = pyqtgraph.InfiniteLine(angle=90, movable=True)
-        self.timeline_marker.setBounds((0, None))
+        self.timeline_marker.setBounds((-10000, None))
         self.timeline_marker.sigPositionChanged.connect(self.__time_changed_event)
 
         self.timeline.addItem(self.timeline_marker, ignoreBounds=True)
@@ -114,7 +116,7 @@ class PatternVisual():
                 
 
     def __generate_pattern(self):
-        _self = [ self.bpm, self.dx, self.angle, self.rot, self.num, self.cs, self.ar ]
+        _self = [ self.bpm, self.dx, self.angle, self.rot, self.num ]
         if None in _self:
             return
 
@@ -142,9 +144,9 @@ class PatternVisual():
         p3x = int(p3x + 256 - px_cx)
         p3y = int(p3y + 192 - px_cy)
 
-        self.data_x = np.repeat([p1x, p2x, p3x, p2x], 1 + int(self.num/4))
-        self.data_y = np.repeat([-p1y, -p2y, -p3y, -p2y], 1 + int(self.num/4))
-        self.data_t = np.arange(0, 4 + 4*int(self.num/4))*ms_t
+        self.data_x = np.tile([p1x, p2x, p3x, p2x], 1 + int(self.num/4))
+        self.data_y = np.tile([-p1y, -p2y, -p3y, -p2y], 1 + int(self.num/4))
+        self.data_t = np.arange(0, self.data_x.shape[0])*ms_t/1000
 
         self.pattern_cache = True
 
@@ -154,13 +156,19 @@ class PatternVisual():
         if type(self.data_y) == type(None): return
         if type(self.data_t) == type(None): return
 
+        if type(self.ar) == type(None): return
+        if type(self.cs) == type(None): return
+
         if len(self.data_x) != len(self.data_y) != len(self.data_t):
             raise AssertionError('len(self.data_x) != len(self.data_y) != len(self.data_t)')
 
-        ar_ms = self.ar_to_ms(self.ar)
-        ar_select = (self.data_t >= (self.t - ar_ms)) & (self.t <= self.data_t)
+        ar_ms = self.ar_to_ms(self.ar)/1000
+        ar_select = (self.t <= self.data_t) & (self.data_t <= (self.t + ar_ms))
 
         self.plot_hits.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=self.cs_to_px(self.cs))
+
+        sizes = self.approach_circle_to_radius(self.cs, self.ar, self.data_t[ar_select] - self.t)
+        self.plot_approach.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=sizes)
 
 
     def __time_changed_event(self):
@@ -175,3 +183,7 @@ class PatternVisual():
     
     def cs_to_px(self, cs):
         return (109 - 9*cs)
+
+    
+    def approach_circle_to_radius(self, cs, ar, dt):
+        return self.cs_to_px(cs)*(1 + 3*dt/(self.ar_to_ms(ar)/1000))
