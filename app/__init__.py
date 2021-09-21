@@ -39,6 +39,7 @@ class App(QtGui.QMainWindow):
     from ._stdev_graph_dx import StddevGraphDx
     #from ._stdev_graph_theta import StddevGraphTheta
     from ._aim_graph import AimGraph
+    from ._pattern_visual import PatternVisual
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -88,6 +89,7 @@ class App(QtGui.QMainWindow):
 
         self.perf_chkbx = QtGui.QCheckBox('Show performance')
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
+        self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
 
         self.edit_layout = QtGui.QHBoxLayout()
         self.bpm_edit    = App.ValueEdit(1, 1200, 1199, 'BPM')
@@ -103,6 +105,7 @@ class App(QtGui.QMainWindow):
 
         self.area = DockArea()
         self.aim_graph = App.AimGraph()
+        self.pattern_visual = App.PatternVisual()
         
 
     def __build_layout(self):
@@ -116,6 +119,7 @@ class App(QtGui.QMainWindow):
 
         self.main_layout.addWidget(self.perf_chkbx)
         self.main_layout.addWidget(self.aim_chkbx)
+        self.main_layout.addWidget(self.ptrn_chkbx)
         self.main_layout.addLayout(self.edit_layout)
         self.main_layout.addWidget(self.action_btn)
         self.main_layout.addWidget(self.status_txt)
@@ -129,6 +133,7 @@ class App(QtGui.QMainWindow):
 
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
+        self.ptrn_chkbx.stateChanged.connect(self.__ptrn_chkbx_event)
 
         self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
         self.dx_edit.value_changed.connect(self.__dx_edit)
@@ -223,12 +228,22 @@ class App(QtGui.QMainWindow):
         pass
 
 
+    def __ptrn_chkbx_event(self, state):
+        if state == QtCore.Qt.Checked:
+            self.pattern_visual.show()
+            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.num, self.cs, self.ar)
+        else:
+            self.pattern_visual.hide()
+        pass
+
+
     def __bpm_edit_event(self, value):
         with open('config.json') as f:
             cfg = json.load(f)
         
         cfg['bpm'] = value
         self.bpm = self.bpm_edit.get_value()
+        self.pattern_visual.update(bpm=self.bpm)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -240,6 +255,7 @@ class App(QtGui.QMainWindow):
         
         cfg['dx'] = value
         self.dx = self.dx_edit.get_value()
+        self.pattern_visual.update(dx=self.dx)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -251,6 +267,7 @@ class App(QtGui.QMainWindow):
         
         cfg['angle'] = value
         self.angle = self.angle_edit.get_value()
+        self.pattern_visual.update(angle=self.angle)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -262,6 +279,7 @@ class App(QtGui.QMainWindow):
         
         cfg['rot'] = value
         self.rot = self.rot_edit.get_value()
+        self.pattern_visual.update(rot=self.rot)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -273,6 +291,7 @@ class App(QtGui.QMainWindow):
         
         cfg['num'] = value
         self.num = self.num_edit.get_value()
+        self.pattern_visual.update(num=self.num)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -284,7 +303,8 @@ class App(QtGui.QMainWindow):
         
         cfg['cs'] = value
         self.cs = self.cs_edit.get_value()
-        self.aim_graph.set_cs(value)
+        self.aim_graph.set_cs(self.cs)
+        self.pattern_visual.update(cs=self.cs)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -296,6 +316,7 @@ class App(QtGui.QMainWindow):
         
         cfg['ar'] = value
         self.ar = self.ar_edit.get_value()
+        self.pattern_visual.update(ar=self.ar)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -571,6 +592,7 @@ class App(QtGui.QMainWindow):
         # Hide any widgets to allow the app to close
         self.area.hide()
         self.aim_graph.hide()
+        self.pattern_visual.hide()
 
         # Proceed
         event.accept()
