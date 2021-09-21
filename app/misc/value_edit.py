@@ -7,7 +7,7 @@ class ValueEdit(QWidget):
 
     value_changed = pyqtSignal(float)
 
-    def __init__(self, minimum, maximum, ticks, name, is_float=False, parent=None):
+    def __init__(self, minimum, maximum, name, is_float=False, parent=None):
         QWidget.__init__(self, parent=parent)        
 
         self.verticalLayout = QVBoxLayout(self)
