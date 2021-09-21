@@ -5,6 +5,8 @@ from pyqtgraph.Qt import QtCore
 import numpy as np
 import math
 
+from app.misc._osu_utils import OsuUtils
+
 
 class PatternVisual():
 
@@ -80,12 +82,6 @@ class PatternVisual():
         self.main_widget.hide()
 
 
-    def __set_cs(self, cs):
-        cs_px = (109 - 9*cs)/2
-        # TODO
-        self.visual.update()
-
-
     def update(self, bpm=None, dx=None, angle=None, rot=None, num=None, cs=None, ar=None):
         if bpm == None:   bpm = self.bpm
         if dx == None:    dx = self.dx
@@ -114,33 +110,12 @@ class PatternVisual():
         if None in _self:
             return
 
-        ms_t = 60*1000/self.bpm
-        rad  = math.pi/180
+        #pattern = OsuUtils.generate_pattern(self.bpm, self.dx, self.angle, self.rot, self.num)
+        pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, 3, self.num)
 
-        p1x = (self.dx/2)*math.cos(rad*self.rot)
-        p1y = (self.dx/2)*math.sin(rad*self.rot)
-
-        p2x = -(self.dx/2)*math.cos(rad*self.rot)
-        p2y = -(self.dx/2)*math.sin(rad*self.rot)
-
-        p3x = self.dx*math.cos(rad*self.rot + rad*self.angle) + p2x
-        p3y = self.dx*math.sin(rad*self.rot + rad*self.angle) + p2y
-
-        px_cx = 1/3*(p1x + p2x + p3x)
-        px_cy = 1/3*(p1y + p2y + p3y)
-
-        p1x = int(p1x + 256 - px_cx)
-        p1y = int(p1y + 192 - px_cy)
-        
-        p2x = int(p2x + 256 - px_cx)
-        p2y = int(p2y + 192 - px_cy)
-
-        p3x = int(p3x + 256 - px_cx)
-        p3y = int(p3y + 192 - px_cy)
-
-        self.data_x = np.tile([p1x, p2x, p3x, p2x], 1 + int(self.num/4))
-        self.data_y = np.tile([-p1y, -p2y, -p3y, -p2y], 1 + int(self.num/4))
-        self.data_t = np.arange(0, self.data_x.shape[0])*ms_t/1000
+        self.data_x = pattern[:, 0]
+        self.data_y = pattern[:, 1]
+        self.data_t = pattern[:, 2]
 
         self.pattern_cache = True
 
@@ -156,28 +131,16 @@ class PatternVisual():
         if len(self.data_x) != len(self.data_y) != len(self.data_t):
             raise AssertionError('len(self.data_x) != len(self.data_y) != len(self.data_t)')
 
-        ar_ms = self.ar_to_ms(self.ar)/1000
+        cs_px = OsuUtils.cs_to_px(self.cs)
+        ar_ms = OsuUtils.ar_to_ms(self.ar)/1000
         ar_select = (self.t <= self.data_t) & (self.data_t <= (self.t + ar_ms))
 
-        self.plot_hits.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=self.cs_to_px(self.cs))
+        self.plot_hits.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=cs_px)
 
-        sizes = self.approach_circle_to_radius(self.cs, self.ar, self.data_t[ar_select] - self.t)
+        sizes = OsuUtils.approach_circle_to_radius(cs_px, ar_ms, self.data_t[ar_select] - self.t)
         self.plot_approach.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=sizes)
 
 
     def __time_changed_event(self):
         self.t = self.timeline_marker.getPos()[0]
         self.__draw()
-        
-
-    def ar_to_ms(self, ar):
-        if ar <= 5: return 1800 - 120*ar
-        else:       return 1950 - 150*ar
-
-    
-    def cs_to_px(self, cs):
-        return (109 - 9*cs)
-
-    
-    def approach_circle_to_radius(self, cs, ar, dt):
-        return self.cs_to_px(cs)*(1 + 3*dt/(self.ar_to_ms(ar)/1000))
