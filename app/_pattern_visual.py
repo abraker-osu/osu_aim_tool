@@ -114,7 +114,7 @@ class PatternVisual():
         pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, 3, self.num)
 
         self.data_x = pattern[:, 0]
-        self.data_y = pattern[:, 1]
+        self.data_y = -pattern[:, 1]
         self.data_t = pattern[:, 2]
 
         self.pattern_cache = True
