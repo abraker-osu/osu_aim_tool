@@ -10,26 +10,6 @@ from app.misc._osu_utils import OsuUtils
 
 class PatternVisual():
 
-    # Construct a unit radius circle for a graph
-    class HitCircleFill(QtGui.QGraphicsObject):
-        def __init__(self, center=(0.0, 0.0)):
-            QtGui.QGraphicsObject.__init__(self)
-            self.center = center
-            self.radius = 1.0
-            self.pen = pyqtgraph.mkPen(color=(255, 255, 255, 255), width=0.5)
-
-
-        def boundingRect(self):
-            rect = QtCore.QRectF(0, 0, 2*self.radius, 2*self.radius)
-            rect.moveCenter(QtCore.QPointF(*self.center))
-            return rect
-
-
-        def paint(self, painter, option, widget):
-            painter.setPen(self.pen)
-            painter.drawEllipse(self.boundingRect())
-
-
     def __init__(self):
         self.data_x = None
         self.data_y = None
