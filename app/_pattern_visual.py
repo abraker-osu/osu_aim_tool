@@ -37,6 +37,9 @@ class PatternVisual():
         self.visual.setXRange(-512, 512)
         self.visual.setYRange(-512, 512)
         self.visual.showGrid(True, True)
+        self.visual.setXRange(0, 540)
+        self.visual.setYRange(-410, 0)
+        self.visual.getViewBox().setMouseEnabled(x=False, y=False)
         self.visual.enableAutoRange(axis='x', enable=False)
         self.visual.enableAutoRange(axis='y', enable=False)
 
