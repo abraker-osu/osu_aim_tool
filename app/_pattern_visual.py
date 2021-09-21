@@ -20,6 +20,7 @@ class PatternVisual():
         self.angle = None
         self.rot   = None
         self.num   = None
+        self.notes = None
         self.cs    = None
         self.ar    = None
         self.t     = None
@@ -65,12 +66,13 @@ class PatternVisual():
         self.main_widget.hide()
 
 
-    def update(self, bpm=None, dx=None, angle=None, rot=None, num=None, cs=None, ar=None):
+    def update(self, bpm=None, dx=None, angle=None, rot=None, num=None, notes=None, cs=None, ar=None):
         if bpm == None:   bpm = self.bpm
         if dx == None:    dx = self.dx
         if angle == None: angle = self.angle
         if rot == None:   rot = self.rot
         if num == None:   num = self.num
+        if notes == None: notes = self.notes
         if cs == None:    cs = self.cs
         if ar == None:    ar = self.ar
 
@@ -79,6 +81,7 @@ class PatternVisual():
         if angle != self.angle: self.pattern_cache = False; self.angle = angle
         if rot != self.rot:     self.pattern_cache = False; self.rot = rot
         if num != self.num:     self.pattern_cache = False; self.num = num
+        if notes != self.notes: self.pattern_cache = False; self.notes = notes
         if cs != self.cs:       self.pattern_cache = False; self.cs = cs
         if ar != self.ar:       self.pattern_cache = False; self.ar = ar
 
@@ -89,12 +92,12 @@ class PatternVisual():
                 
 
     def __generate_pattern(self):
-        _self = [ self.bpm, self.dx, self.angle, self.rot, self.num ]
+        _self = [ self.bpm, self.dx, self.angle, self.rot, self.num, self.notes ]
         if None in _self:
             return
 
         #pattern = OsuUtils.generate_pattern(self.bpm, self.dx, self.angle, self.rot, self.num)
-        pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, 3, self.num)
+        pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
 
         self.data_x = pattern[:, 0]
         self.data_y = -pattern[:, 1]

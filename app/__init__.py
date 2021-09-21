@@ -33,6 +33,7 @@ class App(QtGui.QMainWindow):
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
     from .misc.monitor import Monitor
+    from .misc._osu_utils import OsuUtils
 
     # Left column
     from ._stdev_graph_bpm import StddevGraphBpm
@@ -96,6 +97,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit     = App.ValueEdit(0, 512,  'Spacing')
         self.angle_edit  = App.ValueEdit(0, 360,  'Note deg')
         self.rot_edit    = App.ValueEdit(0, 360,  'Rot deg')
+        self.notes_edit  = App.ValueEdit(1, 100,  '# Notes')
         self.num_edit    = App.ValueEdit(1, 1000, '# Repeats')
         self.cs_edit     = App.ValueEdit(0, 10,   'CS', is_float=True)
         self.ar_edit     = App.ValueEdit(0, 10,   'AR', is_float=True)
@@ -114,6 +116,7 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.angle_edit)
         self.edit_layout.addWidget(self.rot_edit)
         self.edit_layout.addWidget(self.num_edit)
+        self.edit_layout.addWidget(self.notes_edit)
         self.edit_layout.addWidget(self.cs_edit)
         self.edit_layout.addWidget(self.ar_edit)
 
@@ -139,6 +142,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit.value_changed.connect(self.__dx_edit)
         self.angle_edit.value_changed.connect(self.__angle_edit)
         self.rot_edit.value_changed.connect(self.__rot_edit)
+        self.notes_edit.value_changed.connect(self.__notes_edit)
         self.num_edit.value_changed.connect(self.__num_edit)
         self.cs_edit.value_changed.connect(self.__cs_edit)
         self.ar_edit.value_changed.connect(self.__ar_edit)
@@ -184,6 +188,9 @@ class App(QtGui.QMainWindow):
 
         try: self.num_edit.set_value(cfg['num'])
         except KeyError: self.num_edit.set_value(60)
+
+        try: self.notes_edit.set_value(cfg['num'])
+        except KeyError: self.notes_edit.set_value(3)
         
         try: self.cs_edit.set_value(cfg['cs'])
         except KeyError: self.cs_edit.set_value(4)
@@ -196,6 +203,7 @@ class App(QtGui.QMainWindow):
         self.angle = self.angle_edit.get_value()
         self.rot   = self.rot_edit.get_value()
         self.num   = self.num_edit.get_value()
+        self.notes = self.notes_edit.get_value()
         self.cs    = self.cs_edit.get_value()
 
         return True
@@ -231,7 +239,7 @@ class App(QtGui.QMainWindow):
     def __ptrn_chkbx_event(self, state):
         if state == QtCore.Qt.Checked:
             self.pattern_visual.show()
-            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.num, self.cs, self.ar)
+            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.num, self.notes, self.cs, self.ar)
         else:
             self.pattern_visual.hide()
         pass
@@ -297,6 +305,18 @@ class App(QtGui.QMainWindow):
             json.dump(cfg, f, indent=4)
 
 
+    def __notes_edit(self, value):
+        with open('config.json') as f:
+            cfg = json.load(f)
+        
+        cfg['notes'] = value
+        self.notes = self.notes_edit.get_value()
+        self.pattern_visual.update(notes=self.notes)
+
+        with open('config.json', 'w') as f:
+            json.dump(cfg, f, indent=4)
+
+
     def __cs_edit(self, value):
         with open('config.json') as f:
             cfg = json.load(f)
@@ -337,6 +357,7 @@ class App(QtGui.QMainWindow):
         self.angle_edit.value_enter()
         self.rot_edit.value_enter()
         self.num_edit.value_enter()
+        self.notes_edit.value_enter()
         self.cs_edit.value_enter()
         self.ar_edit.value_enter()
 
@@ -347,6 +368,7 @@ class App(QtGui.QMainWindow):
             self.angle_edit.is_error() or \
             self.rot_edit.is_error() or   \
             self.num_edit.is_error() or   \
+            self.notes_edit.is_error() or   \
             self.cs_edit.is_error() or    \
             self.ar_edit.is_error()
 
@@ -446,39 +468,13 @@ class App(QtGui.QMainWindow):
             """
         )
 
-        # Desmos demo: https://www.desmos.com/calculator/bp9scvcssw
-        ms_t = 60*1000/self.bpm
-        rad  = math.pi/180
-
-        p1x = (self.dx/2)*math.cos(rad*self.rot)
-        p1y = (self.dx/2)*math.sin(rad*self.rot)
-
-        p2x = -(self.dx/2)*math.cos(rad*self.rot)
-        p2y = -(self.dx/2)*math.sin(rad*self.rot)
-
-        p3x = self.dx*math.cos(rad*self.rot + rad*self.angle) + p2x
-        p3y = self.dx*math.sin(rad*self.rot + rad*self.angle) + p2y
-
-        px_cx = 1/3*(p1x + p2x + p3x)
-        px_cy = 1/3*(p1y + p2y + p3y)
-
-        p1x = int(p1x + 256 - px_cx)
-        p1y = int(p1y + 192 - px_cy)
-        
-        p2x = int(p2x + 256 - px_cx)
-        p2y = int(p2y + 192 - px_cy)
-
-        p3x = int(p3x + 256 - px_cx)
-        p3y = int(p3y + 192 - px_cy)
-
         # Generate notes
-        for i in range(0, self.num, 4):
+        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
+
+        for note in pattern:
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(p1x)},{int(p1y)},{int((i + 0)*ms_t)},1,0,0:0:0:0:
-                {int(p2x)},{int(p2y)},{int((i + 1)*ms_t)},1,0,0:0:0:0:
-                {int(p3x)},{int(p3y)},{int((i + 2)*ms_t)},1,0,0:0:0:0:
-                {int(p2x)},{int(p2y)},{int((i + 3)*ms_t)},1,0,0:0:0:0:\
+                {int(note[0])},{int(note[1])},{int(note[2]*1000)},1,0,0:0:0:0:\
                 """
             )
 
