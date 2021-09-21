@@ -79,6 +79,22 @@ QLineEdit[Unsaved=true] {
     border-bottom: 2px solid qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0, stop: 0 #fffb00, stop: 1 rgba(255, 220, 0, 0%));
 }
 
+QSpinBox 
+{ 
+    border: None; 
+    border-radius: 5px; 
+    background-color: #353646;
+    max-width: 48px;
+}
+
+QDoubleSpinBox 
+{ 
+    border: None; 
+    border-radius: 5px; 
+    background-color: #353646;
+    max-width: 48px;
+}
+
 DockLabel[orientation='vertical'] {
     border-top-right-radius: 0px;
     border-top-left-radius: 3px;
