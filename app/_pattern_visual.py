@@ -51,21 +51,15 @@ class PatternVisual():
         self.layout.addWidget(self.visual)
         self.layout.addWidget(self.timeline)
 
-        #self.win_hits.setFixedSize(2*140, 2*140 + 32)
-
         self.plot_hits = self.visual.plot(title='Hit scatter', pen=None, symbol='o', symbolPen=None, symbolSize=100, symbolBrush=(100, 100, 255, 200), pxMode=False)
         self.visual.setXRange(-512, 512)
         self.visual.setYRange(-512, 512)
         self.visual.showGrid(True, True)
-        #self.visual.getViewBox().setMouseEnabled(x=False, y=False)
         self.visual.enableAutoRange(axis='x', enable=False)
         self.visual.enableAutoRange(axis='y', enable=False)
 
         self.plot_approach = self.visual.plot(pen=None, symbol='o', symbolPen=(100, 100, 255, 200), symbolBrush=None, symbolSize=100, pxMode=False)
         
-        #self.circle_item = AimGraph.HitCircle((0, 0))
-        #self.visual.addItem(self.circle_item)
-
         self.timeline.setFixedHeight(64)
         self.timeline.hideAxis('left')
 
