@@ -15,7 +15,7 @@ class StddevGraphDx():
             pos         = pos,
             relative_to = relative_to,
             dock_name   = dock_name,
-            widget      = pyqtgraph.PlotWidget(title='Aim variance (px)'),
+            widget      = pyqtgraph.PlotWidget(title='Aim var-x (px)'),
         )
 
         self.graphs[self.__id]['widget'].getPlotItem().getAxis('left').enableAutoSIPrefix(False)

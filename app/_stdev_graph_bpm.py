@@ -15,8 +15,8 @@ class StddevGraphBpm():
             pos         = pos,
             relative_to = relative_to,
             dock_name   = dock_name,
-            widget      = pyqtgraph.PlotWidget(title='Aim variance (bpm)'),
-        )
+            widget      = pyqtgraph.PlotWidget(title='Aim var-x (bpm)'),
+        ) 
 
         self.graphs[self.__id]['widget'].getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.graphs[self.__id]['widget'].getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
