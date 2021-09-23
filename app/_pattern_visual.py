@@ -50,6 +50,7 @@ class PatternVisual():
         
         self.timeline.setFixedHeight(64)
         self.timeline.hideAxis('left')
+        self.timeline.setXRange(-1, 4)
 
         # Interactive region item
         self.timeline_marker = pyqtgraph.InfiniteLine(angle=90, movable=True)
