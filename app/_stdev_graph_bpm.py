@@ -49,7 +49,7 @@ class StddevGraphBpm():
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
 
             px_filter = (data[:, self.COL_PX] == px)
-            stddevs = data[px_filter, self.COL_STDEV]
+            stddevs = data[px_filter, self.COL_STDEV_X]
             bpms = data[px_filter, self.COL_BPM]
 
             idx_sort = np.argsort(bpms)

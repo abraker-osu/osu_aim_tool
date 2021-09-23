@@ -49,7 +49,7 @@ class StddevGraphRot():
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
 
             bpm_filter = (data[:, self.COL_BPM] == bpm)
-            stddevs = data[bpm_filter, self.COL_STDEV]
+            stddevs = data[bpm_filter, self.COL_STDEV_X]
             rots = data[bpm_filter, self.COL_ROT]
 
             idx_sort = np.argsort(rots)
