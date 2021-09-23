@@ -576,10 +576,12 @@ class App(QtGui.QMainWindow):
             stddev_y_curr = self.data[data_select, App.COL_STDEV_Y][0]
             stddev_t_curr = self.data[data_select, App.COL_STDEV_T][0]
 
-            print(
-                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}  aim stddev^2: {stddev_x*stddev_y} (best: {stddev_x_curr*stddev_y_curr}\n'
-                f'aim stddev (x, y): ({stddev_x}, {stddev_y})  best: ({stddev_x_curr}, {stddev_x_curr})\n'
-            )
+            text = \
+                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
+                f'aim stddev^2: {stddev_x*stddev_y:.2f} (best: {stddev_x_curr*stddev_y_curr:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  best: ({stddev_x_curr:.2f}, {stddev_x_curr:.2f}, {stddev_t_curr:.2f})\n'
+            
+            self.status_txt.setText(text)
+            print(text)
 
             # Record new best only if stdev^2 is better
             if stddev_x*stddev_y < stddev_x_curr*stddev_y_curr:
@@ -588,10 +590,12 @@ class App(QtGui.QMainWindow):
                 self.data[data_select, App.COL_STDEV_T] = stddev_t
         else:
             # Create a new record
-            print(
-                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}  aim stddev^2: {stddev_x*stddev_y}\n'
-                f'aim stddev (x, y): ({stddev_x}, {stddev_y}))\n'
-            )
+            text = \
+                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
+                f'aim stddev^2: {stddev_x*stddev_y:.2f}   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f}))\n'
+
+            self.status_txt.setText(text)
+            print(text)
 
             self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
         
