@@ -24,12 +24,13 @@ class App(QtGui.QMainWindow):
 
     COL_STDEV_X = 0
     COL_STDEV_Y = 1
-    COL_BPM     = 2
-    COL_PX      = 3
-    COL_ANGLE   = 4
-    COL_ROT     = 5
-    COL_NUM     = 6
-    NUM_COLS    = 7
+    COL_STDEV_T = 2
+    COL_BPM     = 3
+    COL_PX      = 4
+    COL_ANGLE   = 5
+    COL_ROT     = 6
+    COL_NUM     = 7
+    NUM_COLS    = 8
 
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
@@ -389,21 +390,21 @@ class App(QtGui.QMainWindow):
         self.engaged = False
 
         # Data from map and replay -> score
-        aim_x_offsets, aim_y_offsets = self.__get_data(map_path)
-        if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None):
+        aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
+        if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
             self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
             self.action_btn.setText('Start')
             return
 
         # Update deviation data and plots
-        self.__write_data(aim_x_offsets, aim_y_offsets)
+        self.__write_data(aim_x_offsets, aim_y_offsets, tap_offsets)
         
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
         App.StddevGraphRot.plot_data(self, self.data)
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
-        self.status_txt.setText('Set settings and click start!')
+        self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
         self.action_btn.setText('Start')
 
 
@@ -517,7 +518,7 @@ class App(QtGui.QMainWindow):
         except Exception as e:
             self.status_txt.setText('Error reading replay!')
             print(e)
-            return None, None
+            return None, None, None
 
         # Process score data
         settings = StdScoreData.Settings()
@@ -534,10 +535,11 @@ class App(QtGui.QMainWindow):
         print(f'num total hits: {num_total}   num: misses {num_misses} ({100 * num_misses/num_total:.2f}%)')
         if num_misses/num_total > 0.1:
             self.status_txt.setText('Invalid play. Too many misses.')
-            return None, None
+            return None, None, None
 
         aim_x_offsets = score_data['replay_x'] - score_data['map_x']
         aim_y_offsets = score_data['replay_y'] - score_data['map_y']
+        tap_offsets   = score_data['replay_t'] - score_data['map_t']
 
         # Correct for incoming direction
         x_map_vecs = score_data['map_x'].values[1:] - score_data['map_x'].values[:-1]
@@ -550,12 +552,13 @@ class App(QtGui.QMainWindow):
         aim_x_offsets = mags*np.cos(map_thetas - hit_thetas[1:])
         aim_y_offsets = mags*np.sin(map_thetas - hit_thetas[1:])
 
-        return aim_x_offsets, aim_y_offsets
+        return aim_x_offsets, aim_y_offsets, tap_offsets
 
 
-    def __write_data(self, aim_offsets_x, aim_offsets_y):
+    def __write_data(self, aim_offsets_x, aim_offsets_y, tap_offsets):
         stddev_x = np.std(aim_offsets_x)
         stddev_y = np.std(aim_offsets_y)
+        stddev_t = np.std(tap_offsets)
 
         # Close data file for writing
         self.data_file.close()
@@ -569,8 +572,9 @@ class App(QtGui.QMainWindow):
 
         if np.any(data_select):
             # A record exists, see if it needs to be updated
-            stddev_x_curr = self.data[data_select, App.COL_STDEV_X]
-            stddev_y_curr = self.data[data_select, App.COL_STDEV_Y]
+            stddev_x_curr = self.data[data_select, App.COL_STDEV_X][0]
+            stddev_y_curr = self.data[data_select, App.COL_STDEV_Y][0]
+            stddev_t_curr = self.data[data_select, App.COL_STDEV_T][0]
 
             print(
                 f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}  aim stddev^2: {stddev_x*stddev_y} (best: {stddev_x_curr*stddev_y_curr}\n'
@@ -581,6 +585,7 @@ class App(QtGui.QMainWindow):
             if stddev_x*stddev_y < stddev_x_curr*stddev_y_curr:
                 self.data[data_select, App.COL_STDEV_X] = stddev_x
                 self.data[data_select, App.COL_STDEV_Y] = stddev_y
+                self.data[data_select, App.COL_STDEV_T] = stddev_t
         else:
             # Create a new record
             print(
@@ -588,7 +593,7 @@ class App(QtGui.QMainWindow):
                 f'aim stddev (x, y): ({stddev_x}, {stddev_y}))\n'
             )
 
-            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
+            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
         
         # Save data to file
         np.save(App.SAVE_FILE, self.data, allow_pickle=False)
