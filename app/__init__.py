@@ -20,15 +20,16 @@ from osu_analysis import ReplayIO
 
 class App(QtGui.QMainWindow):
 
-    SAVE_FILE_X = 'data/back_and_forth_data_x.npy'
-    SAVE_FILE_Y = 'data/back_and_forth_data_y.npy'
+    SAVE_FILE = 'data/stdev_data.npy'
 
-    COL_STDEV = 0
-    COL_BPM   = 1
-    COL_PX    = 2
-    COL_ANGLE = 3
-    COL_NUM   = 4
-    NUM_COLS  = 5
+    COL_STDEV_X = 0
+    COL_STDEV_Y = 1
+    COL_BPM     = 2
+    COL_PX      = 3
+    COL_ANGLE   = 4
+    COL_ROT     = 5
+    COL_NUM     = 6
+    NUM_COLS    = 7
 
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
@@ -38,7 +39,7 @@ class App(QtGui.QMainWindow):
     # Left column
     from ._stdev_graph_bpm import StddevGraphBpm
     from ._stdev_graph_dx import StddevGraphDx
-    #from ._stdev_graph_theta import StddevGraphTheta
+    from ._stdev_graph_rot import StddevGraphRot
     from ._aim_graph import AimGraph
     from ._pattern_visual import PatternVisual
 
@@ -47,23 +48,16 @@ class App(QtGui.QMainWindow):
         os.makedirs('data', exist_ok=True)
 
         try: 
-            self.data_file_x = open(App.SAVE_FILE_X, 'rb+')
-            #self.data_file_y = open(App.SAVE_FILE_Y, 'rb+')
-
-            self.data_x = np.load(self.data_file_x, allow_pickle=False)
-            #self.data_y = np.load(self.data_file_y, allow_pickle=False)
+            self.data_file = open(App.SAVE_FILE, 'rb+')
+            self.data = np.load(self.data_file, allow_pickle=False)
         except FileNotFoundError:
             print('Data file not found. Creating...')
 
-            self.data_x = np.asarray([])
-            #self.data_y = np.asarray([])
-            np.save(App.SAVE_FILE_X, np.empty((0, App.NUM_COLS)), allow_pickle=False)
+            self.data = np.asarray([])
+            np.save(App.SAVE_FILE, np.empty((0, App.NUM_COLS)), allow_pickle=False)
             
-            self.data_file_x = open(App.SAVE_FILE_X, 'rb+')
-            #self.data_file_Y = open(App.SAVE_FILE_Y, 'rb+')
-
-            self.data_x = np.load(self.data_file_x, allow_pickle=False)
-            #self.data_y = np.load(self.data_file_y, allow_pickle=False)
+            self.data_file = open(App.SAVE_FILE, 'rb+')
+            self.data = np.load(self.data_file, allow_pickle=False)
 
         self.__init_gui()
         self.__build_layout()
@@ -75,8 +69,9 @@ class App(QtGui.QMainWindow):
             except Exception as e:
                 self.status_txt.setText(str(e) + ' Is osu! path correct?')
 
-        App.StddevGraphBpm.plot_data(self, self.data_x)
-        App.StddevGraphDx.plot_data(self, self.data_x)
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphRot.plot_data(self, self.data)
 
         self.show()
 
@@ -132,7 +127,7 @@ class App(QtGui.QMainWindow):
         # Left column
         App.StddevGraphBpm.__init__(self, pos='top', dock_name='Variance vs BPM')
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Variance vs Spacing')
-        #App.StddevGraphAngle.__init__(self, pos='top')
+        App.StddevGraphRot.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Variance vs Rotation')
 
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
@@ -400,8 +395,9 @@ class App(QtGui.QMainWindow):
         # Update deviation data and plots
         self.__write_data(aim_x_offsets, aim_y_offsets)
         
-        App.StddevGraphBpm.plot_data(self, self.data_x)
-        App.StddevGraphDx.plot_data(self, self.data_x)
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphRot.plot_data(self, self.data)
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
         self.status_txt.setText('Set settings and click start!')
@@ -521,7 +517,11 @@ class App(QtGui.QMainWindow):
             return None, None
 
         # Process score data
-        score_data = StdScoreData.get_score_data(replay_data, map_data)
+        settings = StdScoreData.Settings()
+        settings.ar_ms = App.OsuUtils.ar_to_ms(self.ar)
+        settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cs)
+
+        score_data = StdScoreData.get_score_data(settings, replay_data, map_data)
 
         hit_types_miss = score_data['type'] == StdScoreData.TYPE_MISS
         num_total = score_data['type'].values.shape[0]
@@ -542,7 +542,7 @@ class App(QtGui.QMainWindow):
 
         map_thetas = np.arctan2(y_map_vecs, x_map_vecs)
         hit_thetas = np.arctan2(aim_y_offsets, aim_x_offsets)
-        mags   = (aim_x_offsets**2 + aim_y_offsets**2)**0.5
+        mags = (aim_x_offsets**2 + aim_y_offsets**2)**0.5
 
         aim_x_offsets = mags*np.cos(map_thetas - hit_thetas[1:])
         aim_y_offsets = mags*np.sin(map_thetas - hit_thetas[1:])
@@ -552,32 +552,47 @@ class App(QtGui.QMainWindow):
 
     def __write_data(self, aim_offsets_x, aim_offsets_y):
         stddev_x = np.std(aim_offsets_x)
+        stddev_y = np.std(aim_offsets_y)
 
         # Close data file for writing
-        self.data_file_x.close()
-        #self.data_file_y.close()
+        self.data_file.close()
 
         # Find record based on bpm and spacing
-        data_filter = (self.data_x[:, App.COL_BPM] == self.bpm) & (self.data_x[:, App.COL_PX] == self.dx)
+        data_select = \
+            (self.data[:, App.COL_BPM] == self.bpm) & \
+            (self.data[:, App.COL_PX] == self.dx) & \
+            (self.data[:, App.COL_ROT] == self.rot) & \
+            (self.data[:, App.COL_ANGLE] == self.angle)
 
-        if np.any(data_filter):
-            # A record exists, update it
-            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   rot: {self.rot}   aim stddev (x-axis): {stddev_x} (best: {self.data_x[data_filter, App.COL_STDEV]})')
-            #print(f'aim stddev (y-axis): {stddev_y}')
+        if np.any(data_select):
+            # A record exists, see if it needs to be updated
+            stddev_x_curr = self.data[data_select, App.COL_STDEV_X]
+            stddev_y_curr = self.data[data_select, App.COL_STDEV_Y]
 
-            self.data_x[data_filter, App.COL_STDEV] = min(stddev_x, np.min(self.data_x[data_filter, App.COL_STDEV]))
+            print(
+                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}  aim stddev^2: {stddev_x*stddev_y} (best: {stddev_x_curr*stddev_y_curr}\n'
+                f'aim stddev (x, y): ({stddev_x}, {stddev_y})  best: ({stddev_x_curr}, {stddev_x_curr})\n'
+            )
+
+            # Record new best only if stdev^2 is better
+            if stddev_x*stddev_y < stddev_x_curr*stddev_y_curr:
+                self.data[data_select, App.COL_STDEV_X] = stddev_x
+                self.data[data_select, App.COL_STDEV_Y] = stddev_y
         else:
             # Create a new record
-            print(f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   rot: {self.rot}  aim stddev (x-axis): {stddev_x}')
-            #print(f'aim stddev (y-axis): {stddev_y}')
-            self.data_x = np.insert(self.data_x, 0, np.asarray([ stddev_x, self.bpm , self.dx, self.angle, self.num ]), axis=0)
+            print(
+                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}  aim stddev^2: {stddev_x*stddev_y}\n'
+                f'aim stddev (x, y): ({stddev_x}, {stddev_y}))\n'
+            )
+
+            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
         
         # Save data to file
-        np.save(App.SAVE_FILE_X, self.data_x, allow_pickle=False)
+        np.save(App.SAVE_FILE, self.data, allow_pickle=False)
 
         # Now reopen it so it can be used
-        self.data_file_x = open(App.SAVE_FILE_X, 'rb+')
-        self.data_x = np.load(self.data_file_x, allow_pickle=False)
+        self.data_file = open(App.SAVE_FILE, 'rb+')
+        self.data = np.load(self.data_file, allow_pickle=False)
 
 
     def closeEvent(self, event):
