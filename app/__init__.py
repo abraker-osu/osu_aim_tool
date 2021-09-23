@@ -106,6 +106,9 @@ class App(QtGui.QMainWindow):
         
 
     def __build_layout(self):
+        self.setWindowTitle('osu! Aim Tool Settings')
+        self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
+
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
         self.edit_layout.addWidget(self.angle_edit)

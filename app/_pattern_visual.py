@@ -28,6 +28,8 @@ class PatternVisual():
         self.pattern_cache = False
 
         self.main_widget = QtGui.QWidget()
+        self.main_widget.setWindowTitle('osu! Aim Tool Pattern Visualization')
+
         self.layout = QtGui.QVBoxLayout(self.main_widget)
         self.visual = pyqtgraph.PlotWidget(title='Pattern visualization')
         self.timeline = pyqtgraph.PlotWidget()

@@ -26,7 +26,8 @@ class AimGraph():
 
 
     def __init__(self):
-        self.win_hits = pyqtgraph.PlotWidget(show=False, title='osu! analyzer hit visualization')
+        self.win_hits = pyqtgraph.PlotWidget(show=False, title='Hit visualization')
+        self.win_hits.setWindowTitle('osu! Aim Tool Hit Visualization')
         self.win_hits.setFixedSize(2*140, 2*140 + 32)
 
         self.plot_hits = self.win_hits.plot(title='Hit scatter')
