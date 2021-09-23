@@ -187,8 +187,8 @@ class App(QtGui.QMainWindow):
         try: self.num_edit.set_value(cfg['num'])
         except KeyError: self.num_edit.set_value(60)
 
-        try: self.notes_edit.set_value(cfg['num'])
-        except KeyError: self.notes_edit.set_value(3)
+        try: self.notes_edit.set_value(cfg['notes'])
+        except KeyError: self.notes_edit.set_value(2)
         
         try: self.cs_edit.set_value(cfg['cs'])
         except KeyError: self.cs_edit.set_value(4)
