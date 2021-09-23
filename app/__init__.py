@@ -524,7 +524,7 @@ class App(QtGui.QMainWindow):
         settings.ar_ms = App.OsuUtils.ar_to_ms(self.ar)
         settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cs)
 
-        score_data = StdScoreData.get_score_data(settings, replay_data, map_data)
+        score_data = StdScoreData.get_score_data(replay_data, map_data, settings)
 
         hit_types_miss = score_data['type'] == StdScoreData.TYPE_MISS
         num_total = score_data['type'].values.shape[0]
