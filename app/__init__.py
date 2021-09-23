@@ -97,7 +97,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit     = App.ValueEdit(0, 512,  'Spacing')
         self.angle_edit  = App.ValueEdit(0, 360,  'Note deg')
         self.rot_edit    = App.ValueEdit(0, 360,  'Rot deg')
-        self.notes_edit  = App.ValueEdit(1, 100,  '# Notes')
+        self.notes_edit  = App.ValueEdit(2, 100,  '# Notes')
         self.num_edit    = App.ValueEdit(1, 1000, '# Repeats')
         self.cs_edit     = App.ValueEdit(0, 10,   'CS', is_float=True)
         self.ar_edit     = App.ValueEdit(0, 10,   'AR', is_float=True)
