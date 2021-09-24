@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 
-class StddevGraphRot():
+class StddevGraphAngle():
 
     def __init__(self, pos, relative_to=None, dock_name=''):
         
@@ -15,13 +15,13 @@ class StddevGraphRot():
             pos         = pos,
             relative_to = relative_to,
             dock_name   = dock_name,
-            widget      = pyqtgraph.PlotWidget(title='Aim var-x (rot)'),
+            widget      = pyqtgraph.PlotWidget(title='Aim var-x (angle)'),
         )
 
         self.graphs[self.__id]['widget'].getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.graphs[self.__id]['widget'].getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.graphs[self.__id]['widget'].setLabel('left', 'variance', units='σ²', unitPrefix='')
-        self.graphs[self.__id]['widget'].setLabel('bottom', 'rotation', units='degrees', unitPrefix='')
+        self.graphs[self.__id]['widget'].setLabel('bottom', 'angle', units='degrees', unitPrefix='')
         
         self.graphs[self.__id]['widget'].addLegend()
         self.graphs[self.__id]['widget'].getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
@@ -50,9 +50,9 @@ class StddevGraphRot():
 
             bpm_filter = (data[:, self.COL_BPM] == bpm)
             stddevs = data[bpm_filter, self.COL_STDEV_X]
-            rots = data[bpm_filter, self.COL_ROT]
+            angles = data[bpm_filter, self.COL_ANGLE]
 
-            idx_sort = np.argsort(rots)
+            idx_sort = np.argsort(angles)
 
             color = bpm_lut.map(bpm, 'qcolor')
-            self.graphs[self.__id]['widget'].plot(x=rots[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+            self.graphs[self.__id]['widget'].plot(x=angles[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
