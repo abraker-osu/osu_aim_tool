@@ -46,7 +46,13 @@ class OsuUtils():
         delta_ts = np.pad(delta_ts, (1,(n_repeats - 1)*(n_points - 1)), mode='symmetric')
         delta_ts[0] = 0
 
-        return np.column_stack((points, np.cumsum(delta_ts)))
+        data = np.column_stack((points, np.cumsum(delta_ts)))
+
+        # osu! clips note positions into boundaries of the playfield
+        data[:, 0] = np.minimum(512, np.maximum(0, data[:, 0]))
+        data[:, 1] = np.minimum(384, np.maximum(0, data[:, 1]))
+
+        return data
 
 
     @staticmethod
