@@ -524,6 +524,10 @@ class App(QtGui.QMainWindow):
         settings = StdScoreData.Settings()
         settings.ar_ms = App.OsuUtils.ar_to_ms(self.ar)
         settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cs)
+        settings.pos_hit_range = 100        # ms point of late hit window
+        settings.neg_hit_range = 100        # ms point of early hit window
+        settings.pos_hit_miss_range = 100   # ms point of late miss window
+        settings.neg_hit_miss_range = 100   # ms point of early miss window
 
         score_data = StdScoreData.get_score_data(replay_data, map_data, settings)
 
