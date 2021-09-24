@@ -6,51 +6,6 @@ import math
 
 class OsuUtils():
 
-    def generate_pattern(bpm: 'float', dx: 'float', angle: 'float', rot: 'float', num: 'float') -> np.array:
-        """
-        Create a pattern of osu circles.
-
-        parameters:
-            bpm: Rate of pattern
-            dx: Distance between each note
-            angle: angle of the middle jump
-            rot: Orientation of the entire pattern
-            num: The pattern is played this many times, reversing direction on each repeat
-        
-        returns:
-            np.array of [[x, y, t] for points in pattern]
-        """
-        ms_t = 60/bpm
-        rad  = math.pi/180
-
-        p1x = (dx/2)*math.cos(rad*rot)
-        p1y = (dx/2)*math.sin(rad*rot)
-
-        p2x = -(dx/2)*math.cos(rad*rot)
-        p2y = -(dx/2)*math.sin(rad*rot)
-
-        p3x = dx*math.cos(rad*rot + rad*angle) + p2x
-        p3y = dx*math.sin(rad*rot + rad*angle) + p2y
-
-        px_cx = 1/3*(p1x + p2x + p3x)
-        px_cy = 1/3*(p1y + p2y + p3y)
-
-        p1x = int(p1x + 256 - px_cx)
-        p1y = int(p1y + 192 - px_cy)
-        
-        p2x = int(p2x + 256 - px_cx)
-        p2y = int(p2y + 192 - px_cy)
-
-        p3x = int(p3x + 256 - px_cx)
-        p3y = int(p3y + 192 - px_cy)
-
-        data_x = np.tile([p1x, p2x, p3x, p2x], 1 + int(num/4))
-        data_y = np.tile([-p1y, -p2y, -p3y, -p2y], 1 + int(num/4))
-        data_t = np.arange(0, data_x.shape[0])*ms_t
-
-        return np.column_stack((data_x, data_y, data_t))
-
-
     # Thanks joz#9960
     def generate_pattern2(initial_angle: 'float', distance: 'float|list[float]', time: 'float|list[float]', angle: 'float|list[float]', n_points: 'int', n_repeats: 'int' = 1) -> np.array:
         """
