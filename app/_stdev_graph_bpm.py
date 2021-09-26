@@ -15,16 +15,40 @@ class StddevGraphBpm():
             pos         = pos,
             relative_to = relative_to,
             dock_name   = dock_name,
-            widget      = pyqtgraph.PlotWidget(title='Aim var-x (bpm)'),
+            widget      = QtGui.QWidget(),
         ) 
 
-        self.graphs[self.__id]['widget'].getPlotItem().getAxis('left').enableAutoSIPrefix(False)
-        self.graphs[self.__id]['widget'].getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.graphs[self.__id]['widget'].setLabel('left', 'variance', units='σ²', unitPrefix='')
-        self.graphs[self.__id]['widget'].setLabel('bottom', 'bpm', units='bpm', unitPrefix='')
+        self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (bpm)')
+        self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
+        self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
+        self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
+        self.__graph.setLabel('bottom', 'bpm', units='bpm', unitPrefix='')
         
-        self.graphs[self.__id]['widget'].addLegend()
-        self.graphs[self.__id]['widget'].getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
+        self.__graph.addLegend()
+        self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
+
+        # Interactive region item
+        self.__rot_plot = pyqtgraph.PlotWidget()
+        self.__rot_plot.setXRange(-0.5, 0.5)
+        self.__rot_plot.setYRange(0, 360)
+        self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
+        self.__rot_plot.enableAutoRange(axis='x', enable=False)
+        self.__rot_plot.enableAutoRange(axis='y', enable=False)
+        self.__rot_plot.hideAxis('bottom')
+        self.__rot_plot.hideAxis('left')
+        self.__rot_plot.showAxis('right')
+        self.__rot_plot.setFixedWidth(64)
+
+        self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
+        self.__rot_region.setBounds((0, 360))
+        self.__rot_region.setSpan(0, 22.5)
+        self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__rot_region_event(self))
+
+        # Put it all together
+        self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
+        self.__layout.addWidget(self.__graph)
+        self.__rot_plot.addItem(self.__rot_region)
+        self.__layout.addWidget(self.__rot_plot)
 
 
     def plot_data(self, data):
@@ -44,15 +68,26 @@ class StddevGraphBpm():
             )
         )
 
-        self.graphs[self.__id]['widget'].clearPlots()
+        rot0, rot1 = self.__rot_region.getRegion()
+        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+
+        unique_rots = np.unique(data[:, self.COL_ROT])
+        self.__rot_plot.clearPlots()
+        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
+        self.__graph.clearPlots()
         for px in unique_pxs:
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
 
-            px_filter = (data[:, self.COL_PX] == px)
-            stddevs = data[px_filter, self.COL_STDEV_X]
-            bpms = data[px_filter, self.COL_BPM]
+            px_select = (data[:, self.COL_PX] == px)
+            stddevs = data[px_select & rot_select, self.COL_STDEV_X]
+            bpms = data[px_select & rot_select, self.COL_BPM]
 
             idx_sort = np.argsort(bpms)
             color = px_lut.map(px, 'qcolor')
 
-            self.graphs[self.__id]['widget'].plot(x=bpms[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
+            self.__graph.plot(x=bpms[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
+
+
+    def __rot_region_event(self):
+        StddevGraphBpm.plot_data(self, self.data)
