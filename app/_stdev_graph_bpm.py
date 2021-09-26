@@ -1,6 +1,5 @@
 import pyqtgraph
 from pyqtgraph.Qt import QtGui
-from pyqtgraph.Qt import QtCore
 
 import numpy as np
 import random
@@ -18,12 +17,12 @@ class StddevGraphBpm():
             widget      = QtGui.QWidget(),
         ) 
 
+        # Deviation vs BPM graph
         self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (bpm)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
         self.__graph.setLabel('bottom', 'bpm', units='bpm', unitPrefix='')
-        
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
 
