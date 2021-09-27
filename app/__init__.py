@@ -72,7 +72,7 @@ class App(QtGui.QMainWindow):
 
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
+        #App.StddevGraphAngle.plot_data(self, self.data)
 
         self.show()
 
@@ -131,7 +131,7 @@ class App(QtGui.QMainWindow):
         # Left column
         App.StddevGraphBpm.__init__(self, pos='top', dock_name='Variance vs BPM')
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Variance vs Spacing')
-        App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Variance vs Angle')
+        #App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Variance vs Angle')
 
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
@@ -401,7 +401,7 @@ class App(QtGui.QMainWindow):
         
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
+        #App.StddevGraphAngle.plot_data(self, self.data)
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
         self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
