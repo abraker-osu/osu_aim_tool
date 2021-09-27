@@ -155,7 +155,19 @@ class App(QtGui.QMainWindow):
         self.perf_chkbx.setChecked(True)
 
 
+    def __check_config_file(self):
+        # Load osu_dir setting
+        try:
+            with open('config.json') as f:
+                cfg = json.load(f)
+        except FileNotFoundError:
+            cfg = { 'osu_dir' : '' }
+            with open('config.json', 'w') as f:
+                json.dump(cfg, f, indent=4)
+
+
     def __load_user_val(self):
+        self.__check_config_file()
         with open('config.json') as f:
             cfg = json.load(f)
 
@@ -169,14 +181,9 @@ class App(QtGui.QMainWindow):
 
 
     def __load_settings(self):
-        # Load osu_dir setting
-        try:
-            with open('config.json') as f:
-                cfg = json.load(f)
-        except FileNotFoundError:
-            cfg = { 'osu_dir' : '' }
-            with open('config.json', 'w') as f:
-                json.dump(cfg, f, indent=4)
+        self.__check_config_file()
+        with open('config.json') as f:
+            cfg = json.load(f)
 
         try: self.osu_path = cfg['osu_dir']
         except KeyError:
