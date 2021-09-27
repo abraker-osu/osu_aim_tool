@@ -8,4 +8,4 @@ The data it plots is variance against BPM and Note distance. The lower the varia
 
 If more than 10% of the play are misses, it will reject the play. There might be some bugs with score processing, so don't hesitate to report any issues - just make sure to include a replay and settings with the report so I can debug it. 
 
-![](https://i.imgur.com/xOMy61m.png)
+![](https://i.imgur.com/Ks4ZjIp.png)
