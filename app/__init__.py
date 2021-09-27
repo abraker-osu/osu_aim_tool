@@ -193,6 +193,7 @@ class App(QtGui.QMainWindow):
 
         if not os.path.isdir(self.osu_path):
             self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.')
+            self.action_btn.setEnabled(False)
             return False
 
         # Load saved settings
