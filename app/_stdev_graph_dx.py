@@ -20,6 +20,7 @@ class StddevGraphDx():
         self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (px)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
+        self.__graph.setLimits(xMin=0, xMax=600, yMin=-10, yMax=800)
         self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
         self.__graph.setLabel('bottom', 'distance', units='osu!px', unitPrefix='')
         self.__graph.addLegend()
