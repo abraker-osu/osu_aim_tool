@@ -21,6 +21,7 @@ class StddevGraphBpm():
         self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (bpm)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
+        self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=800)
         self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
         self.__graph.setLabel('bottom', 'bpm', units='bpm', unitPrefix='')
         self.__graph.addLegend()
@@ -85,7 +86,7 @@ class StddevGraphBpm():
             idx_sort = np.argsort(bpms)
             color = px_lut.map(px, 'qcolor')
 
-            self.__graph.plot(x=bpms[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
+            self.__graph.plot(x=bpms[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
 
 
     def __rot_region_event(self):
