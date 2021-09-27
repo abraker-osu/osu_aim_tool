@@ -1,5 +1,6 @@
 import numpy as np
 import textwrap
+import random
 import json
 import time
 import math
@@ -20,7 +21,7 @@ from osu_analysis import ReplayIO
 
 class App(QtGui.QMainWindow):
 
-    SAVE_FILE = 'data/stdev_data.npy'
+    SAVE_FILE = lambda x: f'data/stdev_data_{int(x)}.npy'
 
     COL_STDEV_X = 0
     COL_STDEV_Y = 1
@@ -48,16 +49,18 @@ class App(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         os.makedirs('data', exist_ok=True)
 
+        self.__load_user_val()
+
         try: 
-            self.data_file = open(App.SAVE_FILE, 'rb+')
+            self.data_file = open(App.SAVE_FILE(self.user_id), 'rb+')
             self.data = np.load(self.data_file, allow_pickle=False)
         except FileNotFoundError:
             print('Data file not found. Creating...')
 
             self.data = np.asarray([])
-            np.save(App.SAVE_FILE, np.empty((0, App.NUM_COLS)), allow_pickle=False)
+            np.save(App.SAVE_FILE(self.user_id), np.empty((0, App.NUM_COLS)), allow_pickle=False)
             
-            self.data_file = open(App.SAVE_FILE, 'rb+')
+            self.data_file = open(App.SAVE_FILE(self.user_id), 'rb+')
             self.data = np.load(self.data_file, allow_pickle=False)
 
         self.__init_gui()
@@ -150,6 +153,19 @@ class App(QtGui.QMainWindow):
 
         self.area.setWindowFlags(QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowMinimizeButtonHint)
         self.perf_chkbx.setChecked(True)
+
+
+    def __load_user_val(self):
+        with open('config.json') as f:
+            cfg = json.load(f)
+
+        if not 'id' in cfg:
+            cfg['id'] = random.randint(100, 1000000)
+                    
+            with open('config.json', 'w') as f:
+                json.dump(cfg, f, indent=4)
+
+        self.user_id = cfg['id']
 
 
     def __load_settings(self):
@@ -604,10 +620,10 @@ class App(QtGui.QMainWindow):
             self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
         
         # Save data to file
-        np.save(App.SAVE_FILE, self.data, allow_pickle=False)
+        np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
 
         # Now reopen it so it can be used
-        self.data_file = open(App.SAVE_FILE, 'rb+')
+        self.data_file = open(App.SAVE_FILE(self.user_id), 'rb+')
         self.data = np.load(self.data_file, allow_pickle=False)
 
 
