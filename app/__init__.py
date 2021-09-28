@@ -93,15 +93,15 @@ class App(QtGui.QMainWindow):
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
         self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
 
-        self.edit_layout = QtGui.QHBoxLayout()
-        self.bpm_edit    = App.ValueEdit(1, 1200, 'BPM')
-        self.dx_edit     = App.ValueEdit(0, 512,  'Spacing')
-        self.angle_edit  = App.ValueEdit(0, 360,  'Note deg')
-        self.rot_edit    = App.ValueEdit(0, 360,  'Rot deg')
-        self.notes_edit  = App.ValueEdit(2, 100,  '# Notes')
-        self.num_edit    = App.ValueEdit(1, 1000, '# Repeats')
-        self.cs_edit     = App.ValueEdit(0, 10,   'CS', is_float=True)
-        self.ar_edit     = App.ValueEdit(0, 10,   'AR', is_float=True)
+        self.edit_layout  = QtGui.QHBoxLayout()
+        self.bpm_edit     = App.ValueEdit(1, 1200, 'BPM')
+        self.dx_edit      = App.ValueEdit(0, 512,  'Spacing')
+        self.angle_edit   = App.ValueEdit(0, 360,  'Note deg')
+        self.rot_edit     = App.ValueEdit(0, 360,  'Rot deg')
+        self.notes_edit   = App.ValueEdit(2, 100,  '# Notes')
+        self.repeats_edit = App.ValueEdit(1, 1000, '# Repeats')
+        self.cs_edit      = App.ValueEdit(0, 10,   'CS', is_float=True)
+        self.ar_edit      = App.ValueEdit(0, 10,   'AR', is_float=True)
 
         self.action_btn = QtGui.QPushButton('Start')
         self.status_txt = QtGui.QLabel('Set settings and click start!')
@@ -119,7 +119,7 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.dx_edit)
         self.edit_layout.addWidget(self.angle_edit)
         self.edit_layout.addWidget(self.rot_edit)
-        self.edit_layout.addWidget(self.num_edit)
+        self.edit_layout.addWidget(self.repeats_edit)
         self.edit_layout.addWidget(self.notes_edit)
         self.edit_layout.addWidget(self.cs_edit)
         self.edit_layout.addWidget(self.ar_edit)
@@ -148,7 +148,7 @@ class App(QtGui.QMainWindow):
         self.angle_edit.value_changed.connect(self.__angle_edit)
         self.rot_edit.value_changed.connect(self.__rot_edit)
         self.notes_edit.value_changed.connect(self.__notes_edit)
-        self.num_edit.value_changed.connect(self.__num_edit)
+        self.repeats_edit.value_changed.connect(self.__repeats_edit)
         self.cs_edit.value_changed.connect(self.__cs_edit)
         self.ar_edit.value_changed.connect(self.__ar_edit)
 
@@ -214,8 +214,8 @@ class App(QtGui.QMainWindow):
         try: self.rot_edit.set_value(cfg['rot'])
         except KeyError: self.rot_edit.set_value(0)
 
-        try: self.num_edit.set_value(cfg['num'])
-        except KeyError: self.num_edit.set_value(60)
+        try: self.repeats_edit.set_value(cfg['repeats'])
+        except KeyError: self.repeats_edit.set_value(60)
 
         try: self.notes_edit.set_value(cfg['notes'])
         except KeyError: self.notes_edit.set_value(2)
@@ -226,13 +226,13 @@ class App(QtGui.QMainWindow):
         try: self.ar_edit.set_value(cfg['ar'])
         except KeyError: self.ar_edit.set_value(8)
 
-        self.bpm   = self.bpm_edit.get_value()
-        self.dx    = self.dx_edit.get_value()
-        self.angle = self.angle_edit.get_value()
-        self.rot   = self.rot_edit.get_value()
-        self.num   = self.num_edit.get_value()
-        self.notes = self.notes_edit.get_value()
-        self.cs    = self.cs_edit.get_value()
+        self.bpm     = self.bpm_edit.get_value()
+        self.dx      = self.dx_edit.get_value()
+        self.angle   = self.angle_edit.get_value()
+        self.rot     = self.rot_edit.get_value()
+        self.repeats = self.repeats_edit.get_value()
+        self.notes   = self.notes_edit.get_value()
+        self.cs      = self.cs_edit.get_value()
 
         return True
 
@@ -267,7 +267,7 @@ class App(QtGui.QMainWindow):
     def __ptrn_chkbx_event(self, state):
         if state == QtCore.Qt.Checked:
             self.pattern_visual.show()
-            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.num, self.notes, self.cs, self.ar)
+            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)
         else:
             self.pattern_visual.hide()
         pass
@@ -321,13 +321,13 @@ class App(QtGui.QMainWindow):
             json.dump(cfg, f, indent=4)
 
 
-    def __num_edit(self, value):
+    def __repeats_edit(self, value):
         with open('config.json') as f:
             cfg = json.load(f)
         
-        cfg['num'] = value
-        self.num = self.num_edit.get_value()
-        self.pattern_visual.update(num=self.num)
+        cfg['repeats'] = value
+        self.repeats = self.repeats_edit.get_value()
+        self.pattern_visual.update(num=self.repeats)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -384,7 +384,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit.value_enter()
         self.angle_edit.value_enter()
         self.rot_edit.value_enter()
-        self.num_edit.value_enter()
+        self.repeats_edit.value_enter()
         self.notes_edit.value_enter()
         self.cs_edit.value_enter()
         self.ar_edit.value_enter()
@@ -395,7 +395,7 @@ class App(QtGui.QMainWindow):
             self.dx_edit.is_error() or    \
             self.angle_edit.is_error() or \
             self.rot_edit.is_error() or   \
-            self.num_edit.is_error() or   \
+            self.repeats_edit.is_error() or   \
             self.notes_edit.is_error() or   \
             self.cs_edit.is_error() or    \
             self.ar_edit.is_error()
@@ -499,7 +499,7 @@ class App(QtGui.QMainWindow):
         )
 
         # Generate notes
-        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
+        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.repeats)
 
         for note in pattern:
             beatmap_data += textwrap.dedent(
