@@ -631,7 +631,7 @@ class App(QtGui.QMainWindow):
             self.status_txt.setText(text)
             print(text)
 
-            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.num ]), axis=0)
+            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.notes ]), axis=0)
         
         # Save data to file
         np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
