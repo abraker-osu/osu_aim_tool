@@ -22,8 +22,6 @@ class StddevGraphVel():
         self.__graph.setLimits(xMin=0, xMax=2000, yMin=-10, yMax=800)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'velocity', units='osu!px/s', unitPrefix='')
-        self.__graph.addLegend()
-        self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
         
         # Interactive region item
         self.__rot_plot = pyqtgraph.PlotWidget()
