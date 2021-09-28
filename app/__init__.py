@@ -132,7 +132,7 @@ class App(QtGui.QMainWindow):
         self.setCentralWidget(self.main_widget)
 
         # Left column
-        App.StddevGraphBpm.__init__(self, pos='top', dock_name='Variance vs BPM')
+        App.StddevGraphBpm.__init__(self, pos='top', dock_name='Deviation vs BPM')
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Variance vs Spacing')
         #App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Variance vs Angle')
 

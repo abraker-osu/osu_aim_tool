@@ -18,12 +18,12 @@ class StddevGraphBpm():
         ) 
 
         # Deviation vs BPM graph
-        self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (bpm)')
+        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (bpm)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=800)
-        self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
-        self.__graph.setLabel('bottom', 'bpm', units='bpm', unitPrefix='')
+        self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
+        self.__graph.setLabel('bottom', 'bpm', units='60/s', unitPrefix='')
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
 
