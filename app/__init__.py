@@ -23,14 +23,14 @@ class App(QtGui.QMainWindow):
 
     SAVE_FILE = lambda x: f'data/stdev_data_{int(x)}.npy'
 
-    COL_STDEV_X = 0
-    COL_STDEV_Y = 1
-    COL_STDEV_T = 2
-    COL_BPM     = 3
-    COL_PX      = 4
-    COL_ANGLE   = 5
-    COL_ROT     = 6
-    COL_NUM     = 7
+    COL_STDEV_X = 0  # Deviation along x-axis
+    COL_STDEV_Y = 1  # Deviation along y-axis
+    COL_STDEV_T = 2  # Deviation along hit time
+    COL_BPM     = 3  # BPM of the pattern (60/s)
+    COL_PX      = 4  # Distance between notes in the pattern (osu!px)
+    COL_ANGLE   = 5  # Angle between notes in the pattern (deg)
+    COL_ROT     = 6  # Rotation of pattern (deg)
+    COL_NUM     = 7  # Number of notes in the pattern before pattern reverses
     NUM_COLS    = 8
 
     from .misc._dock_patch import updateStylePatched
