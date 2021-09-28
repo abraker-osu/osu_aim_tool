@@ -16,7 +16,7 @@ class StddevGraphVel():
             widget      = QtGui.QWidget(),
         )
 
-        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (accel)')
+        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (vel)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLimits(xMin=0, xMax=2000, yMin=-10, yMax=800)
