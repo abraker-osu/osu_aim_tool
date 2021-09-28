@@ -16,14 +16,21 @@ class StddevGraphVel():
             widget      = QtGui.QWidget(),
         )
 
+        # Main graph
         self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (vel)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=75)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'velocity', units='osu!px/s', unitPrefix='')
+        self.__graph.addLegend()
+
+        # Used to set text in legend item
+        self.__label_style = pyqtgraph.PlotDataItem(pen=(0,0,0))
+        self.__graph.getPlotItem().legend.addItem(self.__label_style, '')
+        self.__text = self.__graph.getPlotItem().legend.getLabel(self.__label_style)
         
-        # Interactive region item
+        # Interactive region plot to the right
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
         self.__rot_plot.setYRange(0, 360)
@@ -35,6 +42,7 @@ class StddevGraphVel():
         self.__rot_plot.showAxis('right')
         self.__rot_plot.setFixedWidth(64)
 
+        # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__rot_region.setBounds((0, 360))
         self.__rot_region.setSpan(0, 22.5)
@@ -46,24 +54,14 @@ class StddevGraphVel():
         self.__rot_plot.addItem(self.__rot_region)
         self.__layout.addWidget(self.__rot_plot)
 
+        #self.GradientLegend(size, offset)
+
 
     def plot_data(self, data):
         if data.shape[0] == 0:
             return
 
-        unique_bpms = np.unique(data[:, self.COL_BPM])
-
-        bpm_lut = pyqtgraph.ColorMap(
-            np.linspace(min(unique_bpms), max(unique_bpms), 3),
-            np.array(
-                [
-                    [  0, 100, 255, 200],
-                    [100, 255, 100, 200],
-                    [255, 100, 100, 200],
-                ]
-            )
-        )
-
+        # Select data slices by rotation
         rot0, rot1 = self.__rot_region.getRegion()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
@@ -71,16 +69,52 @@ class StddevGraphVel():
         self.__rot_plot.clearPlots()
         self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
-        self.__graph.clearPlots()
-        
-        stddevs = data[rot_select, self.COL_STDEV_X]
+        # Extract relavent data
+        stdevs = data[rot_select, self.COL_STDEV_X]
         pxs = data[rot_select, self.COL_PX]
         bpms = data[rot_select, self.COL_BPM]
 
-        accel = (pxs*bpms)/60
-        idx_sort = np.argsort(accel)
+        # Color points by BPM
+        try:
+            bpm_lut = pyqtgraph.ColorMap(
+                np.linspace(min(bpms), max(bpms), 3),
+                np.array(
+                    [
+                        [  0, 100, 255, 200],
+                        [100, 255, 100, 200],
+                        [255, 100, 100, 200],
+                    ]
+                )
+            )
+        except ValueError:
+            bpm_lut = pyqtgraph.ColorMap([0], np.array([[ 100, 100, 255, 200 ]]))
 
-        self.__graph.plot(x=accel[idx_sort], y=stddevs[idx_sort], pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
+        # Velocity
+        vel = pxs*bpms/60
+        
+        # Clear plots for redraw
+        self.__graph.clearPlots()
+
+        # Draw data plot
+        self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=bpm_lut.map(bpms, 'qcolor'))
+        
+        # Model processing. Needs at least 2 points.
+        if vel.shape[0] >= 2:
+            # Filter out zeros in vel
+            filter_0 = vel != 0
+            m = np.mean(stdevs[filter_0]/vel[filter_0])
+            
+            # Draw model plot
+            self.__graph.plot(x=[0, max(vel)], y=[0, m*max(vel)], pen=(100, 100, 0, 150))
+
+            # Calc and display R^2 
+            corr_mat = np.corrcoef(vel, stdevs)
+            corr_xy = corr_mat[0, 1]
+            r_sq = corr_xy**2
+
+            self.__text.setText(f'R^2 = {r_sq:.2f}')
+        else:
+            self.__text.setText(f'')
 
 
     def __rot_region_event(self):
