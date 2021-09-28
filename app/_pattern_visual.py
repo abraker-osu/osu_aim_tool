@@ -37,8 +37,6 @@ class PatternVisual():
         self.layout.addWidget(self.timeline)
 
         self.plot_hits = self.visual.plot(title='Hit scatter', pen=None, symbol='o', symbolPen=None, symbolSize=100, symbolBrush=(100, 100, 255, 200), pxMode=False)
-        self.visual.setXRange(-512, 512)
-        self.visual.setYRange(-512, 512)
         self.visual.showGrid(True, True)
         self.visual.setXRange(0, 540)
         self.visual.setYRange(-410, 0)
