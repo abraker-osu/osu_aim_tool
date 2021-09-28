@@ -19,7 +19,7 @@ class StddevGraphVel():
         self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (vel)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.__graph.setLimits(xMin=0, xMax=2000, yMin=-10, yMax=800)
+        self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=75)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'velocity', units='osu!px/s', unitPrefix='')
         
