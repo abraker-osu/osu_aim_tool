@@ -99,9 +99,8 @@ class StddevGraphVel():
         self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=bpm_lut.map(bpms, 'qcolor'))
         
         # Model processing. Needs at least 2 points.
-        if vel.shape[0] >= 2:
-            # Filter out zeros in vel
-            filter_0 = vel != 0
+        filter_0 = vel != 0  # Filter out zeros in vel
+        if vel[filter_0].shape[0] >= 2:
             m = np.mean(stdevs[filter_0]/vel[filter_0])
             
             # Draw model plot
