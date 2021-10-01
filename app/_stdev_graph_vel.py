@@ -74,21 +74,6 @@ class StddevGraphVel():
         pxs = data[rot_select, self.COL_PX]
         bpms = data[rot_select, self.COL_BPM]
 
-        # Color points by BPM
-        try:
-            bpm_lut = pyqtgraph.ColorMap(
-                np.linspace(min(bpms), max(bpms), 3),
-                np.array(
-                    [
-                        [  0, 100, 255, 200],
-                        [100, 255, 100, 200],
-                        [255, 100, 100, 200],
-                    ]
-                )
-            )
-        except ValueError:
-            bpm_lut = pyqtgraph.ColorMap([0], np.array([[ 100, 100, 255, 200 ]]))
-
         # Velocity
         vel = pxs*bpms/60
         
@@ -96,7 +81,7 @@ class StddevGraphVel():
         self.__graph.clearPlots()
 
         # Draw data plot
-        self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=bpm_lut.map(bpms, 'qcolor'))
+        self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
         
         # Model processing. Needs at least 2 points.
         filter_0 = vel != 0  # Filter out zeros in vel
