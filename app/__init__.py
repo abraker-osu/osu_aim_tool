@@ -6,6 +6,8 @@ import time
 import math
 import os
 
+import pydub
+
 import pyqtgraph
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.Qt import QtGui
@@ -73,6 +75,8 @@ class App(QtGui.QMainWindow):
                 self.monitor.create_replay_monitor('back_and_forth_monitor', self.__record_results)
             except Exception as e:
                 self.status_txt.setText(str(e) + ' Is osu! path correct?')
+
+        self.pluck_wav = pydub.AudioSegment.from_wav('pluck.wav')
 
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
@@ -408,6 +412,7 @@ class App(QtGui.QMainWindow):
 
         self.status_txt.setText('Generating map...')
         self.__generate_map(map_path)
+        self.__generate_audio(map_path)
         self.__monitor_replay()
 
         # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
@@ -444,7 +449,7 @@ class App(QtGui.QMainWindow):
             osu file format v14
 
             [General]
-            AudioFilename: blank.mp3
+            AudioFilename: metronome.wav
             AudioLeadIn: 0
             PreviewTime: -1
             Countdown: 0
@@ -500,11 +505,12 @@ class App(QtGui.QMainWindow):
 
         # Generate notes
         pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.repeats)
+        audio_offset = 14  # ms
 
         for note in pattern:
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(note[0])},{int(note[1])},{int(note[2]*1000)},1,0,0:0:0:0:\
+                {int(note[0]) + audio_offset},{int(note[1])},{int(note[2]*1000)},1,0,0:0:0:0:\
                 """
             )
 
@@ -517,6 +523,17 @@ class App(QtGui.QMainWindow):
         # Write to beatmap file
         os.makedirs(map_path, exist_ok=True)
         BeatmapIO.save_beatmap(self.beatmap_data, f'{map_path}/map.osu')
+
+
+    def __generate_audio(self, map_path):
+        song = self.pluck_wav[:]
+        interval = int(60000/self.bpm)
+
+        for i in range(self.repeats):
+            song = song.append(pydub.AudioSegment.silent(duration=interval), crossfade=0)
+            song = song.overlay(self.pluck_wav, position=interval*(i + 1))
+
+        song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
 
 
     def __monitor_replay(self):
