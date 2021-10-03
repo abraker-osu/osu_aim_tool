@@ -530,7 +530,7 @@ class App(QtGui.QMainWindow):
         song = self.pluck_wav[:]
         interval = int(60000/self.bpm)
 
-        for i in range(self.repeats):
+        for i in range(self.repeats*self.notes):
             song = song.append(pydub.AudioSegment.silent(duration=interval), crossfade=0)
             song = song.overlay(self.pluck_wav, position=interval*(i + 1))
 
