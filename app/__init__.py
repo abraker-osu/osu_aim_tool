@@ -534,7 +534,15 @@ class App(QtGui.QMainWindow):
             song = song.append(pydub.AudioSegment.silent(duration=interval), crossfade=0)
             song = song.overlay(self.pluck_wav, position=interval*(i + 1))
 
-        song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
+        try:
+            song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
+        except FileNotFoundError:
+            song.ffmpeg = 'ffmpeg/ffmpeg.exe'
+            try:
+                song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
+            except FileNotFoundError:
+                print('FFmpeg not found. Please go to https://ffmpeg.org/download.html and install it for audio!')
+                self.status_txt.setText(self.status_txt.text() + 'Warning: FFmpeg not found! Install it for audio.')
 
 
     def __monitor_replay(self):
