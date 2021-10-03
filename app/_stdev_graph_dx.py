@@ -4,6 +4,8 @@ from pyqtgraph.Qt import QtGui
 import numpy as np
 import random
 
+from app.misc._osu_utils import OsuUtils
+
 
 class StddevGraphDx():
 
@@ -54,6 +56,9 @@ class StddevGraphDx():
         if data.shape[0] == 0:
             return
 
+        self.__graph.clearPlots()
+
+        # Colored gradient r->g->b multiple plots at different osu!px
         unique_bpms = np.unique(data[:, self.COL_BPM])
         unique_bpms = unique_bpms[::int(max(1, unique_bpms.shape[0]/5))]  # Limit display to 5 or 6 plots
 
@@ -68,23 +73,36 @@ class StddevGraphDx():
             )
         )
 
+        # Determine data selected by angle of rotation
         rot0, rot1 = self.__rot_region.getRegion()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
+        # Selected rotation region has no data. Nothing else to do
+        if not any(rot_select):
+            return
+
+        # Draw available rotation points on the plot to the right
         unique_rots = np.unique(data[:, self.COL_ROT])
         self.__rot_plot.clearPlots()
         self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
-        self.__graph.clearPlots()
+        # Main plot - deviation vs osu!px
+        # Adds a plot for every unique BPM recorded
         for bpm in unique_bpms:
-            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
-
+            # Determine data selected by BPM
             bpm_select = (data[:, self.COL_BPM] == bpm)
+            if not any(bpm_select):
+                continue
+
+            # Determine data selected by osu!px
             stddevs = data[bpm_select & rot_select, self.COL_STDEV_X]
             pxs = data[bpm_select & rot_select, self.COL_PX]
 
+            # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(pxs)
 
+            # Draw plot
+            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
             self.__graph.plot(x=pxs[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 

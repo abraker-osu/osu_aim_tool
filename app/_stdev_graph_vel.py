@@ -54,8 +54,6 @@ class StddevGraphVel():
         self.__rot_plot.addItem(self.__rot_region)
         self.__layout.addWidget(self.__rot_plot)
 
-        #self.GradientLegend(size, offset)
-
 
     def plot_data(self, data):
         if data.shape[0] == 0:

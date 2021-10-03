@@ -55,6 +55,9 @@ class StddevGraphBpm():
         if data.shape[0] == 0:
             return
 
+        self.__graph.clearPlots()
+
+        # Colored gradient r->g->b multiple plots at different osu!px
         unique_pxs = np.unique(data[:, self.COL_PX])
         unique_pxs = unique_pxs[::int(max(1, unique_pxs.shape[0]/5))]  # Limit display to 5 or 6 plots
 
@@ -69,26 +72,40 @@ class StddevGraphBpm():
             )
         )
 
+        # Determine data selected by angle of rotation
         rot0, rot1 = self.__rot_region.getRegion()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
+        # Selected rotation region has no data. Nothing else to do
+        if not any(rot_select):
+            return
+
+        # Draw available rotation points on the plot to the right
         unique_rots = np.unique(data[:, self.COL_ROT])
         self.__rot_plot.clearPlots()
         self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
-        self.__graph.clearPlots()
+        # Main plot - deviation vs BPM
+        # Adds a plot for every unique osu!px recorded
         for px in unique_pxs:
-            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
-
+            # Extract data
             px_select = (data[:, self.COL_PX] == px)
-            stddevs = data[px_select & rot_select, self.COL_STDEV_X]
+            if not any(px_select):
+                continue
+
+            # Determine data selected by osu!px
+            stdevs = data[px_select & rot_select, self.COL_STDEV_X]
             bpms = data[px_select & rot_select, self.COL_BPM]
 
+            # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(bpms)
-            color = px_lut.map(px, 'qcolor')
 
-            self.__graph.plot(x=bpms[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
+            # Draw plot
+            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
+            color = px_lut.map(px, 'qcolor')
+            self.__graph.plot(x=bpms[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px {r_sq_text}')
 
 
     def __rot_region_event(self):
+        # When the selection on rotation plot changes, reprocess main graph
         StddevGraphBpm.plot_data(self, self.data)
