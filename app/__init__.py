@@ -379,7 +379,6 @@ class App(QtGui.QMainWindow):
         if self.engaged:
             self.monitor.pause()
             self.action_btn.setText('Start')
-            self.status_txt.setText('Set settings and click start!')
             self.engaged = False
             return
 
@@ -410,14 +409,16 @@ class App(QtGui.QMainWindow):
         # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
         map_path = f'{self.osu_path}/Songs/aim_tool'
 
-        self.status_txt.setText('Generating map...')
+        self.status_txt.setText('')
         self.__generate_map(map_path)
         self.__generate_audio(map_path)
         self.__monitor_replay()
+        self.status_txt.setText('')
 
         # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
         # So if we are in replay waiting state, it means the button was pressed while waiting for replay, so we abort
         if not self.engaged:
+            self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
             return
 
         # Otherwise, replay was successfully detected and we can update the state to reflect that
@@ -426,7 +427,7 @@ class App(QtGui.QMainWindow):
         # Data from map and replay -> score
         aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
         if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
-            self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
+            self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
             self.action_btn.setText('Start')
             return
 
@@ -439,7 +440,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphVel.plot_data(self, self.data)
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
-        self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
+        self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
         self.action_btn.setText('Start')
 
 
@@ -537,7 +538,8 @@ class App(QtGui.QMainWindow):
 
 
     def __monitor_replay(self):
-        self.status_txt.setText('Open osu! and play the map! Waiting for play...')
+        text = self.status_txt.text()
+        self.status_txt.setText(text + ('\n' if len(text) > 0 else '') + 'Open osu! and play the map! Waiting for play...')
         self.action_btn.setText('ABORT')
 
         # Resumes *.osr file monitoring and updates state
