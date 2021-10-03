@@ -506,12 +506,12 @@ class App(QtGui.QMainWindow):
 
         # Generate notes
         pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.repeats)
-        audio_offset = 14  # ms
+        audio_offset = -48  # ms
 
         for note in pattern:
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(note[0]) + audio_offset},{int(note[1])},{int(note[2]*1000)},1,0,0:0:0:0:\
+                {int(note[0]) + audio_offset},{int(note[1])},{int(note[2]*1000 + audio_offset)},1,0,0:0:0:0:\
                 """
             )
 

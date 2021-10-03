@@ -21,6 +21,6 @@ with ZipFile('ffmpeg.zip', 'r') as zip_obj:
 
         print(f'ffmpeg/{filename}')
         with open(f'ffmpeg/{filename}', 'wb') as f:
-                f.write(zip_obj.read(filepathname))
+            f.write(zip_obj.read(filepathname))
 
 os.remove('ffmpeg.zip')
