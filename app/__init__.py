@@ -535,14 +535,18 @@ class App(QtGui.QMainWindow):
             song = song.overlay(self.pluck_wav, position=interval*(i + 1))
 
         try:
-            song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
-        except FileNotFoundError:
-            song.ffmpeg = 'ffmpeg/ffmpeg.exe'
             try:
                 song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
             except FileNotFoundError:
-                print('FFmpeg not found. Please go to https://ffmpeg.org/download.html and install it for audio!')
-                self.status_txt.setText(self.status_txt.text() + 'Warning: FFmpeg not found! Install it for audio.')
+                song.ffmpeg = 'ffmpeg/ffmpeg.exe'
+                try:
+                    song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
+                except FileNotFoundError:
+                    print('FFmpeg not found. Please go to https://ffmpeg.org/download.html and install it for audio!')
+                    self.status_txt.setText(self.status_txt.text() + 'Warning: FFmpeg not found! Install it for audio.')
+        except PermissionError:
+            print('Warning: Unable to update audio file. Change to a different map in osu! and retry')
+            self.status_txt.setText(self.status_txt.text() + 'Warning: Unable to update audio file. Change to a different map in osu! and retry')
 
 
     def __monitor_replay(self):
