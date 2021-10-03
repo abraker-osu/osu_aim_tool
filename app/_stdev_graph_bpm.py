@@ -56,6 +56,7 @@ class StddevGraphBpm():
             return
 
         unique_pxs = np.unique(data[:, self.COL_PX])
+        unique_pxs = unique_pxs[::int(max(1, unique_pxs.shape[0]/5))]  # Limit display to 5 or 6 plots
 
         px_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_pxs), max(unique_pxs), 3),
