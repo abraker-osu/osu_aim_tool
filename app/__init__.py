@@ -617,6 +617,22 @@ class App(QtGui.QMainWindow):
         aim_x_offsets = mags*np.cos(map_thetas - hit_thetas[1:])
         aim_y_offsets = mags*np.sin(map_thetas - hit_thetas[1:])
 
+        distances = (x_map_vecs**2 + y_map_vecs**2)**0.5
+
+        # angle = [ x0, x1, x2 ]
+        dx0 = score_data['map_x'].values[1:-1] - score_data['map_x'].values[:-2]   # x1 - x0
+        dx1 = score_data['map_x'].values[2:] - score_data['map_x'].values[1:-1]    # x2 - x1
+
+        dy0 = score_data['map_y'].values[1:-1] - score_data['map_y'].values[:-2]   # y1 - y0
+        dy1 = score_data['map_y'].values[2:] - score_data['map_y'].values[1:-1]    # y2 - y1
+        
+        theta_d0 = np.arctan2(dy0, dx0)*(180/math.pi)
+        theta_d1 = np.arctan2(dy1, dx1)*(180/math.pi)
+
+        angles = np.abs(theta_d1 - theta_d0)
+        angles[angles > 180] = 360 - angles[angles > 180]
+        angles = np.round(angles)
+
         return aim_x_offsets, aim_y_offsets, tap_offsets
 
 
