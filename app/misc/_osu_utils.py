@@ -49,8 +49,8 @@ class OsuUtils():
         data = np.column_stack((points, np.cumsum(delta_ts)))
 
         # osu! clips note positions into boundaries of the playfield
-        data[:, 0] = np.minimum(512, np.maximum(0, data[:, 0]))
-        data[:, 1] = np.minimum(384, np.maximum(0, data[:, 1]))
+        data[:, 0] = np.round(np.minimum(512, np.maximum(0, data[:, 0])))
+        data[:, 1] = np.round(np.minimum(384, np.maximum(0, data[:, 1])))
 
         return data
 
