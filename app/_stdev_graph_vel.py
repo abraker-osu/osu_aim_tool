@@ -34,7 +34,7 @@ class StddevGraphVel():
         # Interactive region plot to the right to select angle of rotation in data
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
-        self.__rot_plot.setYRange(0, 360)
+        self.__rot_plot.setYRange(0, 180)
         self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
         self.__rot_plot.enableAutoRange(axis='x', enable=False)
         self.__rot_plot.enableAutoRange(axis='y', enable=False)
@@ -45,7 +45,7 @@ class StddevGraphVel():
 
         # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__rot_region.setBounds((0, 360))
+        self.__rot_region.setBounds((0, 180))
         self.__rot_region.setSpan(0, 22.5)
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphVel.__rot_region_event(self))
 
@@ -56,7 +56,7 @@ class StddevGraphVel():
         # Interactive region plot to the right to select angle between notes in data
         self.__ang_plot = pyqtgraph.PlotWidget()
         self.__ang_plot.setXRange(-0.5, 0.5)
-        self.__ang_plot.setYRange(0, 360)
+        self.__ang_plot.setYRange(0, 180)
         self.__ang_plot.getViewBox().setMouseEnabled(x=False, y=False)
         self.__ang_plot.enableAutoRange(axis='x', enable=False)
         self.__ang_plot.enableAutoRange(axis='y', enable=False)
@@ -67,7 +67,7 @@ class StddevGraphVel():
 
         # Slider region allowing to select angle between notes
         self.__ang_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__ang_region.setBounds((0, 360))
+        self.__ang_region.setBounds((0, 180))
         self.__ang_region.setSpan(0, 22.5)
         self.__ang_region.sigRegionChanged.connect(lambda: StddevGraphVel.__angle_region_event(self))
 

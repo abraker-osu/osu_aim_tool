@@ -30,7 +30,7 @@ class StddevGraphBpm():
         # Interactive region plot to the right to select angle of rotation in data
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
-        self.__rot_plot.setYRange(0, 360)
+        self.__rot_plot.setYRange(0, 180)
         self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
         self.__rot_plot.enableAutoRange(axis='x', enable=False)
         self.__rot_plot.enableAutoRange(axis='y', enable=False)
@@ -41,7 +41,7 @@ class StddevGraphBpm():
 
         # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__rot_region.setBounds((0, 360))
+        self.__rot_region.setBounds((0, 180))
         self.__rot_region.setSpan(0, 22.5)
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__rot_region_event(self))
 
