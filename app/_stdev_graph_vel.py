@@ -1,5 +1,6 @@
 import pyqtgraph
 from pyqtgraph.Qt import QtGui
+from pyqtgraph.Qt import QtCore
 
 import numpy as np
 
@@ -30,7 +31,7 @@ class StddevGraphVel():
         self.__graph.getPlotItem().legend.addItem(self.__label_style, '')
         self.__text = self.__graph.getPlotItem().legend.getLabel(self.__label_style)
         
-        # Interactive region plot to the right
+        # Interactive region plot to the right to select angle of rotation in data
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
         self.__rot_plot.setYRange(0, 360)
@@ -48,11 +49,52 @@ class StddevGraphVel():
         self.__rot_region.setSpan(0, 22.5)
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphVel.__rot_region_event(self))
 
+        # Label for the interactive region plot
+        self.__rot_label = QtGui.QLabel('    Rot')
+        self.__rot_label.setStyleSheet('background-color: black')
+
+        # Interactive region plot to the right to select angle between notes in data
+        self.__ang_plot = pyqtgraph.PlotWidget()
+        self.__ang_plot.setXRange(-0.5, 0.5)
+        self.__ang_plot.setYRange(0, 360)
+        self.__ang_plot.getViewBox().setMouseEnabled(x=False, y=False)
+        self.__ang_plot.enableAutoRange(axis='x', enable=False)
+        self.__ang_plot.enableAutoRange(axis='y', enable=False)
+        self.__ang_plot.hideAxis('bottom')
+        self.__ang_plot.hideAxis('left')
+        self.__ang_plot.showAxis('right')
+        self.__ang_plot.setFixedWidth(64)
+
+        # Slider region allowing to select angle between notes
+        self.__ang_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
+        self.__ang_region.setBounds((0, 360))
+        self.__ang_region.setSpan(0, 22.5)
+        self.__ang_region.sigRegionChanged.connect(lambda: StddevGraphVel.__angle_region_event(self))
+
+        # Label for the interactive region plot
+        self.__ang_label = QtGui.QLabel('    Angle')
+        self.__ang_label.setStyleSheet('background-color: black')
+
         # Put it all together
-        self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
-        self.__layout.addWidget(self.__graph)
         self.__rot_plot.addItem(self.__rot_region)
-        self.__layout.addWidget(self.__rot_plot)
+        self.__ang_plot.addItem(self.__ang_region)
+        
+        self.__rot_layout = QtGui.QVBoxLayout()
+        self.__rot_layout.setSpacing(0)
+        self.__rot_layout.addWidget(self.__rot_plot)
+        self.__rot_layout.addWidget(self.__rot_label)
+
+        self.__ang_layout = QtGui.QVBoxLayout()
+        self.__ang_layout.setSpacing(0)
+        self.__ang_layout.addWidget(self.__ang_plot)
+        self.__ang_layout.addWidget(self.__ang_label)
+
+        self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
+        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setSpacing(2)
+        self.__layout.addWidget(self.__graph)
+        self.__layout.addLayout(self.__rot_layout)
+        self.__layout.addLayout(self.__ang_layout)
 
 
     def plot_data(self, data):
@@ -67,10 +109,18 @@ class StddevGraphVel():
         self.__rot_plot.clearPlots()
         self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
+        # Select data slices by angle
+        ang0, ang1 = self.__ang_region.getRegion()
+        ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
+
+        unique_angs = np.unique(data[:, self.COL_ANGLE])
+        self.__ang_plot.clearPlots()
+        self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
         # Extract relavent data
-        stdevs = data[rot_select, self.COL_STDEV_X]
-        pxs = data[rot_select, self.COL_PX]
-        bpms = data[rot_select, self.COL_BPM]
+        stdevs = data[rot_select & ang_select, self.COL_STDEV_X]
+        pxs = data[rot_select & ang_select, self.COL_PX]
+        bpms = data[rot_select & ang_select, self.COL_BPM]
 
         # Velocity
         vel = pxs*bpms/60
@@ -100,4 +150,8 @@ class StddevGraphVel():
 
 
     def __rot_region_event(self):
+        StddevGraphVel.plot_data(self, self.data)
+
+    
+    def __angle_region_event(self):
         StddevGraphVel.plot_data(self, self.data)

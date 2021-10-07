@@ -27,7 +27,7 @@ class StddevGraphBpm():
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
 
-        # Interactive region item
+        # Interactive region plot to the right to select angle of rotation in data
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
         self.__rot_plot.setYRange(0, 360)
@@ -39,16 +39,29 @@ class StddevGraphBpm():
         self.__rot_plot.showAxis('right')
         self.__rot_plot.setFixedWidth(64)
 
+        # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__rot_region.setBounds((0, 360))
         self.__rot_region.setSpan(0, 22.5)
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__rot_region_event(self))
 
+        # Label for the interactive region plot
+        self.__rot_label = QtGui.QLabel('    Rot')
+        self.__rot_label.setStyleSheet('background-color: black')
+
         # Put it all together
-        self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
-        self.__layout.addWidget(self.__graph)
         self.__rot_plot.addItem(self.__rot_region)
-        self.__layout.addWidget(self.__rot_plot)
+        
+        self.__rot_layout = QtGui.QVBoxLayout()
+        self.__rot_layout.setSpacing(0)
+        self.__rot_layout.addWidget(self.__rot_plot)
+        self.__rot_layout.addWidget(self.__rot_label)
+
+        self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
+        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setSpacing(2)
+        self.__layout.addWidget(self.__graph)
+        self.__layout.addLayout(self.__rot_layout)
 
 
     def plot_data(self, data):
