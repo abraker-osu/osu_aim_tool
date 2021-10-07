@@ -602,9 +602,9 @@ class App(QtGui.QMainWindow):
             self.status_txt.setText('Invalid play. Too many misses.')
             return None, None, None
 
-        aim_x_offsets = score_data['replay_x'] - score_data['map_x']
-        aim_y_offsets = score_data['replay_y'] - score_data['map_y']
-        tap_offsets   = score_data['replay_t'] - score_data['map_t']
+        aim_x_offsets = score_data['replay_x'].values - score_data['map_x'].values
+        aim_y_offsets = score_data['replay_y'].values - score_data['map_y'].values
+        tap_offsets   = score_data['replay_t'].values - score_data['map_t'].values
 
         # Correct for incoming direction
         x_map_vecs = score_data['map_x'].values[1:] - score_data['map_x'].values[:-1]
@@ -614,8 +614,10 @@ class App(QtGui.QMainWindow):
         hit_thetas = np.arctan2(aim_y_offsets, aim_x_offsets)
         mags = (aim_x_offsets**2 + aim_y_offsets**2)**0.5
 
-        aim_x_offsets = mags*np.cos(map_thetas - hit_thetas[1:])
-        aim_y_offsets = mags*np.sin(map_thetas - hit_thetas[1:])
+        print(mags.shape, map_thetas.shape, hit_thetas.shape)
+
+        aim_x_offsets = mags[1:]*np.cos(map_thetas - hit_thetas[1:])
+        aim_y_offsets = mags[1:]*np.sin(map_thetas - hit_thetas[1:])
 
         distances = (x_map_vecs**2 + y_map_vecs**2)**0.5
 
@@ -637,8 +639,8 @@ class App(QtGui.QMainWindow):
         # and select by angle (because there are unwanted angles where pattern reverses)
         angle_select = (angles == self.angle)
         
-        aim_x_offsets = aim_x_offsets[1:-1][angle_select]
-        aim_y_offsets = aim_y_offsets[1:-1][angle_select]
+        aim_x_offsets = aim_x_offsets[:-1][angle_select]
+        aim_y_offsets = aim_y_offsets[:-1][angle_select]
         tap_offsets   = tap_offsets[1:-1][angle_select]
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
