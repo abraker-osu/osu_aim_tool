@@ -132,12 +132,30 @@ class StddevGraphVel():
         self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
         
         # Model processing. Needs at least 2 points.
-        filter_0 = vel != 0  # Filter out zeros in vel
-        if vel[filter_0].shape[0] >= 2:
-            m = np.mean(stdevs[filter_0]/vel[filter_0])
+        if vel.shape[0] >= 2:
+            # Model linear curve
+            # Visual example of how this works: https://i.imgur.com/k7H8bLe.png
+            # 1) Take points on y-axis and x-axis, and split them into half - resulting in two groups
+            median_x = np.mean(stdevs)
+            median_y = np.mean(vel)
+
+            g1 = (stdevs < median_x) & (vel < median_y)    # Group 1 select
+            g2 = (stdevs >= median_x) & (vel >= median_y)  # Group 2 select
+            
+            # 2) Take the center of gravity for each of the two groups
+            #    Those become points p1 and p2 to fit a line through
+            p1x = np.mean(vel[g1])
+            p1y = np.mean(stdevs[g1])
+
+            p2x = np.mean(vel[g2])
+            p2y = np.mean(stdevs[g2])
+
+            # 3) Calculate slope and y-intercept
+            m = (p1y - p2y)/(p1x - p2x)
+            b = p1y - m*p1x
             
             # Draw model plot
-            self.__graph.plot(x=[0, max(vel)], y=[0, m*max(vel)], pen=(100, 100, 0, 150))
+            self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))
 
             # Calc and display R^2 
             corr_mat = np.corrcoef(vel, stdevs)
