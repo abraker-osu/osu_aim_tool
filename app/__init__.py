@@ -614,8 +614,6 @@ class App(QtGui.QMainWindow):
         hit_thetas = np.arctan2(aim_y_offsets, aim_x_offsets)
         mags = (aim_x_offsets**2 + aim_y_offsets**2)**0.5
 
-        print(mags.shape, map_thetas.shape, hit_thetas.shape)
-
         aim_x_offsets = mags[1:]*np.cos(map_thetas - hit_thetas[1:])
         aim_y_offsets = mags[1:]*np.sin(map_thetas - hit_thetas[1:])
 
