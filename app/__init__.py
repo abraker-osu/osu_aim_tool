@@ -100,7 +100,7 @@ class App(QtGui.QMainWindow):
         self.edit_layout  = QtGui.QHBoxLayout()
         self.bpm_edit     = App.ValueEdit(1, 1200, 'BPM')
         self.dx_edit      = App.ValueEdit(0, 512,  'Spacing')
-        self.angle_edit   = App.ValueEdit(0, 360,  'Note deg')
+        self.angle_edit   = App.ValueEdit(0, 180,  'Note deg')
         self.rot_edit     = App.ValueEdit(0, 360,  'Rot deg')
         self.notes_edit   = App.ValueEdit(2, 100,  '# Notes')
         self.repeats_edit = App.ValueEdit(1, 1000, '# Repeats')
