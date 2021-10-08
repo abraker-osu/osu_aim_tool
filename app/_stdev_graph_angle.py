@@ -18,7 +18,7 @@ class StddevGraphAngle():
         )
 
         # Main graph
-        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (vel)')
+        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (angle)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=75)
