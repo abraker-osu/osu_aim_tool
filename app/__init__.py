@@ -641,6 +641,14 @@ class App(QtGui.QMainWindow):
         aim_y_offsets = aim_y_offsets[:-1][angle_select]
         tap_offsets   = tap_offsets[1:-1][angle_select]
 
+        # Filter out nans that happen due to misc reasons (usually due to empty slices or div by zero)
+        nan_filter = ~np.isnan(aim_x_offsets) & ~np.isnan(aim_y_offsets)
+
+        aim_x_offsets = aim_x_offsets[nan_filter]
+        aim_y_offsets = aim_y_offsets[nan_filter]
+        tap_offsets   = tap_offsets[nan_filter]
+
+
         return aim_x_offsets, aim_y_offsets, tap_offsets
 
 
