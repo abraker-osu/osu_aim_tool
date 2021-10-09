@@ -102,36 +102,42 @@ class StddevGraphAngle():
         if data.shape[0] == 0:
             return
 
+        # Clear plots for redraw
+        self.__graph.clearPlots()
+
         # Select data slices by bpm
         bpm0, bpm1 = self.__bpm_region.getRegion()
         bpm_select = ((bpm0 <= data[:, self.COL_BPM]) & (data[:, self.COL_BPM] <= bpm1))
-
-        unique_bpms = np.unique(data[:, self.COL_BPM])
-        self.__bpm_plot.clearPlots()
-        self.__bpm_plot.plot(np.zeros(unique_bpms.shape[0]), unique_bpms, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
         # Select data slices by distance
         px0, px1 = self.__px_region.getRegion()
         px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
 
+        unique_bpms = np.unique(data[:, self.COL_BPM])
+        self.__bpm_plot.clearPlots()
+        self.__bpm_plot.plot(np.zeros(unique_bpms.shape[0]), unique_bpms, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
         unique_pxs = np.unique(data[:, self.COL_PX])
         self.__px_plot.clearPlots()
         self.__px_plot.plot(np.zeros(unique_pxs.shape[0]), unique_pxs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
+        # Selected rotation region has no data. Nothing else to do
+        if not any(bpm_select & px_select):
+            return
+
         # Extract relavent data
         stdevs = data[bpm_select & px_select, self.COL_STDEV_X]
         angles = data[bpm_select & px_select, self.COL_ANGLE]
-
-        # Clear plots for redraw
-        self.__graph.clearPlots()
 
         # Draw data plot
         self.__graph.plot(x=angles, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
 
 
     def __bpm_region_event(self):
+        # When the selection on bpm plot changes, reprocess main graph
         StddevGraphAngle.plot_data(self, self.data)
 
     
     def __px_region_event(self):
+        # When the selection on distance plot changes, reprocess main graph
         StddevGraphAngle.plot_data(self, self.data)

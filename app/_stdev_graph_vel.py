@@ -101,21 +101,28 @@ class StddevGraphVel():
         if data.shape[0] == 0:
             return
 
+        # Clear plots for redraw
+        self.__graph.clearPlots()
+
         # Select data slices by rotation
         rot0, rot1 = self.__rot_region.getRegion()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
-
-        unique_rots = np.unique(data[:, self.COL_ROT])
-        self.__rot_plot.clearPlots()
-        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
         # Select data slices by angle
         ang0, ang1 = self.__ang_region.getRegion()
         ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
 
+        unique_rots = np.unique(data[:, self.COL_ROT])
+        self.__rot_plot.clearPlots()
+        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
         unique_angs = np.unique(data[:, self.COL_ANGLE])
         self.__ang_plot.clearPlots()
         self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
+        # Selected rotation region has no data. Nothing else to do
+        if not any(rot_select & ang_select):
+            return
 
         # Extract relavent data
         stdevs = data[rot_select & ang_select, self.COL_STDEV_X]
@@ -124,9 +131,6 @@ class StddevGraphVel():
 
         # Velocity
         vel = pxs*bpms/60
-        
-        # Clear plots for redraw
-        self.__graph.clearPlots()
 
         # Draw data plot
         self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
@@ -168,8 +172,10 @@ class StddevGraphVel():
 
 
     def __rot_region_event(self):
+        # When the selection on rotation plot changes, reprocess main graph
         StddevGraphVel.plot_data(self, self.data)
 
     
     def __angle_region_event(self):
+        # When the selection on angle plot changes, reprocess main graph
         StddevGraphVel.plot_data(self, self.data)
