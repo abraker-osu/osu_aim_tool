@@ -136,7 +136,7 @@ class App(QtGui.QMainWindow):
 
         # Left column
         App.StddevGraphBpm.__init__(self, pos='top', dock_name='Deviation vs BPM')
-        App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Variance vs Spacing')
+        App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Deviation vs Spacing')
         App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Deviation vs Angle')
         App.StddevGraphVel.__init__(self, pos='below', relative_to='StddevGraphAngle', dock_name='Deviation vs Velocity')
 
