@@ -4,9 +4,8 @@ import random
 import json
 import time
 import math
+import shutil
 import os
-
-import pydub
 
 import pyqtgraph
 from pyqtgraph.Qt import QtCore
@@ -75,8 +74,6 @@ class App(QtGui.QMainWindow):
                 self.monitor.create_replay_monitor('back_and_forth_monitor', self.__record_results)
             except Exception as e:
                 self.status_txt.setText(str(e) + ' Is osu! path correct?')
-
-        self.pluck_wav = pydub.AudioSegment.from_wav('pluck.wav')
 
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
@@ -411,7 +408,6 @@ class App(QtGui.QMainWindow):
 
         self.status_txt.setText('')
         self.__generate_map(map_path)
-        self.__generate_audio(map_path)
         self.__monitor_replay()
         self.status_txt.setText('')
 
@@ -450,7 +446,7 @@ class App(QtGui.QMainWindow):
             osu file format v14
 
             [General]
-            AudioFilename: metronome.wav
+            AudioFilename: blank.mp3
             AudioLeadIn: 0
             PreviewTime: -1
             Countdown: 0
@@ -486,27 +482,30 @@ class App(QtGui.QMainWindow):
             SliderMultiplier:1.4
             SliderTickRate:1
 
-            [Events]
-            //Background and Video events
-            //Break Periods
-            //Storyboard Layer 0 (Background)
-            //Storyboard Layer 1 (Fail)
-            //Storyboard Layer 2 (Pass)
-            //Storyboard Layer 3 (Foreground)
-            //Storyboard Layer 4 (Overlay)
-            //Storyboard Sound Samples
-
-            [TimingPoints]
-            0,1000,4,1,1,100,1,0
-
-
-            [HitObjects]\
+            [Events]\
             """
         )
 
         # Generate notes
         pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.repeats)
         audio_offset = -48  # ms
+
+        for note in pattern:
+            beatmap_data += textwrap.dedent(
+                f"""
+                Sample,{int(note[2]*1000 + audio_offset)},3,"pluck.wav",100\
+                """
+            )
+
+        beatmap_data += textwrap.dedent(
+            f"""
+
+            [TimingPoints]
+            0,1000,4,1,1,100,1,0
+
+            [HitObjects]\
+            """
+        )
 
         for note in pattern:
             beatmap_data += textwrap.dedent(
@@ -525,28 +524,13 @@ class App(QtGui.QMainWindow):
         os.makedirs(map_path, exist_ok=True)
         BeatmapIO.save_beatmap(self.beatmap_data, f'{map_path}/map.osu')
 
+        print(os.path.isfile(f'{map_path}/pluck.wav'))
 
-    def __generate_audio(self, map_path):
-        song = self.pluck_wav[:]
-        interval = int(60000/self.bpm)
+        if not os.path.isfile(f'{map_path}/pluck.wav'):
+            shutil.copy2('pluck.wav', f'{map_path}/pluck.wav')
 
-        for i in range(self.repeats*self.notes):
-            song = song.append(pydub.AudioSegment.silent(duration=interval), crossfade=0)
-            song = song.overlay(self.pluck_wav, position=interval*(i + 1))
-
-        try:
-            try:
-                song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
-            except FileNotFoundError:
-                song.ffmpeg = 'ffmpeg/ffmpeg.exe'
-                try:
-                    song.export(f'{map_path}/metronome.wav', format='wav', bitrate='128', parameters=['-ar', '48000'])
-                except FileNotFoundError:
-                    print('FFmpeg not found. Please go to https://ffmpeg.org/download.html and install it for audio!')
-                    self.status_txt.setText(self.status_txt.text() + 'Warning: FFmpeg not found! Install it for audio.')
-        except PermissionError:
-            print('Warning: Unable to update audio file. Change to a different map in osu! and retry')
-            self.status_txt.setText(self.status_txt.text() + 'Warning: Unable to update audio file. Change to a different map in osu! and retry')
+        if not os.path.isfile(f'{map_path}/normal-hitnormal.wav'):
+            shutil.copy2('blank.wav', f'{map_path}/normal-hitnormal.wav')
 
 
     def __monitor_replay(self):

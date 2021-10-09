@@ -6,5 +6,4 @@ pyqt5
 pyqtgraph>=0.12.1
 watchdog
 PyInstaller
-pydub
 requests
