@@ -2,6 +2,8 @@ import pyqtgraph
 from pyqtgraph.Qt import QtGui
 from pyqtgraph.Qt import QtCore
 
+import math
+import random
 import numpy as np
 
 
@@ -125,12 +127,39 @@ class StddevGraphAngle():
         if not any(bpm_select & px_select):
             return
 
-        # Extract relavent data
-        stdevs = data[bpm_select & px_select, self.COL_STDEV_X]
-        angles = data[bpm_select & px_select, self.COL_ANGLE]
+        # Colored gradient r->g->b multiple plots at different osu!px
+        unique_bpms = np.unique(data[bpm_select & px_select, self.COL_BPM])
 
-        # Draw data plot
-        self.__graph.plot(x=angles, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
+        bpm_lut = pyqtgraph.ColorMap(
+            np.linspace(min(unique_bpms), max(unique_bpms), 3),
+            np.array(
+                [
+                    [  0, 100, 255, 200],
+                    [100, 255, 100, 200],
+                    [255, 100, 100, 200],
+                ]
+            )
+        )
+
+        # Main plot - deviation vs osu!px
+        # Adds a plot for every unique BPM recorded
+        for bpm in unique_bpms:
+            # Determine data selected by BPM
+            bpm_select = (data[:, self.COL_BPM] == bpm)
+            if not any(bpm_select):
+                continue
+
+            # Determine data selected by osu!px
+            stddevs = data[bpm_select & px_select, self.COL_STDEV_X]
+            angles = data[bpm_select & px_select, self.COL_ANGLE]
+
+            # Get sort mapping to make points on line graph connect in proper order
+            idx_sort = np.argsort(angles)
+
+            # Draw plot
+            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
+            color = bpm_lut.map(bpm, 'qcolor')
+            self.__graph.plot(x=angles[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __bpm_region_event(self):
