@@ -17,11 +17,11 @@ class StddevGraphDx():
             widget      = QtGui.QWidget(),
         )
 
-        self.__graph = pyqtgraph.PlotWidget(title='Aim var-x (px)')
+        self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (px)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.__graph.setLimits(xMin=0, xMax=600, yMin=-10, yMax=800)
-        self.__graph.setLabel('left', 'variance', units='σ²', unitPrefix='')
+        self.__graph.setLimits(xMin=0, xMax=600, yMin=-10, yMax=200)
+        self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'distance', units='osu!px', unitPrefix='')
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
@@ -115,7 +115,7 @@ class StddevGraphDx():
             # Draw plot
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
-            self.__graph.plot(x=pxs[idx_sort], y=stddevs[idx_sort]**2, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+            self.__graph.plot(x=pxs[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __rot_region_event(self):
