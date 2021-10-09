@@ -21,7 +21,7 @@ class StddevGraphAngle():
         self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (angle)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=75)
+        self.__graph.setLimits(xMin=-10, xMax=190, yMin=-10, yMax=200)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'angle', units='deg', unitPrefix='')
         self.__graph.addLegend()
@@ -34,8 +34,9 @@ class StddevGraphAngle():
         # Interactive region plot to the right to select angle of rotation in data
         self.__bpm_plot = pyqtgraph.PlotWidget()
         self.__bpm_plot.setXRange(-0.5, 0.5)
-        self.__bpm_plot.setYRange(0, 1200)
-        self.__bpm_plot.getViewBox().setMouseEnabled(x=False, y=False)
+        self.__bpm_plot.setYRange(50, 500)
+        self.__bpm_plot.getViewBox().setMouseEnabled(x=False, y=True)
+        self.__bpm_plot.setLimits(yMin=-10, yMax=1210)
         self.__bpm_plot.enableAutoRange(axis='x', enable=False)
         self.__bpm_plot.enableAutoRange(axis='y', enable=False)
         self.__bpm_plot.hideAxis('bottom')
@@ -45,8 +46,8 @@ class StddevGraphAngle():
 
         # Slider region allowing to select bpm
         self.__bpm_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__bpm_region.setBounds((0, 500))
-        self.__bpm_region.setSpan(0, 22.5)
+        self.__bpm_region.setBounds((0, 1200))
+        self.__bpm_region.setRegion((170, 190))
         self.__bpm_region.sigRegionChanged.connect(lambda: StddevGraphAngle.__bpm_region_event(self))
 
         # Label for the interactive region plot
@@ -68,7 +69,7 @@ class StddevGraphAngle():
         # Slider region allowing to select distance between notes
         self.__px_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__px_region.setBounds((0, 512))
-        self.__px_region.setSpan(0, 22.5)
+        self.__px_region.setRegion((75, 125))
         self.__px_region.sigRegionChanged.connect(lambda: StddevGraphAngle.__px_region_event(self))
 
         # Label for the interactive region plot

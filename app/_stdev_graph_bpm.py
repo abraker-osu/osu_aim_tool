@@ -21,7 +21,7 @@ class StddevGraphBpm():
         self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (bpm)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=800)
+        self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=200)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'bpm', units='60/s', unitPrefix='')
         self.__graph.addLegend()
@@ -42,7 +42,7 @@ class StddevGraphBpm():
         # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__rot_region.setBounds((0, 180))
-        self.__rot_region.setSpan(0, 22.5)
+        self.__rot_region.setRegion((0, 30))
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__rot_region_event(self))
 
         # Label for the interactive region plot

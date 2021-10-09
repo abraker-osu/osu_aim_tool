@@ -21,7 +21,7 @@ class StddevGraphVel():
         self.__graph = pyqtgraph.PlotWidget(title='Aim dev-x (vel)')
         self.__graph.getPlotItem().getAxis('left').enableAutoSIPrefix(False)
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
-        self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=75)
+        self.__graph.setLimits(xMin=0, xMax=5000, yMin=-10, yMax=200)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'velocity', units='osu!px/s', unitPrefix='')
         self.__graph.addLegend()
@@ -46,7 +46,7 @@ class StddevGraphVel():
         # Slider region allowing to select angle of rotation
         self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__rot_region.setBounds((0, 180))
-        self.__rot_region.setSpan(0, 22.5)
+        self.__rot_region.setRegion((0, 30))
         self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphVel.__rot_region_event(self))
 
         # Label for the interactive region plot
@@ -68,7 +68,7 @@ class StddevGraphVel():
         # Slider region allowing to select angle between notes
         self.__ang_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
         self.__ang_region.setBounds((0, 180))
-        self.__ang_region.setSpan(0, 22.5)
+        self.__ang_region.setRegion((0, 30))
         self.__ang_region.sigRegionChanged.connect(lambda: StddevGraphVel.__angle_region_event(self))
 
         # Label for the interactive region plot
