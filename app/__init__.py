@@ -657,7 +657,7 @@ class App(QtGui.QMainWindow):
 
             text = \
                 f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
-                f'aim stddev^2: {stddev_x*stddev_y:.2f} (best: {stddev_x_curr*stddev_y_curr:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  best: ({stddev_x_curr:.2f}, {stddev_x_curr:.2f}, {stddev_t_curr:.2f})\n'
+                f'aim stddev^2: {stddev_x*stddev_y:.2f} (best: {stddev_x_curr*stddev_y_curr:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  best: ({stddev_x_curr:.2f}, {stddev_y_curr:.2f}, {stddev_t_curr:.2f})\n'
             
             self.status_txt.setText(text)
             print(text)
