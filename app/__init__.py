@@ -524,8 +524,6 @@ class App(QtGui.QMainWindow):
         os.makedirs(map_path, exist_ok=True)
         BeatmapIO.save_beatmap(self.beatmap_data, f'{map_path}/map.osu')
 
-        print(os.path.isfile(f'{map_path}/pluck.wav'))
-
         if not os.path.isfile(f'{map_path}/pluck.wav'):
             shutil.copy2('pluck.wav', f'{map_path}/pluck.wav')
 
