@@ -34,6 +34,10 @@ class App(QtGui.QMainWindow):
     COL_NUM     = 7  # Number of notes in the pattern before pattern reverses
     NUM_COLS    = 8
 
+    DEV_X  = 0
+    DEV_Y  = 1
+    DEV_XY = 2
+
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
     from .misc.monitor import Monitor
@@ -86,13 +90,22 @@ class App(QtGui.QMainWindow):
     def __init_gui(self):
         self.graphs = {}
         self.engaged = False
+        self.dev_select = App.DEV_X
 
         self.main_widget = QtGui.QWidget()
         self.main_layout = QtGui.QVBoxLayout(self.main_widget)
+        
+        self.selct_layout = QtGui.QHBoxLayout()
 
+        self.win_selct_layout = QtGui.QVBoxLayout()
         self.perf_chkbx = QtGui.QCheckBox('Show performance')
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
         self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
+
+        self.dev_selct_layout = QtGui.QVBoxLayout()
+        self.xdev_radio_btn = QtGui.QRadioButton('x-dev')
+        self.ydev_radio_btn = QtGui.QRadioButton('y-dev')
+        self.xydev_radio_btn = QtGui.QRadioButton('xy-dev')
 
         self.edit_layout  = QtGui.QHBoxLayout()
         self.bpm_edit     = App.ValueEdit(1, 1200, 'BPM')
@@ -116,6 +129,11 @@ class App(QtGui.QMainWindow):
         self.setWindowTitle('osu! Aim Tool Settings')
         self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
 
+        self.xdev_radio_btn.setChecked(True)
+        self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
+        self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
+        self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
+
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
         self.edit_layout.addWidget(self.angle_edit)
@@ -125,9 +143,18 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.cs_edit)
         self.edit_layout.addWidget(self.ar_edit)
 
-        self.main_layout.addWidget(self.perf_chkbx)
-        self.main_layout.addWidget(self.aim_chkbx)
-        self.main_layout.addWidget(self.ptrn_chkbx)
+        self.win_selct_layout.addWidget(self.perf_chkbx)
+        self.win_selct_layout.addWidget(self.aim_chkbx)
+        self.win_selct_layout.addWidget(self.ptrn_chkbx)
+
+        self.dev_selct_layout.addWidget(self.xdev_radio_btn)
+        self.dev_selct_layout.addWidget(self.ydev_radio_btn)
+        self.dev_selct_layout.addWidget(self.xydev_radio_btn)
+
+        self.selct_layout.addLayout(self.win_selct_layout)
+        self.selct_layout.addLayout(self.dev_selct_layout)
+
+        self.main_layout.addLayout(self.selct_layout)
         self.main_layout.addLayout(self.edit_layout)
         self.main_layout.addWidget(self.action_btn)
         self.main_layout.addWidget(self.status_txt)
@@ -370,6 +397,20 @@ class App(QtGui.QMainWindow):
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
 
+
+    def __dev_select_event(self):
+        if self.sender() == self.xdev_radio_btn:
+            self.dev_select = App.DEV_X
+        elif self.sender() == self.ydev_radio_btn:
+            self.dev_select = App.DEV_Y
+        elif self.sender() == self.xydev_radio_btn:
+            self.dev_select = App.DEV_XY
+
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphAngle.plot_data(self, self.data)
+        App.StddevGraphVel.plot_data(self, self.data)
+          
 
     def __action_event(self):
         # If we are waiting for replay, this means we are aborting
@@ -629,7 +670,6 @@ class App(QtGui.QMainWindow):
         aim_x_offsets = aim_x_offsets[nan_filter]
         aim_y_offsets = aim_y_offsets[nan_filter]
         tap_offsets   = tap_offsets[nan_filter]
-
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
 

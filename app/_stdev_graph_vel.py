@@ -121,13 +121,23 @@ class StddevGraphVel():
         self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
         # Selected rotation region has no data. Nothing else to do
-        if not any(rot_select & ang_select):
+        data_select = rot_select & ang_select
+        if not any(data_select):
             return
 
         # Extract relavent data
-        stdevs = data[rot_select & ang_select, self.COL_STDEV_X]
-        pxs = data[rot_select & ang_select, self.COL_PX]
-        bpms = data[rot_select & ang_select, self.COL_BPM]
+        if self.dev_select == self.DEV_X:
+            self.__graph.setTitle('Aim dev-x (vel)')
+            stdevs = data[data_select, self.COL_STDEV_X]
+        elif self.dev_select == self.DEV_Y:
+            self.__graph.setTitle('Aim dev-y (vel)')
+            stdevs = data[data_select, self.COL_STDEV_Y]
+        elif self.dev_select == self.DEV_XY:
+            self.__graph.setTitle('Aim dev-xy (vel)')
+            stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+
+        pxs = data[data_select, self.COL_PX]
+        bpms = data[data_select, self.COL_BPM]
 
         # Velocity
         vel = pxs*bpms/60

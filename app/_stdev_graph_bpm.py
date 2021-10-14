@@ -142,12 +142,22 @@ class StddevGraphBpm():
         for px in unique_pxs:
             # Extract data
             px_select = (data[:, self.COL_PX] == px)
+            data_select = px_select & rot_select & ang_select
             if not any(px_select):
                 continue
 
             # Determine data selected by osu!px
-            stdevs = data[px_select & rot_select & ang_select, self.COL_STDEV_X]
-            bpms = data[px_select & rot_select & ang_select, self.COL_BPM]
+            if self.dev_select == self.DEV_X:
+                self.__graph.setTitle('Aim dev-x (bpm)')
+                stdevs = data[data_select, self.COL_STDEV_X]
+            elif self.dev_select == self.DEV_Y:
+                self.__graph.setTitle('Aim dev-y (bpm)')
+                stdevs = data[data_select, self.COL_STDEV_Y]
+            elif self.dev_select == self.DEV_XY:
+                self.__graph.setTitle('Aim dev-xy (bpm)')
+                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                
+            bpms = data[data_select, self.COL_BPM]
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(bpms)

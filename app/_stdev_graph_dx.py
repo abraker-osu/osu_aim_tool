@@ -141,12 +141,22 @@ class StddevGraphDx():
         for bpm in unique_bpms:
             # Determine data selected by BPM
             bpm_select = (data[:, self.COL_BPM] == bpm)
-            if not any(bpm_select):
+            data_select = bpm_select & rot_select & ang_select
+            if not any(data_select):
                 continue
 
             # Determine data selected by osu!px
-            stddevs = data[bpm_select & rot_select & ang_select, self.COL_STDEV_X]
-            pxs = data[bpm_select & rot_select & ang_select, self.COL_PX]
+            if self.dev_select == self.DEV_X:
+                self.__graph.setTitle('Aim dev-x (px)')
+                stdevs = data[data_select, self.COL_STDEV_X]
+            elif self.dev_select == self.DEV_Y:
+                self.__graph.setTitle('Aim dev-y (px)')
+                stdevs = data[data_select, self.COL_STDEV_Y]
+            elif self.dev_select == self.DEV_XY:
+                self.__graph.setTitle('Aim dev-xy (px)')
+                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                
+            pxs = data[data_select, self.COL_PX]
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(pxs)
@@ -154,7 +164,7 @@ class StddevGraphDx():
             # Draw plot
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
-            self.__graph.plot(x=pxs[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+            self.__graph.plot(x=pxs[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __rot_region_event(self):

@@ -146,12 +146,22 @@ class StddevGraphAngle():
         for bpm in unique_bpms:
             # Determine data selected by BPM
             bpm_select = (data[:, self.COL_BPM] == bpm)
-            if not any(bpm_select):
+            data_select = bpm_select & px_select
+            if not any(data_select):
                 continue
 
             # Determine data selected by osu!px
-            stddevs = data[bpm_select & px_select, self.COL_STDEV_X]
-            angles = data[bpm_select & px_select, self.COL_ANGLE]
+            if self.dev_select == self.DEV_X:
+                self.__graph.setTitle('Aim dev-x (angle)')
+                stdevs = data[data_select, self.COL_STDEV_X]
+            elif self.dev_select == self.DEV_Y:
+                self.__graph.setTitle('Aim dev-y (angle)')
+                stdevs = data[data_select, self.COL_STDEV_Y]
+            elif self.dev_select == self.DEV_XY:
+                self.__graph.setTitle('Aim dev-xy (angle)')
+                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+
+            angles = data[data_select, self.COL_ANGLE]
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(angles)
@@ -159,7 +169,7 @@ class StddevGraphAngle():
             # Draw plot
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
-            self.__graph.plot(x=angles[idx_sort], y=stddevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+            self.__graph.plot(x=angles[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __bpm_region_event(self):
