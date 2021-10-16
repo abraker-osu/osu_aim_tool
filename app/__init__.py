@@ -677,7 +677,7 @@ class App(QtGui.QMainWindow):
             print('Data calculation error!')
             print('Debug info:')
             print()
-            print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
+            print(f'    map_thetas = {np.arctan2(score_data["replay_y"].values - score_data["map_y"].values, score_data["replay_x"].values - score_data["map_x"].values)}')
             print()
             print(f'    aim_y_offsets = {score_data["replay_y"].values - score_data["map_y"].values}')
             print()
