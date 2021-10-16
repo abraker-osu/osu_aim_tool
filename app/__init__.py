@@ -675,6 +675,19 @@ class App(QtGui.QMainWindow):
         if 0 in [ aim_x_offsets.shape[0], aim_x_offsets.shape[0], tap_offsets.shape[0] ]:
             self.status_txt.setText('Data calculation error!')
             print('Data calculation error!')
+            print('Debug info:')
+            print()
+            print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
+            print()
+            print(f'    hit_thetas = {np.arctan2(aim_y_offsets, aim_x_offsets)}')
+            print()
+            print(f'    y_map_vecs = {y_map_vecs}')
+            print()
+            print(f'    x_map_vecs = {x_map_vecs}')
+            print()
+            print(f'    aim_y_offsets = {x_map_vecs}')
+            print()
+            print(f'    aim_x_offsets = {aim_x_offsets}')
             return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
