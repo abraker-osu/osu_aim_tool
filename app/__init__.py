@@ -673,15 +673,21 @@ class App(QtGui.QMainWindow):
 
         # Prevent recording if there is blank data
         if 0 in [ aim_x_offsets.shape[0], aim_x_offsets.shape[0], tap_offsets.shape[0] ]:
+            hit_theta_x = score_data["replay_y"].values - score_data["map_y"].values
+            hit_theta_y = score_data["replay_x"].values - score_data["map_x"].values
+
             self.status_txt.setText('Data calculation error!')
             print('Data calculation error!')
             print('Debug info:')
             print()
-            print(f'    map_thetas = {np.arctan2(score_data["replay_y"].values - score_data["map_y"].values, score_data["replay_x"].values - score_data["map_x"].values)}')
+            print(f'    hit_thetas = {np.arctan2(hit_theta_x, hit_theta_y)}')
             print()
-            print(f'    aim_y_offsets = {score_data["replay_y"].values - score_data["map_y"].values}')
+            print(f'    aim_y_offsets = {hit_theta_y}')
             print()
-            print(f'    aim_x_offsets = {score_data["replay_x"].values - score_data["map_x"].values}')
+            print(f'    aim_x_offsets = {hit_theta_x}')
+            print()
+            print(f'    set ang = {self.angle}')
+            print(f'    angles = {angles}')
             return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
