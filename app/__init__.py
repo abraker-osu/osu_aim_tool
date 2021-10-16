@@ -658,7 +658,9 @@ class App(QtGui.QMainWindow):
 
         # First and last notes do not partain to any angle
         # and select by angle (because there are unwanted angles where pattern reverses)
-        angle_select = (angles == self.angle) | (self.dx == 0)
+        # Allow `dx = 0` through because all angles would be 0
+        # Allow `notes = 2` through because all angles would be 180
+        angle_select = (angles == self.angle) | (self.dx == 0) | (self.notes == 2)
 
         aim_x_offsets = aim_x_offsets[:-1][angle_select]
         aim_y_offsets = aim_y_offsets[:-1][angle_select]
