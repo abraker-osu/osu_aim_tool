@@ -673,6 +673,8 @@ class App(QtGui.QMainWindow):
 
         # Prevent recording if there is blank data
         if 0 in [ aim_x_offsets.shape[0], aim_x_offsets.shape[0], tap_offsets.shape[0] ]:
+            self.status_txt.setText('Data calculation error!')
+            print('Data calculation error!')
             return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
