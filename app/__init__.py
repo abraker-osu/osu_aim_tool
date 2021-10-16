@@ -679,15 +679,9 @@ class App(QtGui.QMainWindow):
             print()
             print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
             print()
-            print(f'    hit_thetas = {np.arctan2(aim_y_offsets, aim_x_offsets)}')
+            print(f'    aim_y_offsets = {score_data["replay_y"].values - score_data["map_y"].values}')
             print()
-            print(f'    y_map_vecs = {y_map_vecs}')
-            print()
-            print(f'    x_map_vecs = {x_map_vecs}')
-            print()
-            print(f'    aim_y_offsets = {x_map_vecs}')
-            print()
-            print(f'    aim_x_offsets = {aim_x_offsets}')
+            print(f'    aim_x_offsets = {score_data["replay_x"].values - score_data["map_x"].values}')
             return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
