@@ -595,7 +595,7 @@ class App(QtGui.QMainWindow):
         except TypeError as e:
             self.status_txt.setText('Error reading beatmap!')
             print(e)
-            return None, None
+            return None, None, None
 
         # Read replay
         try: replay_data = StdReplayData.get_replay_data(self.replay)
@@ -670,6 +670,10 @@ class App(QtGui.QMainWindow):
         aim_x_offsets = aim_x_offsets[nan_filter]
         aim_y_offsets = aim_y_offsets[nan_filter]
         tap_offsets   = tap_offsets[nan_filter]
+
+        # Prevent recording if there is blank data
+        if 0 in [ aim_x_offsets.shape[0], aim_x_offsets.shape[0], tap_offsets.shape[0] ]:
+            return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
 
