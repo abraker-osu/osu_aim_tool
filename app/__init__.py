@@ -658,8 +658,8 @@ class App(QtGui.QMainWindow):
 
         # First and last notes do not partain to any angle
         # and select by angle (because there are unwanted angles where pattern reverses)
-        angle_select = (angles == self.angle)
-        
+        angle_select = (angles == self.angle) | (self.dx == 0)
+
         aim_x_offsets = aim_x_offsets[:-1][angle_select]
         aim_y_offsets = aim_y_offsets[:-1][angle_select]
         tap_offsets   = tap_offsets[1:-1][angle_select]
