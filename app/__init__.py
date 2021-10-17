@@ -710,21 +710,25 @@ class App(QtGui.QMainWindow):
             (self.data[:, App.COL_ROT] == self.rot) & \
             (self.data[:, App.COL_ANGLE] == self.angle)
 
+        stddev_xy = (stddev_x**2 + stddev_y**2)**0.5
+
         if np.any(data_select):
             # A record exists, see if it needs to be updated
             stddev_x_curr = self.data[data_select, App.COL_STDEV_X][0]
             stddev_y_curr = self.data[data_select, App.COL_STDEV_Y][0]
             stddev_t_curr = self.data[data_select, App.COL_STDEV_T][0]
 
+            stddev_xy_curr = (stddev_x_curr**2 + stddev_y_curr**2)**0.5
+
             text = \
                 f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
-                f'aim stddev^2: {stddev_x*stddev_y:.2f} (best: {stddev_x_curr*stddev_y_curr:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  best: ({stddev_x_curr:.2f}, {stddev_y_curr:.2f}, {stddev_t_curr:.2f})\n'
+                f'aim stddev-xy: {stddev_xy:.2f} (best: {stddev_xy_curr:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  best: ({stddev_x_curr:.2f}, {stddev_y_curr:.2f}, {stddev_t_curr:.2f})\n'
             
             self.status_txt.setText(text)
             print(text)
 
-            # Record new best only if stdev^2 is better
-            if stddev_x*stddev_y < stddev_x_curr*stddev_y_curr:
+            # Record new best only if stdev-xy is better
+            if stddev_xy < stddev_xy_curr:
                 self.data[data_select, App.COL_STDEV_X] = stddev_x
                 self.data[data_select, App.COL_STDEV_Y] = stddev_y
                 self.data[data_select, App.COL_STDEV_T] = stddev_t
@@ -732,7 +736,7 @@ class App(QtGui.QMainWindow):
             # Create a new record
             text = \
                 f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
-                f'aim stddev^2: {stddev_x*stddev_y:.2f}   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f}))\n'
+                f'aim stddev-xy: {stddev_xy:.2f}   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f}))\n'
 
             self.status_txt.setText(text)
             print(text)
