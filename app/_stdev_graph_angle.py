@@ -161,7 +161,7 @@ class StddevGraphAngle():
                 self.__graph.setTitle('Aim dev-xy (angle)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
 
-            angles = 180 - data[data_select, self.COL_ANGLE]
+            angles = data[data_select, self.COL_ANGLE]
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(angles)

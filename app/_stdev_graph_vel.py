@@ -110,13 +110,13 @@ class StddevGraphVel():
 
         # Select data slices by angle
         ang0, ang1 = self.__ang_region.getRegion()
-        ang_select = ((ang0 <= 180 - data[:, self.COL_ANGLE]) & (180 - data[:, self.COL_ANGLE] <= ang1))
+        ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
 
         unique_rots = np.unique(data[:, self.COL_ROT])
         self.__rot_plot.clearPlots()
         self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
-        unique_angs = 180 - np.unique(data[:, self.COL_ANGLE])
+        unique_angs = np.unique(data[:, self.COL_ANGLE])
         self.__ang_plot.clearPlots()
         self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
