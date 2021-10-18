@@ -118,7 +118,7 @@ class StddevGraphVel():
 
         unique_angs = np.unique(data[:, self.COL_ANGLE])
         self.__ang_plot.clearPlots()
-        self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), 180 - unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
         # Selected rotation region has no data. Nothing else to do
         data_select = rot_select & ang_select

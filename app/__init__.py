@@ -470,7 +470,7 @@ class App(QtGui.QMainWindow):
 
         # Update deviation data and plots
         self.__write_data(aim_x_offsets, aim_y_offsets, tap_offsets)
-        
+
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
         App.StddevGraphAngle.plot_data(self, self.data)
