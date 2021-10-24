@@ -82,9 +82,32 @@ class StddevGraphAngle():
         self.__px_label = QtGui.QLabel('    Dist')
         self.__px_label.setStyleSheet('background-color: black')
 
+        # Interactive region plot to the right to select angle of rotation in data
+        self.__rot_plot = pyqtgraph.PlotWidget()
+        self.__rot_plot.setXRange(-0.5, 0.5)
+        self.__rot_plot.setYRange(0, 180)
+        self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
+        self.__rot_plot.enableAutoRange(axis='x', enable=False)
+        self.__rot_plot.enableAutoRange(axis='y', enable=False)
+        self.__rot_plot.hideAxis('bottom')
+        self.__rot_plot.hideAxis('left')
+        self.__rot_plot.showAxis('right')
+        self.__rot_plot.setFixedWidth(64)
+
+        # Slider region allowing to select angle of rotation
+        self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
+        self.__rot_region.setBounds((0, 180))
+        self.__rot_region.setRegion((0, 30))
+        self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphAngle.__rot_region_event(self))
+
+        # Label for the interactive region plot
+        self.__rot_label = QtGui.QLabel('    Rot')
+        self.__rot_label.setStyleSheet('background-color: black')
+
         # Put it all together
         self.__bpm_plot.addItem(self.__bpm_region)
         self.__px_plot.addItem(self.__px_region)
+        self.__rot_plot.addItem(self.__rot_region)
         
         self.__bpm_layout = QtGui.QVBoxLayout()
         self.__bpm_layout.setSpacing(0)
@@ -96,12 +119,18 @@ class StddevGraphAngle():
         self.__px_layout.addWidget(self.__px_plot)
         self.__px_layout.addWidget(self.__px_label)
 
+        self.__rot_layout = QtGui.QVBoxLayout()
+        self.__rot_layout.setSpacing(0)
+        self.__rot_layout.addWidget(self.__rot_plot)
+        self.__rot_layout.addWidget(self.__rot_label)
+
         self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
         self.__layout.setContentsMargins(0, 0, 0, 0)
         self.__layout.setSpacing(2)
         self.__layout.addWidget(self.__graph)
         self.__layout.addLayout(self.__bpm_layout)
         self.__layout.addLayout(self.__px_layout)
+        self.__layout.addLayout(self.__rot_layout)
 
 
     def plot_data(self, data):
@@ -119,6 +148,10 @@ class StddevGraphAngle():
         px0, px1 = self.__px_region.getRegion()
         px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
 
+        # Select data slices by rotation
+        rot0, rot1 = self.__rot_region.getRegion()
+        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+
         unique_bpms = np.unique(data[:, self.COL_BPM])
         self.__bpm_plot.clearPlots()
         self.__bpm_plot.plot(np.zeros(unique_bpms.shape[0]), unique_bpms, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
@@ -127,12 +160,16 @@ class StddevGraphAngle():
         self.__px_plot.clearPlots()
         self.__px_plot.plot(np.zeros(unique_pxs.shape[0]), unique_pxs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
+        unique_rots = np.unique(data[:, self.COL_ROT])
+        self.__rot_plot.clearPlots()
+        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+
         # Selected rotation region has no data. Nothing else to do
-        if not any(bpm_select & px_select):
+        if not any(bpm_select & px_select & rot_select):
             return
 
         # Colored gradient r->g->b multiple plots at different osu!px
-        unique_bpms = np.unique(data[bpm_select & px_select, self.COL_BPM])
+        unique_bpms = np.unique(data[bpm_select & px_select & rot_select, self.COL_BPM])
 
         bpm_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_bpms), max(unique_bpms), 3),
@@ -150,7 +187,7 @@ class StddevGraphAngle():
         for bpm in unique_bpms:
             # Determine data selected by BPM
             bpm_select = (data[:, self.COL_BPM] == bpm)
-            data_select = bpm_select & px_select
+            data_select = bpm_select & px_select & rot_select
             if not any(data_select):
                 continue
 
@@ -183,6 +220,11 @@ class StddevGraphAngle():
     
     def __px_region_event(self):
         # When the selection on distance plot changes, reprocess main graph
+        StddevGraphAngle.plot_data(self, self.data)
+
+
+    def __rot_region_event(self):
+        # When the selection on rotation plot changes, reprocess main graph
         StddevGraphAngle.plot_data(self, self.data)
 
 
