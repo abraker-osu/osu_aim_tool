@@ -27,6 +27,10 @@ class StddevGraphDx():
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
         
+        # Deviation marker indicating expected deviation according to set CS
+        self.__dev_marker = pyqtgraph.InfiniteLine(angle=0, movable=False, pen=pyqtgraph.mkPen(color=(200, 200, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
+        self.__graph.addItem(self.__dev_marker, ignoreBounds=True)
+
         # Interactive region plot to the right to select angle of rotation in data
         self.__rot_plot = pyqtgraph.PlotWidget()
         self.__rot_plot.setXRange(-0.5, 0.5)
@@ -175,3 +179,7 @@ class StddevGraphDx():
     def __angle_region_event(self):
         # When the selection on angle plot changes, reprocess main graph
         StddevGraphDx.plot_data(self, self.data)
+
+
+    def set_dev(self, dev):
+        self.__dev_marker.setPos(dev)

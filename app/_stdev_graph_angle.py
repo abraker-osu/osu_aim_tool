@@ -28,6 +28,10 @@ class StddevGraphAngle():
         self.__graph.setLabel('bottom', 'angle', units='deg', unitPrefix='')
         self.__graph.addLegend()
 
+        # Deviation marker indicating expected deviation according to set CS
+        self.__dev_marker = pyqtgraph.InfiniteLine(angle=0, movable=False, pen=pyqtgraph.mkPen(color=(200, 200, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
+        self.__graph.addItem(self.__dev_marker, ignoreBounds=True)
+
         # Used to set text in legend item
         self.__label_style = pyqtgraph.PlotDataItem(pen=(0,0,0))
         self.__graph.getPlotItem().legend.addItem(self.__label_style, '')
@@ -180,3 +184,7 @@ class StddevGraphAngle():
     def __px_region_event(self):
         # When the selection on distance plot changes, reprocess main graph
         StddevGraphAngle.plot_data(self, self.data)
+
+
+    def set_dev(self, dev):
+        self.__dev_marker.setPos(dev)

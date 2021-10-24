@@ -382,6 +382,13 @@ class App(QtGui.QMainWindow):
         self.aim_graph.set_cs(self.cs)
         self.pattern_visual.update(cs=self.cs)
 
+        dev = App.OsuUtils.cs_to_px(self.cs)/5
+
+        App.StddevGraphBpm.set_dev(self, dev)
+        App.StddevGraphDx.set_dev(self, dev)
+        App.StddevGraphAngle.set_dev(self, dev)
+        App.StddevGraphVel.set_dev(self, dev)
+
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
 
