@@ -112,7 +112,7 @@ class App(QtGui.QMainWindow):
         self.dx_edit      = App.ValueEdit(0, 512,  'Spacing')
         self.angle_edit   = App.ValueEdit(0, 180,  'Note deg')
         self.rot_edit     = App.ValueEdit(0, 360,  'Rot deg')
-        self.notes_edit   = App.ValueEdit(2, 100,  '# Notes')
+        self.notes_edit   = App.ValueEdit(3, 100,  '# Notes')
         self.repeats_edit = App.ValueEdit(1, 1000, '# Repeats')
         self.cs_edit      = App.ValueEdit(0, 10,   'CS', is_float=True)
         self.ar_edit      = App.ValueEdit(0, 10,   'AR', is_float=True)
@@ -246,7 +246,7 @@ class App(QtGui.QMainWindow):
         except KeyError: self.repeats_edit.set_value(60)
 
         try: self.notes_edit.set_value(cfg['notes'])
-        except KeyError: self.notes_edit.set_value(2)
+        except KeyError: self.notes_edit.set_value(3)
         
         try: self.cs_edit.set_value(cfg['cs'])
         except KeyError: self.cs_edit.set_value(4)
