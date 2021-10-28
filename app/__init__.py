@@ -684,6 +684,31 @@ class App(QtGui.QMainWindow):
         aim_y_offsets = aim_y_offsets[:-1][angle_select]
         tap_offsets   = tap_offsets[1:-1][angle_select]
 
+        # Prevent recording if there is blank data
+        if 0 in [ aim_x_offsets.shape[0], aim_y_offsets.shape[0], tap_offsets.shape[0] ]:            
+            aim_x_offsets = score_data["replay_y"].values - score_data["map_y"].values
+            aim_y_offsets = score_data["replay_x"].values - score_data["map_x"].values
+
+            self.status_txt.setText('Data calculation error!')
+            print('Non of the angles match')
+
+            print('Debug info:')
+            print()
+            print(f'    aim_x_offsets = {aim_x_offsets}')
+            print()
+            print(f'    aim_y_offsets = {aim_y_offsets}')
+            print()
+            print(f'    x_map_vecs = {x_map_vecs}')
+            print()
+            print(f'    y_map_vecs = {y_map_vecs}')
+            print()
+            print(f'    angles = {angles}')
+            print()
+            print(f'    set dx = {self.dx}')
+            print(f'    set notes = {self.notes}')
+            print(f'    set ang = {self.angle}')
+            return None, None, None
+
         # Filter out nans that happen due to misc reasons (usually due to empty slices or div by zero)
         nan_filter = ~np.isnan(aim_x_offsets) & ~np.isnan(aim_y_offsets)
 
@@ -692,7 +717,7 @@ class App(QtGui.QMainWindow):
         tap_offsets   = tap_offsets[nan_filter]
 
         # Prevent recording if there is blank data
-        if 0 in [ aim_x_offsets.shape[0], aim_x_offsets.shape[0], tap_offsets.shape[0] ]:
+        if 0 in [ aim_x_offsets.shape[0], aim_y_offsets.shape[0], tap_offsets.shape[0] ]:
             hit_theta_x = score_data["replay_y"].values - score_data["map_y"].values
             hit_theta_y = score_data["replay_x"].values - score_data["map_x"].values
 
@@ -700,14 +725,15 @@ class App(QtGui.QMainWindow):
             print('Data calculation error!')
             print('Debug info:')
             print()
-            print(f'    hit_thetas = {np.arctan2(hit_theta_x, hit_theta_y)}')
+            print(f'    tap_offsets = {tap_offsets}')
             print()
             print(f'    aim_y_offsets = {hit_theta_y}')
             print()
             print(f'    aim_x_offsets = {hit_theta_x}')
             print()
-            print(f'    set ang = {self.angle}')
-            print(f'    angles = {angles}')
+            print(f'    hit_thetas = {np.arctan2(hit_theta_x, hit_theta_y)}')
+            print()
+            print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
             return None, None, None
 
         return aim_x_offsets, aim_y_offsets, tap_offsets
