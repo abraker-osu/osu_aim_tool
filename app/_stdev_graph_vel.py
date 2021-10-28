@@ -184,6 +184,16 @@ class StddevGraphVel():
         else:
             self.__text.setText(f'')
 
+        if self.model_compensation:
+            self.__graph.clearPlots()
+
+            y_model = m*vel + b
+
+            self.__text.setText(f'σ = {np.std(stdevs - y_model):.2f}')
+            self.__graph.plot(x=vel, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
+            self.__graph.plot(x=[0, max(vel)], y=[0, 0], pen=(100, 100, 0, 150))
+
+
 
     def __rot_region_event(self):
         # When the selection on rotation plot changes, reprocess main graph

@@ -91,6 +91,7 @@ class App(QtGui.QMainWindow):
         self.graphs = {}
         self.engaged = False
         self.dev_select = App.DEV_X
+        self.model_compensation = False
 
         self.main_widget = QtGui.QWidget()
         self.main_layout = QtGui.QVBoxLayout(self.main_widget)
@@ -101,6 +102,7 @@ class App(QtGui.QMainWindow):
         self.perf_chkbx = QtGui.QCheckBox('Show performance')
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
         self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
+        self.model_chkbx = QtGui.QCheckBox('Model compensation')
 
         self.dev_selct_layout = QtGui.QVBoxLayout()
         self.xdev_radio_btn = QtGui.QRadioButton('x-dev')
@@ -146,6 +148,7 @@ class App(QtGui.QMainWindow):
         self.win_selct_layout.addWidget(self.perf_chkbx)
         self.win_selct_layout.addWidget(self.aim_chkbx)
         self.win_selct_layout.addWidget(self.ptrn_chkbx)
+        self.win_selct_layout.addWidget(self.model_chkbx)
 
         self.dev_selct_layout.addWidget(self.xdev_radio_btn)
         self.dev_selct_layout.addWidget(self.ydev_radio_btn)
@@ -170,6 +173,7 @@ class App(QtGui.QMainWindow):
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
         self.ptrn_chkbx.stateChanged.connect(self.__ptrn_chkbx_event)
+        self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
         self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
         self.dx_edit.value_changed.connect(self.__dx_edit)
@@ -289,7 +293,6 @@ class App(QtGui.QMainWindow):
             self.aim_graph.show()
         else:
             self.aim_graph.hide()
-        pass
 
 
     def __ptrn_chkbx_event(self, state):
@@ -298,7 +301,15 @@ class App(QtGui.QMainWindow):
             self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)
         else:
             self.pattern_visual.hide()
-        pass
+
+
+    def __model_chkbx_event(self, state):
+        self.model_compensation = (state == QtCore.Qt.Checked)
+
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphAngle.plot_data(self, self.data)
+        App.StddevGraphVel.plot_data(self, self.data)
 
 
     def __bpm_edit_event(self, value):
