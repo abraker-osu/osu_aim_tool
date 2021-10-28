@@ -180,7 +180,7 @@ class StddevGraphVel():
             corr_xy = corr_mat[0, 1]
             r_sq = corr_xy**2
 
-            self.__text.setText(f'R^2 = {r_sq:.2f}')
+            self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.3f}  b={b:.2f}')
         else:
             self.__text.setText(f'')
 
@@ -189,7 +189,7 @@ class StddevGraphVel():
 
             y_model = m*vel + b
 
-            self.__text.setText(f'σ = {np.std(stdevs - y_model):.2f}')
+            self.__text.setText(f'σ = {np.std(stdevs - y_model):.2f}  m={m:.3f}  b={b:.2f}')
             self.__graph.plot(x=vel, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
             self.__graph.plot(x=[0, max(vel)], y=[0, 0], pen=(100, 100, 0, 150))
 
