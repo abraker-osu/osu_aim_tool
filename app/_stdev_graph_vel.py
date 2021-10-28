@@ -160,6 +160,10 @@ class StddevGraphVel():
             g1 = (stdevs < median_x) & (vel < median_y)    # Group 1 select
             g2 = (stdevs >= median_x) & (vel >= median_y)  # Group 2 select
             
+            # Check if follows model by having positive linear slope
+            if(not any(g1) or not any(g2)):
+                return
+
             # 2) Take the center of gravity for each of the two groups
             #    Those become points p1 and p2 to fit a line through
             p1x = np.mean(vel[g1])
