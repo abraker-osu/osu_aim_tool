@@ -6,6 +6,7 @@ import time
 import math
 import shutil
 import os
+import re
 
 import pyqtgraph
 from pyqtgraph.Qt import QtCore
@@ -57,20 +58,11 @@ class App(QtGui.QMainWindow):
 
         self.__load_user_val()
 
-        try: 
-            self.data_file = open(App.SAVE_FILE(self.user_id), 'rb+')
-            self.data = np.load(self.data_file, allow_pickle=False)
-        except FileNotFoundError:
-            print('Data file not found. Creating...')
-
-            self.data = np.asarray([])
-            np.save(App.SAVE_FILE(self.user_id), np.empty((0, App.NUM_COLS)), allow_pickle=False)
-            
-            self.data_file = open(App.SAVE_FILE(self.user_id), 'rb+')
-            self.data = np.load(self.data_file, allow_pickle=False)
-
         self.__init_gui()
         self.__build_layout()
+
+        self.__load_data_list()
+        self.__select_data_id(self.user_id)
 
         if self.__load_settings():    
             try:
@@ -93,6 +85,9 @@ class App(QtGui.QMainWindow):
         self.dev_select = App.DEV_X
         self.model_compensation = False
 
+        self.selected_data_id = None
+        self.data_list_ids = []
+
         self.main_widget = QtGui.QWidget()
         self.main_layout = QtGui.QVBoxLayout(self.main_widget)
         
@@ -102,6 +97,7 @@ class App(QtGui.QMainWindow):
         self.perf_chkbx = QtGui.QCheckBox('Show performance')
         self.aim_chkbx  = QtGui.QCheckBox('Show hits')
         self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
+        self.data_chkbx = QtGui.QCheckBox('Show data select')
         self.model_chkbx = QtGui.QCheckBox('Model compensation')
 
         self.dev_selct_layout = QtGui.QVBoxLayout()
@@ -125,16 +121,21 @@ class App(QtGui.QMainWindow):
         self.area = DockArea()
         self.aim_graph = App.AimGraph()
         self.pattern_visual = App.PatternVisual()
+        self.data_list = QtGui.QListWidget()
         
 
     def __build_layout(self):
         self.setWindowTitle('osu! Aim Tool Settings')
         self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
 
+        self.data_list.setWindowTitle('Data file selection')
+
         self.xdev_radio_btn.setChecked(True)
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
         self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
+
+        self.data_list.currentRowChanged.connect(self.__data_list_click_event)
 
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
@@ -148,6 +149,7 @@ class App(QtGui.QMainWindow):
         self.win_selct_layout.addWidget(self.perf_chkbx)
         self.win_selct_layout.addWidget(self.aim_chkbx)
         self.win_selct_layout.addWidget(self.ptrn_chkbx)
+        self.win_selct_layout.addWidget(self.data_chkbx)
         self.win_selct_layout.addWidget(self.model_chkbx)
 
         self.dev_selct_layout.addWidget(self.xdev_radio_btn)
@@ -173,6 +175,7 @@ class App(QtGui.QMainWindow):
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
         self.ptrn_chkbx.stateChanged.connect(self.__ptrn_chkbx_event)
+        self.data_chkbx.stateChanged.connect(self.__data_chkbx_event)
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
         self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
@@ -213,6 +216,18 @@ class App(QtGui.QMainWindow):
                 json.dump(cfg, f, indent=4)
 
         self.user_id = cfg['id']
+
+
+    def __load_data_list(self):
+        regex = re.compile(r'stdev_data_(\d+).npy')
+
+        for data_file_name in os.listdir('data'):
+            match = regex.match(data_file_name)
+            if not match:
+                continue
+            
+            self.data_list_ids.append(int(match.group(1)))
+            self.data_list.addItem(data_file_name)
 
 
     def __load_settings(self):
@@ -301,6 +316,13 @@ class App(QtGui.QMainWindow):
             self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)
         else:
             self.pattern_visual.hide()
+
+
+    def __data_chkbx_event(self, state):
+        if state == QtCore.Qt.Checked:
+            self.data_list.show()
+        else:
+            self.data_list.hide()
 
 
     def __model_chkbx_event(self, state):
@@ -428,6 +450,20 @@ class App(QtGui.QMainWindow):
         App.StddevGraphDx.plot_data(self, self.data)
         App.StddevGraphAngle.plot_data(self, self.data)
         App.StddevGraphVel.plot_data(self, self.data)
+
+
+    def __data_list_click_event(self, idx):
+        selected_data_id = self.data_list_ids[idx]
+        if self.selected_data_id == selected_data_id:
+            return
+
+        self.selected_data_id = selected_data_id
+        self.__load_data_file(selected_data_id)
+    
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphAngle.plot_data(self, self.data)
+        App.StddevGraphVel.plot_data(self, self.data)
           
 
     def __action_event(self):
@@ -436,6 +472,7 @@ class App(QtGui.QMainWindow):
             self.monitor.pause()
             self.action_btn.setText('Start')
             self.engaged = False
+            self.data_list.setEnabled(True)
             return
 
         # Submit all unsaved settings to save and apply them
@@ -462,6 +499,15 @@ class App(QtGui.QMainWindow):
         if is_error:
             return
 
+        # Check if we have user's data opened. Switch to it if we do not
+        if self.selected_data_id != self.user_id:
+            self.__select_data_id(self.user_id)
+
+            App.StddevGraphBpm.plot_data(self, self.data)
+            App.StddevGraphDx.plot_data(self, self.data)
+            App.StddevGraphAngle.plot_data(self, self.data)
+            App.StddevGraphVel.plot_data(self, self.data)
+
         # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
         map_path = f'{self.osu_path}/Songs/aim_tool'
 
@@ -478,6 +524,7 @@ class App(QtGui.QMainWindow):
 
         # Otherwise, replay was successfully detected and we can update the state to reflect that
         self.engaged = False
+        self.data_list.setEnabled(True)
 
         # Data from map and replay -> score
         aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
@@ -598,6 +645,7 @@ class App(QtGui.QMainWindow):
         # Resumes *.osr file monitoring and updates state
         self.monitor.resume()
         self.engaged = True
+        self.data_list.setEnabled(False)
 
         # Wait until a replay is detected or user presses the ABORT button
         while not self.monitor.paused:
@@ -796,6 +844,29 @@ class App(QtGui.QMainWindow):
         self.data = np.load(self.data_file, allow_pickle=False)
 
 
+    def __load_data_file(self, user_id):
+        try: 
+            self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
+            self.data = np.load(self.data_file, allow_pickle=False)
+        except FileNotFoundError:
+            print('Data file not found. Creating...')
+
+            self.data = np.asarray([])
+            np.save(App.SAVE_FILE(user_id), np.empty((0, App.NUM_COLS)), allow_pickle=False)
+            
+            self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
+            self.data = np.load(self.data_file, allow_pickle=False)
+
+
+    def __select_data_id(self, data_id):
+        idx = self.data_list_ids.index(data_id)
+        if idx == None:
+            return
+
+        self.data_list.setCurrentRow(idx)
+        self.__data_list_click_event(idx)
+
+
     def closeEvent(self, event):
         # Gracefully stop monitoring
         if self.engaged:
@@ -805,6 +876,7 @@ class App(QtGui.QMainWindow):
         self.area.hide()
         self.aim_graph.hide()
         self.pattern_visual.hide()
+        self.data_list.hide()
 
         # Proceed
         event.accept()
