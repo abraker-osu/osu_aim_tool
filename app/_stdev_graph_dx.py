@@ -5,6 +5,8 @@ import math
 import numpy as np
 import random
 
+from app.misc._utils import Utils
+
 
 class StddevGraphDx():
 
@@ -164,11 +166,23 @@ class StddevGraphDx():
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(pxs)
+            pxs = pxs[idx_sort]
+            stdevs = stdevs[idx_sort]
 
             # Draw plot
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
-            self.__graph.plot(x=pxs[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+
+            m, b = Utils.linear_regresion(pxs, stdevs)
+            if type(m) == type(None) or type(b) == type(None):
+                self.__graph.plot(x=pxs, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+                return
+
+            if self.model_compensation:
+                y_model = m*pxs + b
+                self.__graph.plot(x=pxs, y=stdevs - y_model, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
+            else:
+                self.__graph.plot(x=pxs, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __rot_region_event(self):
