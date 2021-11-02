@@ -24,7 +24,7 @@ class StddevGraphBpm():
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=200)
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
-        self.__graph.setLabel('bottom', 'bpm', units='60/s', unitPrefix='')
+        self.__graph.setLabel('bottom', 'bpm', units='1/(60*s)', unitPrefix='')
         self.__graph.addLegend()
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
 
