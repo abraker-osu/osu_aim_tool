@@ -169,7 +169,7 @@ class StddevGraphBpm():
             # Draw plot
             symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = px_lut.map(px, 'qcolor')
-            self.__graph.plot(x=bpms[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} px')
+            self.__graph.plot(x=bpms[idx_sort], y=stdevs[idx_sort], symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px')
 
 
     def __rot_region_event(self):
