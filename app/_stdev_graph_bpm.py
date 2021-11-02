@@ -130,7 +130,7 @@ class StddevGraphBpm():
 
         # Colored gradient r->g->b multiple plots at different osu!px
         unique_pxs = np.unique(data[rot_select & ang_select, self.COL_PX])
-        unique_pxs = unique_pxs[::max(1, math.ceil(unique_pxs.shape[0]/5))]  # Limit display to 5 or 6 plots
+        #unique_pxs = unique_pxs[::max(1, math.ceil(unique_pxs.shape[0]/5))]  # Limit display to 5 or 6 plots
 
         px_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_pxs), max(unique_pxs), 3),
