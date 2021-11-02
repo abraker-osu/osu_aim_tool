@@ -55,11 +55,11 @@ class Utils():
 
         # 2) Take the center of gravity for each of the two groups
         #    Those become points p1 and p2 to fit a line through
-        p1x = np.mean(y[g1])
-        p1y = np.mean(x[g1])
+        p1x = np.mean(x[g1])
+        p1y = np.mean(y[g1])
 
-        p2x = np.mean(y[g2])
-        p2y = np.mean(x[g2])
+        p2x = np.mean(x[g2])
+        p2y = np.mean(y[g2])
 
         # 3) Calculate slope and y-intercept
         m = (p1y - p2y)/(p1x - p2x)

@@ -151,7 +151,7 @@ class StddevGraphVel():
         # Draw data plot
         self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
 
-        m, b = Utils.linear_regresion(stdevs, vel)
+        m, b = Utils.linear_regresion(vel, stdevs)
         if type(m) == type(None) or type(b) == type(None):
             self.__text.setText(f'')
             return
