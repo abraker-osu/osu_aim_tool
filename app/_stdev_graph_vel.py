@@ -164,7 +164,7 @@ class StddevGraphVel():
         corr_xy = corr_mat[0, 1]
         r_sq = corr_xy**2
 
-        self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.3f}  b={b:.2f}')
+        self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.5f}  b={b:.2f}')
 
         if self.model_compensation:
             self.__graph.clearPlots()
