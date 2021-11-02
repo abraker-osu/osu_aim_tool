@@ -40,14 +40,31 @@ class Utils():
         if y.shape[0] < 2:
             return None, None
 
+        # Split data in half on x-axis and figure out if the data is increasing or decreasing
+        left_half = x < np.median(x)
+        right_half = x >= np.median(x)
+
+        # If one of halves is empty, return None
+        if not (any(left_half) and any(right_half)):
+            return None, None
+
+        y_left_avg = np.mean(y[x < np.median(x)])
+        y_right_avg = np.mean(y[x >= np.median(x)])
+
         # Model linear curve
         # Visual example of how this works: https://i.imgur.com/k7H8bLe.png
         # 1) Take points on y-axis and x-axis, and split them into half - resulting in two groups
-        median_x = np.mean(x)
-        median_y = np.mean(y)
+        avg_x = np.mean(x)
+        avg_y = np.mean(y)
 
-        g1 = (x < median_x) & (y < median_y)    # Group 1 select
-        g2 = (x >= median_x) & (y >= median_y)  # Group 2 select
+        if y_left_avg < y_right_avg:
+            # Positive slope
+            g1 = (x < avg_x) & (y < avg_y)    # Group 1 select
+            g2 = (x >= avg_x) & (y >= avg_y)  # Group 2 select
+        else:
+            # Negative slope
+            g1 = (x < avg_x) & (y >= avg_y)   # Group 1 select
+            g2 = (x >= avg_x) & (y < avg_y)   # Group 2 select
         
         # Check if follows model by having positive linear slope
         if(not any(g1) or not any(g2)):
