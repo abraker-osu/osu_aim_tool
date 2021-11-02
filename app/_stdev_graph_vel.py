@@ -4,6 +4,8 @@ from pyqtgraph.Qt import QtCore
 
 import numpy as np
 
+from app.misc._utils import Utils
+
 
 class StddevGraphVel():
 
@@ -148,45 +150,21 @@ class StddevGraphVel():
 
         # Draw data plot
         self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
-        
-        # Model processing. Needs at least 2 points.
-        if vel.shape[0] >= 2:
-            # Model linear curve
-            # Visual example of how this works: https://i.imgur.com/k7H8bLe.png
-            # 1) Take points on y-axis and x-axis, and split them into half - resulting in two groups
-            median_x = np.mean(stdevs)
-            median_y = np.mean(vel)
 
-            g1 = (stdevs < median_x) & (vel < median_y)    # Group 1 select
-            g2 = (stdevs >= median_x) & (vel >= median_y)  # Group 2 select
-            
-            # Check if follows model by having positive linear slope
-            if(not any(g1) or not any(g2)):
-                return
-
-            # 2) Take the center of gravity for each of the two groups
-            #    Those become points p1 and p2 to fit a line through
-            p1x = np.mean(vel[g1])
-            p1y = np.mean(stdevs[g1])
-
-            p2x = np.mean(vel[g2])
-            p2y = np.mean(stdevs[g2])
-
-            # 3) Calculate slope and y-intercept
-            m = (p1y - p2y)/(p1x - p2x)
-            b = p1y - m*p1x
-            
-            # Draw model plot
-            self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))
-
-            # Calc and display R^2 
-            corr_mat = np.corrcoef(vel, stdevs)
-            corr_xy = corr_mat[0, 1]
-            r_sq = corr_xy**2
-
-            self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.3f}  b={b:.2f}')
-        else:
+        m, b = Utils.linear_regresion(stdevs, vel)
+        if type(m) == type(None) or type(b) == type(None):
             self.__text.setText(f'')
+            return
+
+        # Draw model plot
+        self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))
+
+        # Calc and display R^2 
+        corr_mat = np.corrcoef(vel, stdevs)
+        corr_xy = corr_mat[0, 1]
+        r_sq = corr_xy**2
+
+        self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.3f}  b={b:.2f}')
 
         if self.model_compensation:
             self.__graph.clearPlots()
