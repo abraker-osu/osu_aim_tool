@@ -616,7 +616,7 @@ class App(QtGui.QMainWindow):
         for note in pattern:
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(note[0]) + audio_offset},{int(note[1])},{int(note[2]*1000 + audio_offset)},1,0,0:0:0:0:\
+                {int(note[0])},{int(note[1])},{int(note[2]*1000 + audio_offset)},1,0,0:0:0:0:\
                 """
             )
 

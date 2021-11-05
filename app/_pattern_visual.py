@@ -97,7 +97,6 @@ class PatternVisual():
         if None in _self:
             return
 
-        #pattern = OsuUtils.generate_pattern(self.bpm, self.dx, self.angle, self.rot, self.num)
         pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
 
         self.data_x = pattern[:, 0]
