@@ -41,7 +41,8 @@ class OsuUtils():
             points.append(curr_pos)
             delta_ts.append(delta_t)
 
-        points   = np.array(points) + [[ 256, 192 ]] - np.mean(points, axis=0)
+        center = (np.max(points, axis=0) + np.min(points, axis=0))/2
+        points   = np.array(points) - center + [[ 256, 192 ]] 
         points   = np.pad(points, ((0, (n_repeats - 1)*n_points), (0, 0)), mode='reflect')
         delta_ts = np.pad(delta_ts, (1, (n_repeats - 1)*n_points), mode='symmetric')
         delta_ts[0] = 0
