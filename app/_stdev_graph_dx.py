@@ -176,7 +176,7 @@ class StddevGraphDx():
             m, b = Utils.linear_regresion(pxs, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 self.__graph.plot(x=pxs, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
-                return
+                continue
 
             if self.model_compensation:
                 y_model = m*pxs + b

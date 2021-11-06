@@ -177,7 +177,7 @@ class StddevGraphBpm():
             m, b = Utils.linear_regresion(bpms, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 self.__graph.plot(x=bpms, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px')
-                return
+                continue
 
             if self.model_compensation:
                 y_model = m*bpms + b
