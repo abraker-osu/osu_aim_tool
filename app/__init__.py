@@ -61,6 +61,7 @@ class App(QtGui.QMainWindow):
         self.__init_gui()
         self.__build_layout()
 
+        self.__load_data_file(self.user_id)
         self.__load_data_list()
         self.__select_data_id(self.user_id)
 
