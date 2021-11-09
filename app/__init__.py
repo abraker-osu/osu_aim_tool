@@ -603,9 +603,7 @@ class App(QtGui.QMainWindow):
         pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm*rate_multiplier, self.angle*math.pi/180, self.notes, self.repeats)
         audio_offset = -48  # ms
 
-        print(rate_multiplier)
         for note in pattern:
-            print(int(note[2]*1000 + audio_offset))
             beatmap_data += textwrap.dedent(
                 f"""
                 Sample,{int(note[2]*1000 + audio_offset*rate_multiplier)},3,"pluck.wav",100\
