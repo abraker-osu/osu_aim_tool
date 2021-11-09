@@ -18,6 +18,8 @@ from osu_analysis import StdReplayData
 from osu_analysis import StdScoreData
 from osu_analysis import BeatmapIO
 from osu_analysis import ReplayIO
+from osu_analysis import ReplayIO
+from osu_analysis import Mod
 
 
 
@@ -114,7 +116,7 @@ class App(QtGui.QMainWindow):
         self.notes_edit   = App.ValueEdit(3, 100,  '# Notes')
         self.repeats_edit = App.ValueEdit(1, 1000, '# Repeats')
         self.cs_edit      = App.ValueEdit(0, 10,   'CS', is_float=True)
-        self.ar_edit      = App.ValueEdit(0, 10,   'AR', is_float=True)
+        self.ar_edit      = App.ValueEdit(0, 11,   'AR', is_float=True)
 
         self.action_btn = QtGui.QPushButton('Start')
         self.status_txt = QtGui.QLabel('Set settings and click start!')
@@ -548,6 +550,10 @@ class App(QtGui.QMainWindow):
 
 
     def __generate_map(self, map_path):
+        # Handle DT/NC vs nomod setting
+        ar = min(self.ar, 10)
+        rate_multiplier = 1.0 if (self.ar <= 10) else 1.5
+
         beatmap_data = textwrap.dedent(
             f"""\
             osu file format v14
@@ -585,7 +591,7 @@ class App(QtGui.QMainWindow):
             HPDrainRate:8
             CircleSize:{self.cs}
             OverallDifficulty:10
-            ApproachRate:{self.ar}
+            ApproachRate:{ar}
             SliderMultiplier:1.4
             SliderTickRate:1
 
@@ -594,13 +600,15 @@ class App(QtGui.QMainWindow):
         )
 
         # Generate notes
-        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.repeats)
+        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm*rate_multiplier, self.angle*math.pi/180, self.notes, self.repeats)
         audio_offset = -48  # ms
 
+        print(rate_multiplier)
         for note in pattern:
+            print(int(note[2]*1000 + audio_offset))
             beatmap_data += textwrap.dedent(
                 f"""
-                Sample,{int(note[2]*1000 + audio_offset)},3,"pluck.wav",100\
+                Sample,{int(note[2]*1000 + audio_offset*rate_multiplier)},3,"pluck.wav",100\
                 """
             )
 
@@ -617,7 +625,7 @@ class App(QtGui.QMainWindow):
         for note in pattern:
             beatmap_data += textwrap.dedent(
                 f"""
-                {int(note[0])},{int(note[1])},{int(note[2]*1000 + audio_offset)},1,0,0:0:0:0:\
+                {int(note[0])},{int(note[1])},{int(note[2]*1000 + audio_offset*rate_multiplier)},1,0,0:0:0:0:\
                 """
             )
 
@@ -651,23 +659,43 @@ class App(QtGui.QMainWindow):
         # Wait until a replay is detected or user presses the ABORT button
         while not self.monitor.paused:
             QtGui.QApplication.instance().processEvents()
-            time.sleep(0.1)
+            time.sleep(0.05)
 
 
     def __get_data(self, map_path):
         beatmap = BeatmapIO.open_beatmap(f'{map_path}/map.osu')
 
+        print('replay mods:', self.replay.mods.value)
+
+        # Check if mods are valid
+        if self.ar > 10:
+            has_dt = (self.replay.mods.value & Mod.DoubleTime) > 0
+            has_nc = (self.replay.mods.value & Mod.Nightcore) > 0
+
+            if not (has_dt or has_nc):
+                self.status_txt.setText('AR >10 requires DT or NC mod enabled!\n')
+                return None, None, None
+
+            has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore)) > 0
+            if has_other_mods:
+                self.status_txt.setText('AR >10 requires ONLY DT or NC mod enabled!\n')
+                return None, None, None
+        else:
+            if self.replay.mods.value != 0:
+                self.status_txt.setText('AR <10 requires nomod!\n')
+                return None, None, None
+
         # Read beatmap
         try: map_data = StdMapData.get_map_data(beatmap)
         except TypeError as e:
-            self.status_txt.setText('Error reading beatmap!')
+            self.status_txt.setText('Error reading beatmap!\n')
             print(e)
             return None, None, None
 
         # Read replay
         try: replay_data = StdReplayData.get_replay_data(self.replay)
         except Exception as e:
-            self.status_txt.setText('Error reading replay!')
+            self.status_txt.setText('Error reading replay!\n')
             print(e)
             return None, None, None
 
