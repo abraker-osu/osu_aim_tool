@@ -245,7 +245,7 @@ class App(QtGui.QMainWindow):
                 json.dump(cfg, f, indent=4)
 
         if not os.path.isdir(self.osu_path):
-            self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.')
+            self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.\nMake sure to use double backslashes for osu! path')
             self.action_btn.setEnabled(False)
             self.aim_chkbx.setEnabled(False)
             self.ptrn_chkbx.setEnabled(False)
