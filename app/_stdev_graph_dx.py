@@ -109,7 +109,7 @@ class StddevGraphDx():
         self.__ang_layout.setSpacing(0)
         self.__ang_layout.addWidget(self.__ang_plot)
         self.__ang_layout.addWidget(self.__ang_label)
-        
+
         self.__bpm_layout = QtGui.QVBoxLayout()
         self.__bpm_layout.setSpacing(0)
         self.__bpm_layout.addWidget(self.__bpm_plot)
@@ -201,6 +201,10 @@ class StddevGraphDx():
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
                 
             pxs = data[data_select, self.COL_PX]
+
+            # Average overlapping data points (those that fall on same px)
+            stdevs = np.asarray([ stdevs[pxs == px].mean() for px in np.unique(pxs) ])
+            pxs = np.unique(pxs)
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(pxs)

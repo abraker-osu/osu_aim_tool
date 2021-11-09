@@ -207,6 +207,10 @@ class StddevGraphAngle():
 
             angles = data[data_select, self.COL_ANGLE]
 
+            # Average overlapping data points (those that fall on same angle)
+            stdevs = np.asarray([ stdevs[angles == angle].mean() for angle in np.unique(angles) ])
+            angles = np.unique(angles)
+
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(angles)
             angles = angles[idx_sort]

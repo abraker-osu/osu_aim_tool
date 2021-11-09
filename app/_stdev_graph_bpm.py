@@ -201,6 +201,10 @@ class StddevGraphBpm():
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
                 
             bpms = data[data_select, self.COL_BPM]
+            
+            # Average overlapping data points (those that fall on same bpm)
+            stdevs = np.asarray([ stdevs[bpms == bpm].mean() for bpm in np.unique(bpms) ])
+            bpms = np.unique(bpms)
 
             # Get sort mapping to make points on line graph connect in proper order
             idx_sort = np.argsort(bpms)
