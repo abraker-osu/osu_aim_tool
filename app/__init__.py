@@ -836,44 +836,34 @@ class App(QtGui.QMainWindow):
 
         num_records = data_select.sum()
 
-        # Check how many records match. If we are at capacity, figure out which one is lowest and drop it
-        if num_records >= App.MAX_NUM_DATA_POINTS:
-            # A record exists, see if it needs to be updated
+        # Print play/record info
+        if num_records != 0:
+            # Get current records
             stddev_x_curr = self.data[data_select, App.COL_STDEV_X]
             stddev_y_curr = self.data[data_select, App.COL_STDEV_Y]
             stddev_t_curr = self.data[data_select, App.COL_STDEV_T]
 
-            # Calculate stdev-xy for each data point and figure out which one is smallest
+            # Calculate stdev-xy for each data point and figure out which one is largest
             stddev_xy_curr = (stddev_x_curr**2 + stddev_y_curr**2)**0.5
-            min_stddev_xy_curr_idx = np.argmax(stddev_xy_curr)            
+            min_stddev_xy_curr_idx = np.argmax(stddev_xy_curr)
 
-            text = \
-                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
-                f'aim stddev-xy: {stddev_xy:.2f} (worst: {stddev_xy_curr[min_stddev_xy_curr_idx]:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  worst: ({stddev_x_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_y_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_t_curr[min_stddev_xy_curr_idx]:.2f})\n'
-            
-            self.status_txt.setText(text)
-            print(text)
-
-            # Record new best only if stdev-xy is better
-            if stddev_xy < stddev_xy_curr[min_stddev_xy_curr_idx]:
-                idx = np.arange(self.data.shape[0])[data_select][min_stddev_xy_curr_idx]
-
-                self.data[idx, App.COL_STDEV_X] = stddev_x
-                self.data[idx, App.COL_STDEV_Y] = stddev_y
-                self.data[idx, App.COL_STDEV_T] = stddev_t
-        else:
-            # Create a new record
+            # Print current record along with worst one
             text = \
                 f'Total number of records: {num_records + 1}\n' \
                 f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
-                f'aim stddev-xy: {stddev_xy:.2f}   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f}))\n'
+                f'aim stddev-xy: {stddev_xy:.2f} (worst: {stddev_xy_curr[min_stddev_xy_curr_idx]:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  worst: ({stddev_x_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_y_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_t_curr[min_stddev_xy_curr_idx]:.2f})\n'
+        else:
+            # Nothing recorded yet, print just current record
+            text = \
+                f'Total number of records: {num_records + 1}\n' \
+                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
+                f'aim stddev-xy: {stddev_xy:.2f}  aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})\n'
 
-            self.status_txt.setText(text)
-            print(text)
-
-            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.notes ]), axis=0)
-        
-        # Save data to file
+        self.status_txt.setText(text)
+        print(text)
+    
+        # Update data and save to file
+        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.notes ]), axis=0)
         np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
 
         # Now reopen it so it can be used

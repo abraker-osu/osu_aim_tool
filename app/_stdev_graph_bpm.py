@@ -189,6 +189,8 @@ class StddevGraphBpm():
             if not any(px_select):
                 continue
 
+            bpms = data[data_select, self.COL_BPM]
+
             # Determine data selected by osu!px
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (bpm)')
@@ -199,11 +201,12 @@ class StddevGraphBpm():
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (bpm)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
-                
-            bpms = data[data_select, self.COL_BPM]
             
+            # Use best N points for data display
+            num_points = min(len(stdevs), self.MAX_NUM_DATA_POINTS)
+
             # Average overlapping data points (those that fall on same bpm)
-            stdevs = np.asarray([ stdevs[bpms == bpm].mean() for bpm in np.unique(bpms) ])
+            stdevs = np.asarray([ np.sort(stdevs[bpms == bpm])[:num_points].mean() for bpm in np.unique(bpms) ])
             bpms = np.unique(bpms)
 
             # Get sort mapping to make points on line graph connect in proper order
@@ -217,6 +220,7 @@ class StddevGraphBpm():
             
             m, b = Utils.linear_regresion(bpms, stdevs)
             if type(m) == type(None) or type(b) == type(None):
+                # Linear regression failed, just plot the points
                 self.__graph.plot(x=bpms, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px')
                 continue
 

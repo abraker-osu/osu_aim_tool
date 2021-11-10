@@ -188,6 +188,8 @@ class StddevGraphDx():
             data_select = bpm_select & rot_select & ang_select
             if not any(data_select):
                 continue
+                
+            pxs = data[data_select, self.COL_PX]
 
             # Determine data selected by osu!px
             if self.dev_select == self.DEV_X:
@@ -199,11 +201,12 @@ class StddevGraphDx():
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (px)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
-                
-            pxs = data[data_select, self.COL_PX]
+
+            # Use best N points for data display
+            num_points = min(len(stdevs), self.MAX_NUM_DATA_POINTS)
 
             # Average overlapping data points (those that fall on same px)
-            stdevs = np.asarray([ stdevs[pxs == px].mean() for px in np.unique(pxs) ])
+            stdevs = np.asarray([ np.sort(stdevs[pxs == px])[:num_points].mean() for px in np.unique(pxs) ])
             pxs = np.unique(pxs)
 
             # Get sort mapping to make points on line graph connect in proper order
