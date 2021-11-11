@@ -55,6 +55,7 @@ class App(QtGui.QMainWindow):
     from ._stdev_graph_vel import StddevGraphVel
     from ._aim_graph import AimGraph
     from ._pattern_visual import PatternVisual
+    from ._data_list import DataList
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -65,9 +66,9 @@ class App(QtGui.QMainWindow):
         self.__init_gui()
         self.__build_layout()
 
-        self.__load_data_file(self.user_id)
-        self.__load_data_list()
-        self.__select_data_id(self.user_id)
+        self.load_data_file(self.user_id)
+        self.data_list.load_data_list()
+        self.data_list.select_data_id(self.user_id)
 
         if self.__load_settings():    
             try:
@@ -76,11 +77,7 @@ class App(QtGui.QMainWindow):
             except Exception as e:
                 self.status_txt.setText(str(e) + ' Is osu! path correct?')
 
-        App.StddevGraphBpm.plot_data(self, self.data)
-        App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
-        App.StddevGraphVel.plot_data(self, self.data)
-
+        self.replot_graphs()
         self.show()
 
 
@@ -126,21 +123,17 @@ class App(QtGui.QMainWindow):
         self.area = DockArea()
         self.aim_graph = App.AimGraph()
         self.pattern_visual = App.PatternVisual()
-        self.data_list = QtGui.QListWidget()
+        self.data_list = App.DataList(self)
         
 
     def __build_layout(self):
         self.setWindowTitle('osu! Aim Tool Settings')
         self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
 
-        self.data_list.setWindowTitle('Data file selection')
-
         self.xdev_radio_btn.setChecked(True)
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
         self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
-
-        self.data_list.currentRowChanged.connect(self.__data_list_click_event)
 
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
@@ -221,18 +214,6 @@ class App(QtGui.QMainWindow):
                 json.dump(cfg, f, indent=4)
 
         self.user_id = cfg['id']
-
-
-    def __load_data_list(self):
-        regex = re.compile(r'stdev_data_(\d+).npy')
-
-        for data_file_name in os.listdir('data'):
-            match = regex.match(data_file_name)
-            if not match:
-                continue
-            
-            self.data_list_ids.append(int(match.group(1)))
-            self.data_list.addItem(data_file_name)
 
 
     def __load_settings(self):
@@ -332,11 +313,7 @@ class App(QtGui.QMainWindow):
 
     def __model_chkbx_event(self, state):
         self.model_compensation = (state == QtCore.Qt.Checked)
-
-        App.StddevGraphBpm.plot_data(self, self.data)
-        App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
-        App.StddevGraphVel.plot_data(self, self.data)
+        self.replot_graphs()
 
 
     def __bpm_edit_event(self, value):
@@ -451,25 +428,8 @@ class App(QtGui.QMainWindow):
         elif self.sender() == self.xydev_radio_btn:
             self.dev_select = App.DEV_XY
 
-        App.StddevGraphBpm.plot_data(self, self.data)
-        App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
-        App.StddevGraphVel.plot_data(self, self.data)
+        self.replot_graphs()
 
-
-    def __data_list_click_event(self, idx):
-        selected_data_id = self.data_list_ids[idx]
-        if self.selected_data_id == selected_data_id:
-            return
-
-        self.selected_data_id = selected_data_id
-        self.__load_data_file(selected_data_id)
-    
-        App.StddevGraphBpm.plot_data(self, self.data)
-        App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
-        App.StddevGraphVel.plot_data(self, self.data)
-          
 
     def __action_event(self):
         # If we are waiting for replay, this means we are aborting
@@ -506,12 +466,8 @@ class App(QtGui.QMainWindow):
 
         # Check if we have user's data opened. Switch to it if we do not
         if self.selected_data_id != self.user_id:
-            self.__select_data_id(self.user_id)
-
-            App.StddevGraphBpm.plot_data(self, self.data)
-            App.StddevGraphDx.plot_data(self, self.data)
-            App.StddevGraphAngle.plot_data(self, self.data)
-            App.StddevGraphVel.plot_data(self, self.data)
+            self.data_list.select_data_id(self.user_id)
+            self.replot_graphs()
 
         # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
         map_path = f'{self.osu_path}/Songs/aim_tool'
@@ -541,10 +497,7 @@ class App(QtGui.QMainWindow):
         # Update deviation data and plots
         self.__write_data(aim_x_offsets, aim_y_offsets, tap_offsets)
 
-        App.StddevGraphBpm.plot_data(self, self.data)
-        App.StddevGraphDx.plot_data(self, self.data)
-        App.StddevGraphAngle.plot_data(self, self.data)
-        App.StddevGraphVel.plot_data(self, self.data)
+        self.replot_graphs()
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
         self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
@@ -871,7 +824,7 @@ class App(QtGui.QMainWindow):
         self.data = np.load(self.data_file, allow_pickle=False)
 
 
-    def __load_data_file(self, user_id):
+    def load_data_file(self, user_id):
         try: 
             self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
             self.data = np.load(self.data_file, allow_pickle=False)
@@ -885,13 +838,11 @@ class App(QtGui.QMainWindow):
             self.data = np.load(self.data_file, allow_pickle=False)
 
 
-    def __select_data_id(self, data_id):
-        idx = self.data_list_ids.index(data_id)
-        if idx == None:
-            return
-
-        self.data_list.setCurrentRow(idx)
-        self.__data_list_click_event(idx)
+    def replot_graphs(self):
+        App.StddevGraphBpm.plot_data(self, self.data)
+        App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphAngle.plot_data(self, self.data)
+        App.StddevGraphVel.plot_data(self, self.data)
 
 
     def closeEvent(self, event):
