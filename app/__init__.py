@@ -336,6 +336,14 @@ class App(QtGui.QMainWindow):
         self.dx = self.dx_edit.get_value()
         self.pattern_visual.update(dx=self.dx)
 
+        if self.pattern_visual.is_clipped():
+            self.status_txt.setText(
+                'Set settings and click start!\n'
+                'Warning: Pattern is being clipped to playfield border!\n'
+            )
+        else:
+            self.status_txt.setText('Set settings and click start!')
+
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
 
@@ -347,6 +355,14 @@ class App(QtGui.QMainWindow):
         cfg['angle'] = value
         self.angle = self.angle_edit.get_value()
         self.pattern_visual.update(angle=self.angle)
+
+        if self.pattern_visual.is_clipped():
+            self.status_txt.setText(
+                'Set settings and click start!\n'
+                'Warning: Pattern is being clipped to playfield border!\n'
+            )
+        else:
+            self.status_txt.setText('Set settings and click start!')
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -360,6 +376,14 @@ class App(QtGui.QMainWindow):
         self.rot = self.rot_edit.get_value()
         self.pattern_visual.update(rot=self.rot)
 
+        if self.pattern_visual.is_clipped():
+            self.status_txt.setText(
+                'Set settings and click start!\n'
+                'Warning: Pattern is being clipped to playfield border!\n'
+            )
+        else:
+            self.status_txt.setText('Set settings and click start!')
+
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
 
@@ -372,6 +396,15 @@ class App(QtGui.QMainWindow):
         self.repeats = self.repeats_edit.get_value()
         self.pattern_visual.update(num=self.repeats)
 
+        if self.pattern_visual.is_clipped():
+            self.status_txt.setText(
+                'Set settings and click start!\n'
+                'Warning: Pattern is being clipped to playfield border!\n'
+            )
+        else:
+            self.status_txt.setText('Set settings and click start!')
+
+
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
 
@@ -383,6 +416,14 @@ class App(QtGui.QMainWindow):
         cfg['notes'] = value
         self.notes = self.notes_edit.get_value()
         self.pattern_visual.update(notes=self.notes)
+
+        if self.pattern_visual.is_clipped():
+            self.status_txt.setText(
+                'Set settings and click start!\n'
+                'Warning: Pattern is being clipped to playfield border!\n'
+            )
+        else:
+            self.status_txt.setText('Set settings and click start!')
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
@@ -555,7 +596,7 @@ class App(QtGui.QMainWindow):
         )
 
         # Generate notes
-        pattern = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm*rate_multiplier, self.angle*math.pi/180, self.notes, self.repeats)
+        pattern, _ = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm*rate_multiplier, self.angle*math.pi/180, self.notes, self.repeats)
         audio_offset = -48  # ms
 
         for note in pattern:
@@ -720,7 +761,7 @@ class App(QtGui.QMainWindow):
             aim_x_offsets = score_data["replay_y"].values - score_data["map_y"].values
             aim_y_offsets = score_data["replay_x"].values - score_data["map_x"].values
 
-            self.status_txt.setText('Data calculation error!')
+            self.status_txt.setText('Data calculation error!\n')
             print('Non of the angles match')
 
             print('Debug info:')
@@ -752,7 +793,7 @@ class App(QtGui.QMainWindow):
             hit_theta_x = score_data["replay_y"].values - score_data["map_y"].values
             hit_theta_y = score_data["replay_x"].values - score_data["map_x"].values
 
-            self.status_txt.setText('Data calculation error!')
+            self.status_txt.setText('Data calculation error!\n')
             print('Data calculation error!')
             print('Debug info:')
             print()

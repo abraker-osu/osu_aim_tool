@@ -50,10 +50,12 @@ class OsuUtils():
         data = np.column_stack((points, np.cumsum(delta_ts)))
 
         # osu! clips note positions into boundaries of the playfield
+        is_clip = np.any((data[:, 0] < 0) | (data[:, 0] > 512)) or np.any((data[:, 1] < 0) | (data[:, 1] > 384))
+
         data[:, 0] = np.round(np.minimum(512, np.maximum(0, data[:, 0])))
         data[:, 1] = np.round(np.minimum(384, np.maximum(0, data[:, 1])))
 
-        return data
+        return data, is_clip
 
 
     @staticmethod

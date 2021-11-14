@@ -26,6 +26,7 @@ class PatternVisual():
         self.t     = None
 
         self.pattern_cache = False
+        self.is_clip = False
 
         self.main_widget = QtGui.QWidget()
         self.main_widget.setWindowTitle('osu! Aim Tool Pattern Visualization')
@@ -67,6 +68,10 @@ class PatternVisual():
         self.main_widget.hide()
 
 
+    def is_clipped(self):
+        return self.is_clip
+
+
     def update(self, bpm=None, dx=None, angle=None, rot=None, num=None, notes=None, cs=None, ar=None):
         if bpm == None:   bpm = self.bpm
         if dx == None:    dx = self.dx
@@ -97,7 +102,7 @@ class PatternVisual():
         if None in _self:
             return
 
-        pattern = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
+        pattern, self.is_clip = OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm, self.angle*math.pi/180, self.notes, self.num)
 
         self.data_x = pattern[:, 0]
         self.data_y = -pattern[:, 1]
