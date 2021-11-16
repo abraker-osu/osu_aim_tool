@@ -109,6 +109,7 @@ class StddevGraphVel():
 
         # Clear plots for redraw
         self.__graph.clearPlots()
+        self.__text.setText(f'')
 
         # Select data slices by rotation
         rot0, rot1 = self.__rot_region.getRegion()
@@ -126,55 +127,67 @@ class StddevGraphVel():
         self.__ang_plot.clearPlots()
         self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
 
-        # Selected rotation region has no data. Nothing else to do
-        data_select = rot_select & ang_select
-        if not any(data_select):
+        # Colored gradient r->g->b multiple plots at different angles
+        unique_angs = np.unique(data[ang_select & rot_select, self.COL_ANGLE])
+        if unique_angs.shape[0] == 0:
+            # Data selection empty
             return
 
-        # Extract relavent data
-        if self.dev_select == self.DEV_X:
-            self.__graph.setTitle('Aim dev-x (vel)')
-            stdevs = data[data_select, self.COL_STDEV_X]
-        elif self.dev_select == self.DEV_Y:
-            self.__graph.setTitle('Aim dev-y (vel)')
-            stdevs = data[data_select, self.COL_STDEV_Y]
-        elif self.dev_select == self.DEV_XY:
-            self.__graph.setTitle('Aim dev-xy (vel)')
-            stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+        angle_lut = pyqtgraph.ColorMap(
+            np.linspace(min(unique_angs), max(unique_angs), 3),
+            np.array(
+                [
+                    [  0, 100, 255, 200],
+                    [100, 255, 100, 200],
+                    [255, 100, 100, 200],
+                ]
+            )
+        )
 
-        pxs = data[data_select, self.COL_PX]
-        bpms = data[data_select, self.COL_BPM]
+        # Adds a plot for every unique BPM recorded
+        for angle in unique_angs:
+            # Determine data selected by angle
+            ang_select = (data[:, self.COL_ANGLE] == angle)
+            data_select = rot_select & ang_select
+            if not any(data_select):
+                # Selected region has no data. Nothing else to do
+                continue
 
-        # Velocity
-        vel = pxs*bpms/60
+            # Extract relavent data
+            if self.dev_select == self.DEV_X:
+                self.__graph.setTitle('Aim dev-x (vel)')
+                stdevs = data[data_select, self.COL_STDEV_X]
+            elif self.dev_select == self.DEV_Y:
+                self.__graph.setTitle('Aim dev-y (vel)')
+                stdevs = data[data_select, self.COL_STDEV_Y]
+            elif self.dev_select == self.DEV_XY:
+                self.__graph.setTitle('Aim dev-xy (vel)')
+                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
 
-        # Draw data plot
-        self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
+            pxs = data[data_select, self.COL_PX]
+            bpms = data[data_select, self.COL_BPM]
 
-        m, b = Utils.linear_regresion(vel, stdevs)
-        if type(m) == type(None) or type(b) == type(None):
-            self.__text.setText(f'')
-            return
+            # Velocity
+            vel = pxs*bpms/60 
 
-        # Draw model plot
-        self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))
+            # Plot color
+            color = angle_lut.map(angle, 'qcolor')
+                
+            # Calc linear regression
+            m, b = Utils.linear_regresion(vel, stdevs)
+            if type(m) == type(None) or type(b) == type(None):
+                self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color)
+                continue
 
-        # Calc and display R^2 
-        corr_mat = np.corrcoef(vel, stdevs)
-        corr_xy = corr_mat[0, 1]
-        r_sq = corr_xy**2
+            y_model = m*vel + b      
+            label = f'∠={angle:.2f}  σ={np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}'
 
-        self.__text.setText(f'R^2 = {r_sq:.2f}  m={m:.5f}  b={b:.2f}')
-
-        if self.model_compensation:
-            self.__graph.clearPlots()
-
-            y_model = m*vel + b
-
-            self.__text.setText(f'σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
-            self.__graph.plot(x=vel, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200))
-            self.__graph.plot(x=[0, max(vel)], y=[0, 0], pen=(100, 100, 0, 150))
-
+            if self.model_compensation:
+                self.__graph.plot(x=vel, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 200), name=label)
+                self.__graph.plot(x=[0, max(vel)], y=[0, 0], pen=(100, 100, 0, 150))
+            else:
+                self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
+                self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))  
 
 
     def __rot_region_event(self):

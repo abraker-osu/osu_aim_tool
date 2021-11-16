@@ -187,6 +187,7 @@ class StddevGraphBpm():
             px_select = (data[:, self.COL_PX] == px)
             data_select = px_select & ang_select & rot_select
             if not any(px_select):
+                # Selected region has no data. Nothing else to do
                 continue
 
             bpms = data[data_select, self.COL_BPM]

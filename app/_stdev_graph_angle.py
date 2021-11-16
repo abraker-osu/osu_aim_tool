@@ -192,6 +192,7 @@ class StddevGraphAngle():
             bpm_select = (data[:, self.COL_BPM] == bpm)
             data_select = bpm_select & px_select & rot_select
             if not any(data_select):
+                # Selected region has no data. Nothing else to do
                 continue
 
             angles = data[data_select, self.COL_ANGLE]
