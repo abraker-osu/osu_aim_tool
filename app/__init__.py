@@ -892,24 +892,14 @@ class App(QtGui.QMainWindow):
 
 
     def __set_settings_edit_enabled(self, enabled):
-        # Enable all the line edits
-        if enabled == True:
-            self.bpm_edit.setEnabled(True)
-            self.dx_edit.setEnabled(True)
-            self.angle_edit.setEnabled(True)
-            self.rot_edit.setEnabled(True)
-            self.notes_edit.setEnabled(True)
-            self.cs_edit.setEnabled(True)
-            self.ar_edit.setEnabled(True)
-        # Disable all the line edits
-        else:
-            self.bpm_edit.setEnabled(False)
-            self.dx_edit.setEnabled(False)
-            self.angle_edit.setEnabled(False)
-            self.rot_edit.setEnabled(False)
-            self.notes_edit.setEnabled(False)
-            self.cs_edit.setEnabled(False)
-            self.ar_edit.setEnabled(False)
+        self.bpm_edit.setEnabled(enabled)
+        self.dx_edit.setEnabled(enabled)
+        self.angle_edit.setEnabled(enabled)
+        self.rot_edit.setEnabled(enabled)
+        self.repeats_edit.setEnabled(enabled)
+        self.notes_edit.setEnabled(enabled)
+        self.cs_edit.setEnabled(enabled)
+        self.ar_edit.setEnabled(enabled)
 
 
     def closeEvent(self, event):
