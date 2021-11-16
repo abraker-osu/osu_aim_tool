@@ -479,6 +479,7 @@ class App(QtGui.QMainWindow):
             self.action_btn.setText('Start')
             self.engaged = False
             self.data_list.setEnabled(True)
+            self.__set_settings_edit_enabled(True)
             return
 
         # Submit all unsaved settings to save and apply them
@@ -527,6 +528,7 @@ class App(QtGui.QMainWindow):
         # Otherwise, replay was successfully detected and we can update the state to reflect that
         self.engaged = False
         self.data_list.setEnabled(True)
+        self.__set_settings_edit_enabled(True)
 
         # Data from map and replay -> score
         aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
@@ -651,6 +653,7 @@ class App(QtGui.QMainWindow):
         self.monitor.resume()
         self.engaged = True
         self.data_list.setEnabled(False)
+        self.__set_settings_edit_enabled(False)
 
         # Wait until a replay is detected or user presses the ABORT button
         while not self.monitor.paused:
@@ -886,6 +889,27 @@ class App(QtGui.QMainWindow):
         App.StddevGraphDx.plot_data(self, self.data)
         App.StddevGraphAngle.plot_data(self, self.data)
         App.StddevGraphVel.plot_data(self, self.data)
+
+
+    def __set_settings_edit_enabled(self, enabled):
+        # Enable all the line edits
+        if enabled == True:
+            self.bpm_edit.setEnabled(True)
+            self.dx_edit.setEnabled(True)
+            self.angle_edit.setEnabled(True)
+            self.rot_edit.setEnabled(True)
+            self.notes_edit.setEnabled(True)
+            self.cs_edit.setEnabled(True)
+            self.ar_edit.setEnabled(True)
+        # Disable all the line edits
+        else:
+            self.bpm_edit.setEnabled(False)
+            self.dx_edit.setEnabled(False)
+            self.angle_edit.setEnabled(False)
+            self.rot_edit.setEnabled(False)
+            self.notes_edit.setEnabled(False)
+            self.cs_edit.setEnabled(False)
+            self.ar_edit.setEnabled(False)
 
 
     def closeEvent(self, event):
