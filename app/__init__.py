@@ -547,8 +547,10 @@ class App(QtGui.QMainWindow):
 
     def __generate_map(self, map_path):
         # Handle DT/NC vs nomod setting
-        ar = min(self.ar, 10)
         rate_multiplier = 1.0 if (self.ar <= 10) else 1.5
+        
+        ar = min(self.ar, 10)
+        ar = ar if (self.ar <= 10) else App.OsuUtils.ms_to_ar(App.OsuUtils.ar_to_ms(self.ar)*rate_multiplier)
 
         beatmap_data = textwrap.dedent(
             f"""\

@@ -63,6 +63,12 @@ class OsuUtils():
         if ar <= 5: return 1800 - 120*ar
         else:       return 1950 - 150*ar
 
+
+    @staticmethod
+    def ms_to_ar(ms: 'float') -> float:
+        if ms >= 1200: return (1800 - ms)/120
+        else:          return (1950 - ms)/150
+
     
     @staticmethod
     def cs_to_px(cs: 'float') -> float:
