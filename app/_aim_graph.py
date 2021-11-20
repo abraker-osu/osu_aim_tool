@@ -149,7 +149,7 @@ class AimGraph():
 
         # Plot covariance area
         self.cov_area.setRect(-x_dev, -y_dev, 2*x_dev, 2*y_dev)
-        self.cov_area.rotate(angle_lambda1)
+        self.cov_area.setRotation(angle_lambda1)
 
         # Plot a histogram for x-dev
         y, x = np.histogram(scaled_aim_x_offsets, bins=np.linspace(-AimGraph.SIZE/2, AimGraph.SIZE/2, int(AimGraph.SIZE/5)))
