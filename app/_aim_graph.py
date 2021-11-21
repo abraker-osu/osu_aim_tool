@@ -131,8 +131,8 @@ class AimGraph():
         x_dev = 2*eigen_values[0]**0.5  # 95% confidence interval
         y_dev = 2*eigen_values[1]**0.5  # 95% confidence interval
 
-        self.lambda1.setStyle(angle=(angle_lambda1 - 180), tailLen=x_dev)
-        self.lambda2.setStyle(angle=(angle_lambda2 - 180), tailLen=y_dev)
+        self.lambda1.setStyle(angle=(-angle_lambda1 - 180), tailLen=x_dev)
+        self.lambda2.setStyle(angle=(-angle_lambda2 - 180), tailLen=y_dev)
 
         lambda1_len = self.lambda1.opts['tailLen'] + self.lambda1.opts['headLen']
         lambda2_len = self.lambda2.opts['tailLen'] + self.lambda2.opts['headLen']
@@ -149,7 +149,7 @@ class AimGraph():
 
         # Plot covariance area
         self.cov_area.setRect(-x_dev, -y_dev, 2*x_dev, 2*y_dev)
-        self.cov_area.setRotation(angle_lambda1)
+        self.cov_area.setRotation(-angle_lambda1)
 
         # Plot a histogram for x-dev
         y, x = np.histogram(scaled_aim_x_offsets, bins=np.linspace(-AimGraph.SIZE/2, AimGraph.SIZE/2, int(AimGraph.SIZE/5)))
