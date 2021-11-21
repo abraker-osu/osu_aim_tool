@@ -94,6 +94,11 @@ class AimGraph():
         self.cov_area.setBrush(pyqtgraph.mkBrush((133, 245, 255, 50)))
         self.win_hits.addItem(self.cov_area)
 
+        # Cov area metrics
+        self.cov_area_metrics = pyqtgraph.TextItem('', anchor=(0, 0), )
+        self.cov_area_metrics.setPos(-AimGraph.SIZE/2, AimGraph.SIZE/2)
+        self.win_hits.addItem(self.cov_area_metrics)
+
         self.main_layout.addWidget(self.win_hits, 0, 0)
         self.main_layout.addWidget(self.dev_x, 1, 0)
         self.main_layout.addWidget(self.dev_y, 0, 1)
@@ -113,16 +118,10 @@ class AimGraph():
         self.win_hits.update()
 
 
-    def plot_data(self, aim_x_offsets, aim_y_offsets):
-        scaled_aim_x_offsets = aim_x_offsets*AimGraph.SCALE
-        scaled_aim_y_offsets = aim_y_offsets*AimGraph.SCALE
-
-        # Plot aim data scatter plot
-        self.plot_hits.setData(scaled_aim_x_offsets, scaled_aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
-
+    def calc_cov_area(self, x, y):
         # Plot covariance vectors
         # ||lambda1|| = x-dev', ||lambda2|| = y-dev'
-        cov_matrix = np.cov(scaled_aim_x_offsets, scaled_aim_y_offsets)
+        cov_matrix = np.cov(x, y)
         eigen_values, eigen_vectors = np.linalg.eig(cov_matrix)
 
         angle_lambda1 = np.arctan2(eigen_vectors[0, 1], eigen_vectors[0, 0])*180/np.pi
@@ -131,8 +130,20 @@ class AimGraph():
         x_dev = 2*eigen_values[0]**0.5  # 95% confidence interval
         y_dev = 2*eigen_values[1]**0.5  # 95% confidence interval
 
-        self.lambda1.setStyle(angle=(-angle_lambda1 - 180), tailLen=x_dev)
-        self.lambda2.setStyle(angle=(-angle_lambda2 - 180), tailLen=y_dev)
+        return angle_lambda1, angle_lambda2, x_dev, y_dev
+
+
+    def plot_data(self, aim_x_offsets, aim_y_offsets):
+        scaled_aim_x_offsets = aim_x_offsets*AimGraph.SCALE
+        scaled_aim_y_offsets = aim_y_offsets*AimGraph.SCALE
+
+        # Plot aim data scatter plot
+        self.plot_hits.setData(scaled_aim_x_offsets, scaled_aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
+
+        angle_lambda1, angle_lambda2, scaled_x_dev, scaled_y_dev = self.calc_cov_area(scaled_aim_x_offsets, scaled_aim_y_offsets)
+
+        self.lambda1.setStyle(angle=(-angle_lambda1 - 180), tailLen=scaled_x_dev)
+        self.lambda2.setStyle(angle=(-angle_lambda2 - 180), tailLen=scaled_y_dev)
 
         lambda1_len = self.lambda1.opts['tailLen'] + self.lambda1.opts['headLen']
         lambda2_len = self.lambda2.opts['tailLen'] + self.lambda2.opts['headLen']
@@ -148,7 +159,7 @@ class AimGraph():
         )
 
         # Plot covariance area
-        self.cov_area.setRect(-x_dev, -y_dev, 2*x_dev, 2*y_dev)
+        self.cov_area.setRect(-scaled_x_dev, -scaled_y_dev, 2*scaled_x_dev, 2*scaled_y_dev)
         self.cov_area.setRotation(-angle_lambda1)
 
         # Plot a histogram for x-dev
@@ -161,3 +172,16 @@ class AimGraph():
         self.dev_y.clearPlots()
         plot = self.dev_y.plot(x, y, stepMode='center', fillLevel=0, fillOutline=True, brush=(0, 0, 255, 150))
         plot.rotate(90)
+
+        # Update metrics
+        angle_lambda1, angle_lambda2, x_dev, y_dev = self.calc_cov_area(aim_x_offsets, aim_y_offsets)
+
+        self.cov_area_metrics.setText(
+            f'θx-dev span: {2*x_dev:.2f} o!px @ 95% conf\n'
+            f'θy-dev span: {2*y_dev:.2f} o!px @ 95% conf\n'
+            f'θ-dev: {angle_lambda1:.2f}°\n'
+            f'\n'
+            f'x-dev span: {2*2*np.std(aim_x_offsets):.2f} o!px @ 95% conf\n'
+            f'y-dev span: {2*2*np.std(aim_y_offsets):.2f} o!px @ 95% conf\n'
+            f'cs_px: {2*self.circle_item.radius/AimGraph.SCALE:.2f} o!px'
+        )
