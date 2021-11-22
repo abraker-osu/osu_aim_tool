@@ -438,7 +438,7 @@ class App(QtGui.QMainWindow):
         self.aim_graph.set_cs(self.cs)
         self.pattern_visual.update(cs=self.cs)
 
-        dev = App.OsuUtils.cs_to_px(self.cs)/5
+        dev = App.OsuUtils.cs_to_px(self.cs)
 
         App.StddevGraphBpm.set_dev(self, dev)
         App.StddevGraphDx.set_dev(self, dev)

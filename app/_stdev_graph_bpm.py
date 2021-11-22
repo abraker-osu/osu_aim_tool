@@ -31,8 +31,8 @@ class StddevGraphBpm():
         self.__graph.getPlotItem().legend.setBrush(pyqtgraph.mkBrush(53, 54, 70, 150))
 
         # Deviation marker indicating expected deviation according to set CS
-        self.__dev_marker = pyqtgraph.InfiniteLine(angle=0, movable=False, pen=pyqtgraph.mkPen(color=(200, 200, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
-        self.__graph.addItem(self.__dev_marker, ignoreBounds=True)
+        self.__dev_marker_95 = pyqtgraph.InfiniteLine(angle=0, movable=False, pen=pyqtgraph.mkPen(color=(255, 100, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
+        self.__graph.addItem(self.__dev_marker_95, ignoreBounds=True)
 
         # Interactive region plot to the right to select angle between notes in data
         self.__ang_plot = pyqtgraph.PlotWidget()
@@ -246,4 +246,4 @@ class StddevGraphBpm():
 
 
     def set_dev(self, dev):
-        self.__dev_marker.setPos(dev)
+        self.__dev_marker_95.setPos(dev/4)
