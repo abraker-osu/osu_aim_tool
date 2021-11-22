@@ -32,6 +32,12 @@ class StddevGraphVel():
         self.__dev_marker_95 = pyqtgraph.InfiniteLine(angle=0, movable=False, pen=pyqtgraph.mkPen(color=(255, 100, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
         self.__graph.addItem(self.__dev_marker_95, ignoreBounds=True)
 
+        self.__vel_marker = pyqtgraph.InfiniteLine(angle=90, movable=False, pen=pyqtgraph.mkPen(color=(200, 200, 0, 100), style=pyqtgraph.QtCore.Qt.DashLine))
+        self.__graph.addItem(self.__vel_marker, ignoreBounds=True)
+
+        self.__dx = None
+        self.__bpm = None
+
         # Used to set text in legend item
         self.__label_style = pyqtgraph.PlotDataItem(pen=(0,0,0))
         self.__graph.getPlotItem().legend.addItem(self.__label_style, '')
@@ -168,26 +174,26 @@ class StddevGraphVel():
             bpms = data[data_select, self.COL_BPM]
 
             # Velocity
-            vel = pxs*bpms/60 
+            vels = pxs*bpms/60
 
             # Plot color
             color = angle_lut.map(angle, 'qcolor')
-                
+
             # Calc linear regression
-            m, b = Utils.linear_regresion(vel, stdevs)
+            m, b = Utils.linear_regresion(vels, stdevs)
             if type(m) == type(None) or type(b) == type(None):
-                self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color)
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color)
                 continue
 
-            y_model = m*vel + b      
+            y_model = m*vels + b      
             label = f'∠={angle:.2f}  σ={np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}'
 
             if self.model_compensation:
-                self.__graph.plot(x=vel, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
-                self.__graph.plot(x=[0, max(vel)], y=[0, 0], pen=(100, 100, 0, 150))
+                self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
+                self.__graph.plot(x=[0, max(vels)], y=[0, 0], pen=(100, 100, 0, 150))
             else:
-                self.__graph.plot(x=vel, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
-                self.__graph.plot(x=[0, max(vel)], y=[b, m*max(vel) + b], pen=(100, 100, 0, 150))  
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
+                self.__graph.plot(x=[0, max(vels)], y=[b, m*max(vels) + b], pen=(100, 100, 0, 150))  
 
 
     def __rot_region_event(self):
@@ -202,3 +208,14 @@ class StddevGraphVel():
 
     def set_dev(self, dev):
         self.__dev_marker_95.setPos(dev/4)
+
+
+    def update_vel(self, dx=None, bpm=None):
+        if type(dx) != type(None):
+            self.__dx = dx
+
+        if type(bpm) != type(None):
+            self.__bpm = bpm
+
+        if type(self.__dx) != type(None) and type(self.__bpm) != type(None):
+            self.__vel_marker.setPos(self.__dx*self.__bpm/60)

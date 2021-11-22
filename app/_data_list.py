@@ -98,5 +98,5 @@ class DataList(QtGui.QListWidget):
         self.blockSignals(True)
         self.load_data_list()
         self.blockSignals(False)
-        
+
         self.select_data_id(self.selected_data_id)

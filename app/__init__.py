@@ -324,6 +324,8 @@ class App(QtGui.QMainWindow):
         self.bpm = self.bpm_edit.get_value()
         self.pattern_visual.update(bpm=self.bpm)
 
+        App.StddevGraphVel.update_vel(self, bpm=self.bpm)
+
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
         
@@ -343,6 +345,8 @@ class App(QtGui.QMainWindow):
             )
         else:
             self.status_txt.setText('Set settings and click start!')
+
+        App.StddevGraphVel.update_vel(self, dx=self.dx)
 
         with open('config.json', 'w') as f:
             json.dump(cfg, f, indent=4)
