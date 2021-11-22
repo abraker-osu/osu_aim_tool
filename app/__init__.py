@@ -27,7 +27,7 @@ class App(QtGui.QMainWindow):
 
     SAVE_FILE = lambda x: f'data/stdev_data_{int(x)}.npy'
 
-    MAX_NUM_DATA_POINTS = 10  # Maximum number of data point records to store
+    MAX_NUM_DATA_POINTS = 5  # Maximum number of data point records to average
 
     COL_STDEV_X = 0  # Deviation along x-axis
     COL_STDEV_Y = 1  # Deviation along y-axis
