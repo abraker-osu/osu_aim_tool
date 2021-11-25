@@ -738,7 +738,7 @@ class App(QtGui.QMainWindow):
         aim_x_offsets = mags[1:]*np.cos(map_thetas - hit_thetas[1:])
         aim_y_offsets = mags[1:]*np.sin(map_thetas - hit_thetas[1:])
 
-        distances = (x_map_vecs**2 + y_map_vecs**2)**0.5
+        spacings = (x_map_vecs**2 + y_map_vecs**2)**0.5
 
         # angle = [ x0, x1, x2 ]
         dx0 = score_data['map_x'].values[1:-1] - score_data['map_x'].values[:-2]   # x1 - x0
@@ -761,9 +761,12 @@ class App(QtGui.QMainWindow):
         # Allow `notes = 2` through because all angles would be 180
         angle_select = (np.abs(angles - self.angle) < 3) | (self.dx == 0) | (self.notes == 2)
 
-        aim_x_offsets = aim_x_offsets[:-1][angle_select]
-        aim_y_offsets = aim_y_offsets[:-1][angle_select]
-        tap_offsets   = tap_offsets[1:-1][angle_select]
+        # Make sure only points that are within the set spacing are recorded
+        spacing_select = (np.abs(spacings[1:] - self.dx) < 3)
+
+        aim_x_offsets = aim_x_offsets[:-1][angle_select & spacing_select]
+        aim_y_offsets = aim_y_offsets[:-1][angle_select & spacing_select]
+        tap_offsets   = tap_offsets[1:-1][angle_select & spacing_select]
 
         # Prevent recording if there is blank data
         if 0 in [ aim_x_offsets.shape[0], aim_y_offsets.shape[0], tap_offsets.shape[0] ]:            
