@@ -72,7 +72,8 @@ class OsuUtils():
     
     @staticmethod
     def cs_to_px(cs: 'float') -> float:
-        return (109 - 9*cs)
+        # From https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Osu/Objects/OsuHitObject.cs#L137
+        return (108.8 - 8.96*cs)
 
 
     @staticmethod

@@ -113,7 +113,9 @@ class AimGraph():
 
 
     def set_cs(self, cs):
-        cs_px = (109 - 9*cs)/2
+        # From https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Osu/Objects/OsuHitObject.cs#L137
+        cs_px = (108.8 - 8.96*cs)/2
+        
         self.circle_item.radius = cs_px*AimGraph.SCALE
         self.win_hits.update()
 
