@@ -130,11 +130,13 @@ class App(QtGui.QMainWindow):
         self.setWindowTitle('osu! Aim Tool Settings')
         self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
 
+        # Connect deviation select radio buttons events
         self.xdev_radio_btn.setChecked(True)
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
         self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
 
+        # Add setting text edit fields
         self.edit_layout.addWidget(self.bpm_edit)
         self.edit_layout.addWidget(self.dx_edit)
         self.edit_layout.addWidget(self.angle_edit)
@@ -144,16 +146,19 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.cs_edit)
         self.edit_layout.addWidget(self.ar_edit)
 
+        # Add settings checkboxes
         self.win_selct_layout.addWidget(self.perf_chkbx)
         self.win_selct_layout.addWidget(self.aim_chkbx)
         self.win_selct_layout.addWidget(self.ptrn_chkbx)
         self.win_selct_layout.addWidget(self.data_chkbx)
         self.win_selct_layout.addWidget(self.model_chkbx)
 
+        # Add deviation select radio buttons
         self.dev_selct_layout.addWidget(self.xdev_radio_btn)
         self.dev_selct_layout.addWidget(self.ydev_radio_btn)
         self.dev_selct_layout.addWidget(self.xydev_radio_btn)
 
+        # Build layout
         self.selct_layout.addLayout(self.win_selct_layout)
         self.selct_layout.addLayout(self.dev_selct_layout)
 
@@ -164,18 +169,20 @@ class App(QtGui.QMainWindow):
 
         self.setCentralWidget(self.main_widget)
 
-        # Left column
+        # Create graphs
         App.StddevGraphBpm.__init__(self, pos='top', dock_name='Deviation vs BPM')
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Deviation vs Spacing')
         App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Deviation vs Angle')
         App.StddevGraphVel.__init__(self, pos='below', relative_to='StddevGraphAngle', dock_name='Deviation vs Velocity')
 
+        # Connect checkbox events
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
         self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
         self.ptrn_chkbx.stateChanged.connect(self.__ptrn_chkbx_event)
         self.data_chkbx.stateChanged.connect(self.__data_chkbx_event)
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
+        # Connect settings edit events
         self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
         self.dx_edit.value_changed.connect(self.__dx_edit)
         self.angle_edit.value_changed.connect(self.__angle_edit)
