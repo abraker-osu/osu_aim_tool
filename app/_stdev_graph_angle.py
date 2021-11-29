@@ -224,19 +224,18 @@ class StddevGraphAngle():
             stdevs = stdevs[idx_sort]
 
             # Draw plot
-            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = bpm_lut.map(bpm, 'qcolor')
 
             m, b = Utils.linear_regresion(angles, stdevs)
             if type(m) == type(None) or type(b) == type(None):
-                self.__graph.plot(x=angles, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+                self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue
 
             if self.model_compensation:
                 y_model = m*angles + b
-                self.__graph.plot(x=angles, y=stdevs - y_model, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
+                self.__graph.plot(x=angles, y=stdevs - y_model, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
             else:
-                self.__graph.plot(x=angles, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{bpm} bpm')
+                self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
 
 
     def __bpm_region_event(self):

@@ -223,17 +223,17 @@ class StddevGraphVel():
             # Calc linear regression
             m, b = Utils.linear_regresion(vels, stdevs)
             if type(m) == type(None) or type(b) == type(None):
-                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color)
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color)
                 continue
 
             y_model = m*vels + b      
             label = f'∠={angle:.2f}  σ={np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}'
 
             if self.model_compensation:
-                self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
+                self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
                 self.__graph.plot(x=[0, max(vels)], y=[0, 0], pen=(100, 100, 0, 150))
             else:
-                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=10, symbolBrush=color, name=label)
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
                 self.__graph.plot(x=[0, max(vels)], y=[b, m*max(vels) + b], pen=(100, 100, 0, 150))  
 
     

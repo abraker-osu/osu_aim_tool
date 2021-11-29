@@ -59,7 +59,7 @@ class StddevGraphBpm():
         self.__ang_label = QtGui.QLabel('    Angle')
         self.__ang_label.setStyleSheet('background-color: black')
 
-        # Interactive region plot to the right to select angle between notes in data
+        # Interactive region plot to the right to select distance between notes in data
         self.__px_plot = pyqtgraph.PlotWidget()
         self.__px_plot.setXRange(-0.5, 0.5)
         self.__px_plot.setYRange(0, 512)
@@ -219,29 +219,30 @@ class StddevGraphBpm():
             stdevs = stdevs[idx_sort]
 
             # Draw plot
-            symbol = random.choice([ 't', 'star', 'o', 'd', 'h', 's', 't1', 'p' ])
             color = px_lut.map(px, 'qcolor')
             
             m, b = Utils.linear_regresion(bpms, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 # Linear regression failed, just plot the points
-                self.__graph.plot(x=bpms, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px')
+                self.__graph.plot(x=bpms, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{px} osu!px')
                 continue
 
             if self.model_compensation:
                 y_model = m*bpms + b
-                self.__graph.plot(x=bpms, y=stdevs - y_model, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px   σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
+                self.__graph.plot(x=bpms, y=stdevs - y_model, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{px} osu!px   σ = {np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}')
             else:
-                self.__graph.plot(x=bpms, y=stdevs, symbol=symbol, symbolPen='w', symbolSize=10, pen=color, symbolBrush=color, name=f'{px} osu!px')
+                self.__graph.plot(x=bpms, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{px} osu!px')
 
     
     def __angle_region_event(self):
         # When the selection on angle plot changes, reprocess main graph
         StddevGraphBpm.plot_data(self, self.data)
 
+
     def __px_region_event(self):
         # When the selection on distance plot changes, reprocess main graph
         StddevGraphBpm.plot_data(self, self.data)
+
 
     def __rot_region_event(self):
         # When the selection on rotation plot changes, reprocess main graph
