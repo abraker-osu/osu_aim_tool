@@ -53,6 +53,7 @@ class App(QtGui.QMainWindow):
     from ._stdev_graph_dx import StddevGraphDx
     from ._stdev_graph_angle import StddevGraphAngle
     from ._stdev_graph_vel import StddevGraphVel
+    from ._stdev_graph_skill import StddevGraphSkill
     from ._aim_graph import AimGraph
     from ._pattern_visual import PatternVisual
     from ._data_list import DataList
@@ -174,6 +175,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Deviation vs Spacing')
         App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Deviation vs Angle')
         App.StddevGraphVel.__init__(self, pos='below', relative_to='StddevGraphAngle', dock_name='Deviation vs Velocity')
+        App.StddevGraphSkill.__init__(self, pos='below', relative_to='StddevGraphVel', dock_name='Skill vs Angle')
 
         # Connect checkbox events
         self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
@@ -196,6 +198,9 @@ class App(QtGui.QMainWindow):
 
         self.area.setWindowFlags(QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowMinimizeButtonHint)
         self.perf_chkbx.setChecked(True)
+
+        # Switch to the dev vs vel tab
+        self.graphs['StddevGraphVel']['dock'].raiseDock()
 
 
     def __check_config_file(self):
@@ -903,6 +908,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphDx.plot_data(self, self.data)
         App.StddevGraphAngle.plot_data(self, self.data)
         App.StddevGraphVel.plot_data(self, self.data)
+        App.StddevGraphSkill.plot_data(self, self.data)
 
 
     def __set_settings_edit_enabled(self, enabled):
