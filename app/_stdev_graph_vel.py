@@ -2,6 +2,7 @@ import pyqtgraph
 from pyqtgraph.Qt import QtGui
 from pyqtgraph.Qt import QtCore
 
+import math
 import numpy as np
 
 from app.misc._utils import Utils
@@ -226,8 +227,16 @@ class StddevGraphVel():
                 self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color)
                 continue
 
-            y_model = m*vels + b      
-            label = f'∠={angle:.2f}  σ={np.std(stdevs - y_model):.2f}  m={m:.5f}  b={b:.2f}'
+            y_model = m*vels + b                # model: y = mx + b
+            x_model = (stdevs - b)/m            # model: x = (y - b)/m
+
+            m_dev_y = np.std(stdevs - y_model)  # deviation of y from model
+            m_dev_x = np.std(vels - x_model)    # deviation of x from model
+
+            # Standard error of slope @ 95% confidence interval
+            m_se_95 = (m_dev_y/m_dev_x)/math.sqrt(stdevs.shape[0] - 2)*1.96
+
+            label = f'∠={angle:.2f}  σ={m_dev_y:.2f}  m={m:.5f}±{m_se_95:.5f}  b={b:.2f}'
 
             if self.model_compensation:
                 self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
