@@ -114,9 +114,9 @@ class StddevGraphSkill():
             plot_data[i, 2] = m_se_95*2*1000
 
         # Plot slope vs angle
-        plot_data = plot_data[~np.isnan(plot_data[:, 0])]
+        plot_data = plot_data[~np.isnan(plot_data[:, 0])]  # Remove nan
         self.__graph.plot(x=plot_data[:, 0], y=plot_data[:, 1], pen='y')
 
         # Plot error bars
-        plot_data = plot_data[~np.isnan(plot_data[:, 2])]
+        plot_data = plot_data[~np.isnan(plot_data[:, 2])]  # Remove nan
         self.__error_bars.setData(x=plot_data[:, 0], y=plot_data[:, 1], top=plot_data[:, 2], bottom=plot_data[:, 2]) 
