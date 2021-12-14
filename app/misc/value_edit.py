@@ -1,50 +1,54 @@
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import *
+from PyQt5 import QtCore, QtWidgets
+
+from app.misc._custom_spinbox import CustomSpinBox
 
 
+class ValueEdit(QtWidgets.QWidget):
 
-class ValueEdit(QWidget):
+    value_changed = QtCore.pyqtSignal(tuple)
+    auto_value_changed = QtCore.pyqtSignal(tuple)
 
-    value_changed = pyqtSignal(float)
+    def __init__(self, minimum, maximum, key, name, is_float=False, parent=None):
+        QtWidgets.QWidget.__init__(self, parent=parent)        
 
-    def __init__(self, minimum, maximum, name, is_float=False, parent=None):
-        QWidget.__init__(self, parent=parent)        
+        self.key = key
 
-        self.verticalLayout = QVBoxLayout(self)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self)
 
         if is_float:
-            self.value_label = QDoubleSpinBox(self)
-            self.value_label.setDecimals(1)
+            self.value = QtWidgets.QDoubleSpinBox(self)
+            self.value.setDecimals(1)
         else:
-            self.value_label = QSpinBox(self)
+            self.value = CustomSpinBox(self)
+            self.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
 
-        self.verticalLayout.addWidget(self.value_label)
-        self.horizontalLayout = QHBoxLayout()
+        self.verticalLayout.addWidget(self.value)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
 
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.name_label = QLabel(name)
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.name_label = QtWidgets.QLabel(name)
+        self.name_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.horizontalLayout.addWidget(self.name_label)
         
         self.resize(self.sizeHint())
 
-        self.value_label.valueChanged.connect(self.value_enter)
-        self.value_label.textChanged.connect(self.__value_edit)
-        self.value_label.setValue(0)
-        self.value_label.setMaximum(maximum)
-        self.value_label.setMinimum(minimum)
+        self.value.valueChanged.connect(self.value_enter)
+        self.value.textChanged.connect(self.__value_edit)
+        self.value.setValue(0)
+        self.value.setMaximum(maximum)
+        self.value.setMinimum(minimum)
 
-        #self.__update_style(self.value_label, 'Draggable', True)
+        #self.__update_style(self.value, 'Draggable', True)
         self.__is_error = False
 
 
     def set_value(self, value):
-        self.value_label.setValue(value)
+        self.value.setValue(value)
         self.value_enter()
 
 
     def get_value(self):
-        return self.value_label.value()
+        return self.value.value()
 
 
     def is_error(self):
@@ -52,7 +56,7 @@ class ValueEdit(QWidget):
 
 
     def __value_edit(self, _):
-        self.__update_style(self.value_label, 'Unsaved', True)
+        self.__update_style(self.value, 'Unsaved', True)
 
 
     def __update_style(self, widget, key, val):
@@ -64,5 +68,10 @@ class ValueEdit(QWidget):
 
 
     def value_enter(self):
-        self.__update_style(self.value_label, 'Unsaved', False)
-        self.value_changed.emit(self.value_label.value())
+        self.__update_style(self.value, 'Unsaved', False)
+        self.value_changed.emit((self.key, self.value.value()))
+
+
+    def value_increase(self):
+        if hasattr(self.value, 'auto_value_cache'):
+            self.value.set_value(self.value.value() + self.value.auto_value_cache)

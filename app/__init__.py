@@ -87,8 +87,10 @@ class App(QtGui.QMainWindow):
         self.graphs = {}
         self.engaged = False
         self.dev_select = App.DEV_X
+
         self.model_compensation = False
         self.avg_data_points    = True
+        self.auto_increase      = False
 
         self.selected_data_id = None
         self.data_list_ids = []
@@ -110,6 +112,7 @@ class App(QtGui.QMainWindow):
         self.selct_layout = QtGui.QHBoxLayout()
 
         self.win_selct_layout = QtGui.QVBoxLayout()
+        self.auto_chkbx = QtGui.QCheckBox('Auto increment settings')
         self.avg_chkbx = QtGui.QCheckBox('Average data points')
         self.model_chkbx = QtGui.QCheckBox('Model compensation')
 
@@ -171,6 +174,7 @@ class App(QtGui.QMainWindow):
         self.avg_chkbx.setChecked(True)
         self.win_selct_layout.addWidget(self.avg_chkbx)
         self.win_selct_layout.addWidget(self.model_chkbx)
+        self.win_selct_layout.addWidget(self.auto_chkbx)
 
         # Add deviation select radio buttons
         self.dev_selct_layout.addWidget(self.xdev_radio_btn)
@@ -199,10 +203,13 @@ class App(QtGui.QMainWindow):
         # Connect checkbox events
         self.avg_chkbx.stateChanged.connect(self.__avg_chkbx_event)
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
+        self.auto_chkbx.stateChanged.connect(self.__auto_chkbx_event)
 
         # Connect settings edit events
         for widget in self.cfg_widgets.values():
             widget.value_changed.connect(lambda data: self.__setting_value_changed_event(*data))
+            #widget.auto_state_changed.connect(self.__setting_auto_state_changed_event)
+            #widget.auto_value_changed.connect(self.__setting_auto_value_changed_event)
 
         self.action_btn.pressed.connect(self.__action_event)
 
@@ -280,6 +287,17 @@ class App(QtGui.QMainWindow):
         return True
 
 
+    def __get_auto_cfg(self, key):
+        try:
+            return {
+                'enable' : self.cfg_widgets[key].value.auto_chkbx_cache,
+                'value'  : self.cfg_widgets[key].value.auto_value_cache,
+            }
+        except:
+            return {
+                'enable' : False,
+                'value'  : 0,
+            }
 
 
     def __record_results(self, replay_path):
@@ -304,6 +322,8 @@ class App(QtGui.QMainWindow):
         self.replot_graphs()
 
 
+    def __auto_chkbx_event(self, state):
+        self.auto_increase = (state == QtCore.Qt.Checked)
 
 
     def __setting_value_changed_event(self, key, value):
@@ -353,8 +373,11 @@ class App(QtGui.QMainWindow):
 
 
     def __action_event(self):
+        #while True:
         # If we are waiting for replay, this means we are aborting
         if self.engaged:
+            # We are manually aborting, so disable automation
+            self.auto_chkbx.setChecked(False)
 
             # Stop monitoring
             self.monitor.pause()
@@ -417,8 +440,15 @@ class App(QtGui.QMainWindow):
         self.replot_graphs()
         self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
         
-        self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
-        self.action_btn.setText('Start')
+        # If we are in not auto mode, we are done
+        if not self.auto_increase:
+            self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
+            self.action_btn.setText('Start')
+            return
+
+        # Otherwise, we are in auto mode, so we need to increase the respective settings
+        for widget in self.cfg_widgets.values():
+            widget.value_increase()
 
 
     def __generate_map(self, map_path):
