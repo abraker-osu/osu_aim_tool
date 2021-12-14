@@ -51,6 +51,7 @@ class App(QtGui.QMainWindow):
     # Left column
     from ._stdev_graph_bpm import StddevGraphBpm
     from ._stdev_graph_dx import StddevGraphDx
+    from ._stdev_graph_num_notes import StddevGraphNumNotes
     from ._stdev_graph_angle import StddevGraphAngle
     from ._stdev_graph_vel import StddevGraphVel
     from ._stdev_graph_skill import StddevGraphSkill
@@ -191,7 +192,8 @@ class App(QtGui.QMainWindow):
         # Create graphs
         App.StddevGraphBpm.__init__(self, pos='top', dock_name='Deviation vs BPM')
         App.StddevGraphDx.__init__(self, pos='below', relative_to='StddevGraphBpm', dock_name='Deviation vs Spacing')
-        App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Deviation vs Angle')
+        App.StddevGraphNumNotes.__init__(self, pos='below', relative_to='StddevGraphDx', dock_name='Deviation vs # Notes')
+        App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphNumNotes', dock_name='Deviation vs Angle')
         App.StddevGraphVel.__init__(self, pos='below', relative_to='StddevGraphAngle', dock_name='Deviation vs Velocity')
         App.StddevGraphSkill.__init__(self, pos='below', relative_to='StddevGraphVel', dock_name='Skill vs Angle')
 
@@ -449,6 +451,7 @@ class App(QtGui.QMainWindow):
 
         App.StddevGraphBpm.set_dev(self, dev)
         App.StddevGraphDx.set_dev(self, dev)
+        App.StddevGraphNumNotes.set_dev(self, dev)
         App.StddevGraphAngle.set_dev(self, dev)
         App.StddevGraphVel.set_dev(self, dev)
 
@@ -897,6 +900,7 @@ class App(QtGui.QMainWindow):
     def replot_graphs(self):
         App.StddevGraphBpm.plot_data(self, self.data)
         App.StddevGraphDx.plot_data(self, self.data)
+        App.StddevGraphNumNotes.plot_data(self, self.data)
         App.StddevGraphAngle.plot_data(self, self.data)
         App.StddevGraphVel.plot_data(self, self.data)
         App.StddevGraphSkill.plot_data(self, self.data)
