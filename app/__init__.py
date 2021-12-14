@@ -88,19 +88,21 @@ class App(QtGui.QMainWindow):
         self.engaged = False
         self.dev_select = App.DEV_X
         self.model_compensation = False
-        self.avg_data_points = True
+        self.avg_data_points    = True
 
         self.selected_data_id = None
         self.data_list_ids = []
 
-        self.menu_bar = QtGui.QMenuBar()
-
+        self.menu_bar  = QtGui.QMenuBar()
         self.view_menu = QtGui.QMenu("&View", self)
 
-        self.view_perf_action    = QtGui.QAction("&Show performance", self)
-        self.view_hits_action    = QtGui.QAction("&Show hits", self)
-        self.view_map_action     = QtGui.QAction("&Show map", self)
-        self.view_data_sel_action = QtGui.QAction("&Show data select", self)
+        self.view_perf_action     = QtGui.QAction("&Show performance", self.view_menu, triggered=lambda: self.area.show())
+        self.view_hits_action     = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
+        self.view_map_action      = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
+            self.pattern_visual.show(), 
+            self.pattern_visual.update(self.cfg["bpm"], self.cfg["dx"], self.cfg["angle"], self.cfg["rot"], self.cfg["repeats"], self.cfg["notes"], self.cfg["cs"], self.cfg["ar"]))
+        )
+        self.view_data_sel_action = QtGui.QAction("&Show data select", self.view_menu, triggered=lambda: self.data_list.show())
 
         self.main_widget = QtGui.QWidget()
         self.main_layout = QtGui.QVBoxLayout(self.main_widget)
@@ -117,14 +119,16 @@ class App(QtGui.QMainWindow):
         self.xydev_radio_btn = QtGui.QRadioButton('xy-dev')
 
         self.edit_layout  = QtGui.QHBoxLayout()
-        self.bpm_edit     = App.ValueEdit(1, 1200, 'BPM')
-        self.dx_edit      = App.ValueEdit(0, 512,  'Spacing')
-        self.angle_edit   = App.ValueEdit(0, 180,  'Note deg')
-        self.rot_edit     = App.ValueEdit(0, 360,  'Rot deg')
-        self.notes_edit   = App.ValueEdit(3, 100,  '# Notes')
-        self.repeats_edit = App.ValueEdit(1, 1000, '# Repeats')
-        self.cs_edit      = App.ValueEdit(0, 10,   'CS', is_float=True)
-        self.ar_edit      = App.ValueEdit(0, 11,   'AR', is_float=True)
+        self.cfg_widgets = {
+            'bpm'     : App.ValueEdit(1, 1200, 'bpm',     'BPM'),
+            'dx'      : App.ValueEdit(0, 512,  'dx',      'Spacing'),
+            'angle'   : App.ValueEdit(0, 180,  'angle',   'Note deg'),
+            'rot'     : App.ValueEdit(0, 360,  'rot',     'Rot deg'),
+            'notes'   : App.ValueEdit(3, 100,  'notes',   '# Notes'),
+            'repeats' : App.ValueEdit(1, 1000, 'repeats', '# Repeats'),
+            'cs'      : App.ValueEdit(0, 10,   'cs',      'CS', is_float=True),
+            'ar'      : App.ValueEdit(0, 11,   'ar',      'AR', is_float=True),
+        }
 
         self.action_btn = QtGui.QPushButton('Start')
         self.status_txt = QtGui.QLabel('Set settings and click start!')
@@ -147,11 +151,6 @@ class App(QtGui.QMainWindow):
         self.view_menu.addAction(self.view_map_action)
         self.view_menu.addAction(self.view_data_sel_action)
 
-        self.view_perf_action.triggered.connect(lambda: self.area.show())
-        self.view_hits_action.triggered.connect(lambda: self.aim_graph.show())
-        self.view_map_action.triggered.connect(lambda: (self.pattern_visual.show(), self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)))
-        self.view_data_sel_action.triggered.connect(lambda: self.data_list.show())
-
         # Connect deviation select radio buttons events
         self.xdev_radio_btn.setChecked(True)
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
@@ -159,14 +158,14 @@ class App(QtGui.QMainWindow):
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
 
         # Add setting text edit fields
-        self.edit_layout.addWidget(self.bpm_edit)
-        self.edit_layout.addWidget(self.dx_edit)
-        self.edit_layout.addWidget(self.angle_edit)
-        self.edit_layout.addWidget(self.rot_edit)
-        self.edit_layout.addWidget(self.repeats_edit)
-        self.edit_layout.addWidget(self.notes_edit)
-        self.edit_layout.addWidget(self.cs_edit)
-        self.edit_layout.addWidget(self.ar_edit)
+        self.edit_layout.addWidget(self.cfg_widgets['bpm'])
+        self.edit_layout.addWidget(self.cfg_widgets['dx'])
+        self.edit_layout.addWidget(self.cfg_widgets['angle'])
+        self.edit_layout.addWidget(self.cfg_widgets['rot'])
+        self.edit_layout.addWidget(self.cfg_widgets['repeats'])
+        self.edit_layout.addWidget(self.cfg_widgets['notes'])
+        self.edit_layout.addWidget(self.cfg_widgets['cs'])
+        self.edit_layout.addWidget(self.cfg_widgets['ar'])
 
         # Add settings checkboxes
         self.avg_chkbx.setChecked(True)
@@ -202,14 +201,8 @@ class App(QtGui.QMainWindow):
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
         # Connect settings edit events
-        self.bpm_edit.value_changed.connect(self.__bpm_edit_event)
-        self.dx_edit.value_changed.connect(self.__dx_edit)
-        self.angle_edit.value_changed.connect(self.__angle_edit)
-        self.rot_edit.value_changed.connect(self.__rot_edit)
-        self.notes_edit.value_changed.connect(self.__notes_edit)
-        self.repeats_edit.value_changed.connect(self.__repeats_edit)
-        self.cs_edit.value_changed.connect(self.__cs_edit)
-        self.ar_edit.value_changed.connect(self.__ar_edit)
+        for widget in self.cfg_widgets.values():
+            widget.value_changed.connect(lambda data: self.__setting_value_changed_event(*data))
 
         self.action_btn.pressed.connect(self.__action_event)
 
@@ -248,55 +241,45 @@ class App(QtGui.QMainWindow):
     def __load_settings(self):
         self.__check_config_file()
         with open('config.json') as f:
-            cfg = json.load(f)
+            self.cfg = json.load(f)
 
-        try: self.osu_path = cfg['osu_dir']
+        try: self.osu_path = self.cfg['osu_dir']
         except KeyError:
-            cfg['osu_dir'] = ''
+            self.cfg['osu_dir'] = ''
             with open('config.json', 'w') as f:
-                json.dump(cfg, f, indent=4)
+                json.dump(self.cfg, f, indent=4)
 
         if not os.path.isdir(self.osu_path):
             self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.\nMake sure to use double backslashes for osu! path')
             self.action_btn.setEnabled(False)
-            self.aim_chkbx.setEnabled(False)
-            self.ptrn_chkbx.setEnabled(False)
+            self.view_hits_action.setEnabled(False)
+            self.view_map_action.setEnabled(False)
             return False
 
+        default_cfg = {
+            'bpm'     : 60,
+            'dx'      : 100,
+            'angle'   : 0,
+            'rot'     : 0,
+            'notes'   : 0,
+            'repeats' : 60,
+        }
+
+        for key in self.cfg_widgets:
+            try: self.cfg_widgets[key].set_value(self.cfg[key])
+            except KeyError:
+                self.cfg_widgets[key].set_value(default_cfg[key])
+
         # Load saved settings
-        try: self.bpm_edit.set_value(cfg['bpm'])
-        except KeyError: self.bpm_edit.set_value(60)
+        try: self.cfg_widgets['cs'].set_value(self.cfg['cs'])
+        except KeyError: self.cfg_widgets['cs'].set_value(4)
 
-        try: self.dx_edit.set_value(cfg['dx'])
-        except KeyError: self.dx_edit.set_value(100)
-
-        try: self.angle_edit.set_value(cfg['angle'])
-        except KeyError: self.angle_edit.set_value(0)
-
-        try: self.rot_edit.set_value(cfg['rot'])
-        except KeyError: self.rot_edit.set_value(0)
-
-        try: self.repeats_edit.set_value(cfg['repeats'])
-        except KeyError: self.repeats_edit.set_value(60)
-
-        try: self.notes_edit.set_value(cfg['notes'])
-        except KeyError: self.notes_edit.set_value(3)
-        
-        try: self.cs_edit.set_value(cfg['cs'])
-        except KeyError: self.cs_edit.set_value(4)
-
-        try: self.ar_edit.set_value(cfg['ar'])
-        except KeyError: self.ar_edit.set_value(8)
-
-        self.bpm     = self.bpm_edit.get_value()
-        self.dx      = self.dx_edit.get_value()
-        self.angle   = self.angle_edit.get_value()
-        self.rot     = self.rot_edit.get_value()
-        self.repeats = self.repeats_edit.get_value()
-        self.notes   = self.notes_edit.get_value()
-        self.cs      = self.cs_edit.get_value()
+        try: self.cfg_widgets['ar'].set_value(self.cfg['ar'])
+        except KeyError: self.cfg_widgets['ar'].set_value(8)
 
         return True
+
+
 
 
     def __record_results(self, replay_path):
@@ -321,154 +304,41 @@ class App(QtGui.QMainWindow):
         self.replot_graphs()
 
 
-    def __bpm_edit_event(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['bpm'] = value
-        self.bpm = self.bpm_edit.get_value()
-        self.pattern_visual.update(bpm=self.bpm)
 
-        App.StddevGraphVel.update_vel(self, bpm=self.bpm)
+
+    def __setting_value_changed_event(self, key, value):
+        with open('config.json') as f:
+            self.cfg = json.load(f)
+        
+        self.cfg[key] = value
 
         with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-        
+            json.dump(self.cfg, f, indent=4)
 
-    def __dx_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['dx'] = value
-        self.dx = self.dx_edit.get_value()
-        self.pattern_visual.update(dx=self.dx)
+        if key in [ 'bpm', 'dx', 'angle', 'rot', 'notes', 'cs', 'ar' ]:
+            self.pattern_visual.update(**{ key : self.cfg[key] })
 
-        if self.pattern_visual.is_clipped():
-            self.status_txt.setText(
-                'Set settings and click start!\n'
-                'Warning: Pattern is being clipped to playfield border!\n'
-            )
-        else:
-            self.status_txt.setText('Set settings and click start!')
+        if key in [ 'bpm', 'dx' ]:
+            App.StddevGraphVel.update_vel(self, **{ key : self.cfg[key] })
 
-        App.StddevGraphVel.update_vel(self, dx=self.dx)
+        # Check if pattern is clipped and show warning if so
+        if key in [ 'dx', 'angle', 'rot', 'repeats', 'notes' ]:
+            if self.pattern_visual.is_clipped():
+                self.status_txt.setText(
+                    'Set settings and click start!\n'
+                    'Warning: Pattern is being clipped to playfield border!\n'
+                )
+            else:
+                self.status_txt.setText('Set settings and click start!')
 
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
+        if key == 'cs':
+            dev = App.OsuUtils.cs_to_px(self.cfg['cs'])
 
-
-    def __angle_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['angle'] = value
-        self.angle = self.angle_edit.get_value()
-        self.pattern_visual.update(angle=self.angle)
-
-        if self.pattern_visual.is_clipped():
-            self.status_txt.setText(
-                'Set settings and click start!\n'
-                'Warning: Pattern is being clipped to playfield border!\n'
-            )
-        else:
-            self.status_txt.setText('Set settings and click start!')
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
-    def __rot_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['rot'] = value
-        self.rot = self.rot_edit.get_value()
-        self.pattern_visual.update(rot=self.rot)
-
-        if self.pattern_visual.is_clipped():
-            self.status_txt.setText(
-                'Set settings and click start!\n'
-                'Warning: Pattern is being clipped to playfield border!\n'
-            )
-        else:
-            self.status_txt.setText('Set settings and click start!')
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
-    def __repeats_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['repeats'] = value
-        self.repeats = self.repeats_edit.get_value()
-        self.pattern_visual.update(num=self.repeats)
-
-        if self.pattern_visual.is_clipped():
-            self.status_txt.setText(
-                'Set settings and click start!\n'
-                'Warning: Pattern is being clipped to playfield border!\n'
-            )
-        else:
-            self.status_txt.setText('Set settings and click start!')
-
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
-    def __notes_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['notes'] = value
-        self.notes = self.notes_edit.get_value()
-        self.pattern_visual.update(notes=self.notes)
-
-        if self.pattern_visual.is_clipped():
-            self.status_txt.setText(
-                'Set settings and click start!\n'
-                'Warning: Pattern is being clipped to playfield border!\n'
-            )
-        else:
-            self.status_txt.setText('Set settings and click start!')
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
-    def __cs_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['cs'] = value
-        self.cs = self.cs_edit.get_value()
-        self.aim_graph.set_cs(self.cs)
-        self.pattern_visual.update(cs=self.cs)
-
-        dev = App.OsuUtils.cs_to_px(self.cs)
-
-        App.StddevGraphBpm.set_dev(self, dev)
-        App.StddevGraphDx.set_dev(self, dev)
-        App.StddevGraphNumNotes.set_dev(self, dev)
-        App.StddevGraphAngle.set_dev(self, dev)
-        App.StddevGraphVel.set_dev(self, dev)
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
-
-
-    def __ar_edit(self, value):
-        with open('config.json') as f:
-            cfg = json.load(f)
-        
-        cfg['ar'] = value
-        self.ar = self.ar_edit.get_value()
-        self.pattern_visual.update(ar=self.ar)
-
-        with open('config.json', 'w') as f:
-            json.dump(cfg, f, indent=4)
+            App.StddevGraphBpm.set_dev(self, dev)
+            App.StddevGraphDx.set_dev(self, dev)
+            App.StddevGraphNumNotes.set_dev(self, dev)
+            App.StddevGraphAngle.set_dev(self, dev)
+            App.StddevGraphVel.set_dev(self, dev)
 
 
     def __dev_select_event(self):
@@ -485,33 +355,27 @@ class App(QtGui.QMainWindow):
     def __action_event(self):
         # If we are waiting for replay, this means we are aborting
         if self.engaged:
+
+            # Stop monitoring
             self.monitor.pause()
+
+            # Restore GUI state to non-engaged state
             self.action_btn.setText('Start')
-            self.engaged = False
             self.data_list.setEnabled(True)
             self.__set_settings_edit_enabled(True)
+
+            self.engaged = False
             return
 
         # Submit all unsaved settings to save and apply them
-        self.bpm_edit.value_enter()
-        self.dx_edit.value_enter()
-        self.angle_edit.value_enter()
-        self.rot_edit.value_enter()
-        self.repeats_edit.value_enter()
-        self.notes_edit.value_enter()
-        self.cs_edit.value_enter()
-        self.ar_edit.value_enter()
+        is_error = False
 
-        # Check if all settings are proper
-        is_error = \
-            self.bpm_edit.is_error() or   \
-            self.dx_edit.is_error() or    \
-            self.angle_edit.is_error() or \
-            self.rot_edit.is_error() or   \
-            self.repeats_edit.is_error() or   \
-            self.notes_edit.is_error() or   \
-            self.cs_edit.is_error() or    \
-            self.ar_edit.is_error()
+        for widget in self.cfg_widgets.values():
+            # Apply all settings
+            widget.value_enter()
+
+            # Check if all settings are proper
+            is_error = is_error or widget.is_error()
 
         if is_error:
             return
@@ -559,10 +423,10 @@ class App(QtGui.QMainWindow):
 
     def __generate_map(self, map_path):
         # Handle DT/NC vs nomod setting
-        rate_multiplier = 1.0 if (self.ar <= 10) else 1.5
+        rate_multiplier = 1.0 if (self.cfg["ar"] <= 10) else 1.5
         
-        ar = min(self.ar, 10)
-        ar = ar if (self.ar <= 10) else App.OsuUtils.ms_to_ar(App.OsuUtils.ar_to_ms(self.ar)*rate_multiplier)
+        ar = min(self.cfg["ar"], 10)
+        ar = ar if (self.cfg["ar"] <= 10) else App.OsuUtils.ms_to_ar(App.OsuUtils.ar_to_ms(self.cfg["ar"])*rate_multiplier)
 
         beatmap_data = textwrap.dedent(
             f"""\
@@ -591,7 +455,7 @@ class App(QtGui.QMainWindow):
             Artist:abraker
             ArtistUnicode:abraker
             Creator:abraker
-            Version:aim__bpm-{self.bpm}_dx-{self.dx}_rot-{self.rot}_deg-{self.angle}
+            Version:aim__bpm-{self.cfg["bpm"]}_dx-{self.cfg["dx"]}_rot-{self.cfg["rot"]}_deg-{self.cfg["angle"]}
             Source:
             Tags:
             BeatmapID:0
@@ -599,9 +463,9 @@ class App(QtGui.QMainWindow):
 
             [Difficulty]
             HPDrainRate:8
-            CircleSize:{self.cs}
+            CircleSize:{self.cfg["cs"]}
             OverallDifficulty:10
-            ApproachRate:{ar}
+            ApproachRate:{self.cfg["ar"]}
             SliderMultiplier:1.4
             SliderTickRate:1
 
@@ -610,7 +474,7 @@ class App(QtGui.QMainWindow):
         )
 
         # Generate notes
-        pattern, _ = App.OsuUtils.generate_pattern2(self.rot*math.pi/180, self.dx, 60/self.bpm*rate_multiplier, self.angle*math.pi/180, self.notes, self.repeats)
+        pattern, _ = App.OsuUtils.generate_pattern2(self.cfg["rot"]*math.pi/180, self.cfg["dx"], 60/self.cfg["bpm"]*rate_multiplier, self.cfg["angle"]*math.pi/180, self.cfg["notes"], self.cfg["repeats"])
         audio_offset = -48  # ms
 
         for note in pattern:
@@ -841,11 +705,11 @@ class App(QtGui.QMainWindow):
 
         # Find record based on bpm and spacing
         data_select = \
-            (self.data[:, App.COL_BPM] == self.bpm) & \
-            (self.data[:, App.COL_PX] == self.dx) & \
-            (self.data[:, App.COL_ROT] == self.rot) & \
-            (self.data[:, App.COL_ANGLE] == self.angle) & \
-            (self.data[:, App.COL_NUM] == self.notes)
+            (self.data[:, App.COL_BPM] == self.cfg["bpm"]) & \
+            (self.data[:, App.COL_PX] == self.cfg["dx"]) & \
+            (self.data[:, App.COL_ROT] == self.cfg["rot"]) & \
+            (self.data[:, App.COL_ANGLE] == self.cfg["angle"]) & \
+            (self.data[:, App.COL_NUM] == self.cfg["notes"])
 
         num_records = data_select.sum()
 
@@ -863,20 +727,20 @@ class App(QtGui.QMainWindow):
             # Print current record along with worst one
             text = \
                 f'Total number of records: {num_records + 1}\n' \
-                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
+                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f} (worst: {stddev_xy_curr[min_stddev_xy_curr_idx]:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  worst: ({stddev_x_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_y_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_t_curr[min_stddev_xy_curr_idx]:.2f})\n'
         else:
             # Nothing recorded yet, print just current record
             text = \
                 f'Total number of records: {num_records + 1}\n' \
-                f'ar: {self.ar}   bpm: {self.bpm}   dx: {self.dx}   angle: {self.angle}   rot: {self.rot}\n' \
+                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f}  aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})\n'
 
         self.status_txt.setText(text)
         print(text)
     
         # Update data and save to file
-        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.bpm , self.dx, self.angle, self.rot, self.notes ]), axis=0)
+        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.cfg['bpm'], self.cfg['dx'], self.cfg['angle'], self.cfg['rot'], self.cfg['notes'] ]), axis=0)
         np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
 
         # Now reopen it so it can be used
@@ -908,14 +772,8 @@ class App(QtGui.QMainWindow):
 
 
     def __set_settings_edit_enabled(self, enabled):
-        self.bpm_edit.setEnabled(enabled)
-        self.dx_edit.setEnabled(enabled)
-        self.angle_edit.setEnabled(enabled)
-        self.rot_edit.setEnabled(enabled)
-        self.repeats_edit.setEnabled(enabled)
-        self.notes_edit.setEnabled(enabled)
-        self.cs_edit.setEnabled(enabled)
-        self.ar_edit.setEnabled(enabled)
+        for widget in self.cfg_widgets.values():
+            widget.setEnabled(enabled)
 
 
     def closeEvent(self, event):
