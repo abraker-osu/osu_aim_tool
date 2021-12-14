@@ -6,6 +6,7 @@ import numpy as np
 import random
 
 from app.misc._utils import Utils
+from app.misc._select_plot import SelectPlot
 
 
 class StddevGraphBpm():
@@ -38,99 +39,40 @@ class StddevGraphBpm():
         self.__graph.addItem(self.__dev_marker_95, ignoreBounds=True)
 
         # Interactive region plot to the right to select angle between notes in data
-        self.__ang_plot = pyqtgraph.PlotWidget()
-        self.__ang_plot.setXRange(-0.5, 0.5)
-        self.__ang_plot.setYRange(0, 180)
-        self.__ang_plot.getViewBox().setMouseEnabled(x=False, y=False)
-        self.__ang_plot.enableAutoRange(axis='x', enable=False)
-        self.__ang_plot.enableAutoRange(axis='y', enable=False)
-        self.__ang_plot.hideAxis('bottom')
-        self.__ang_plot.hideAxis('left')
-        self.__ang_plot.showAxis('right')
-        self.__ang_plot.setFixedWidth(64)
-
-        # Slider region allowing to select angle between notes
-        self.__ang_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__ang_region.setBounds((0, 180))
-        self.__ang_region.setRegion((0, 30))
-        self.__ang_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__angle_region_event(self))
-
-        # Label for the interactive region plot
-        self.__ang_label = QtGui.QLabel('    Angle')
-        self.__ang_label.setStyleSheet('background-color: black')
+        self.__ang_plot = SelectPlot(
+            view_min = 0, view_max = 180,
+            val_min  = 0, val_max  = 180,
+            init_min = 0, init_max = 180,
+            label = 'Angle',
+            region_event = lambda: StddevGraphBpm.__angle_region_event(self)
+        )
 
         # Interactive region plot to the right to select distance between notes in data
-        self.__px_plot = pyqtgraph.PlotWidget()
-        self.__px_plot.setXRange(-0.5, 0.5)
-        self.__px_plot.setYRange(0, 512)
-        self.__px_plot.getViewBox().setMouseEnabled(x=False, y=True)
-        self.__px_plot.setLimits(yMin=-10, yMax=520)
-        self.__px_plot.enableAutoRange(axis='x', enable=False)
-        self.__px_plot.enableAutoRange(axis='y', enable=False)
-        self.__px_plot.hideAxis('bottom')
-        self.__px_plot.hideAxis('left')
-        self.__px_plot.showAxis('right')
-        self.__px_plot.setFixedWidth(64)
-
-        # Slider region allowing to select distance between notes
-        self.__px_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__px_region.setBounds((0, 512))
-        self.__px_region.setRegion((75, 125))
-        self.__px_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__px_region_event(self))
-
-        # Label for the interactive region plot
-        self.__px_label = QtGui.QLabel('    Dist')
-        self.__px_label.setStyleSheet('background-color: black')
+        self.__px_plot = SelectPlot(
+            view_min = 0,  view_max = 512,
+            val_min  = 0,  val_max  = 512,
+            init_min = 75, init_max = 125,
+            label = 'Dist',
+            region_event = lambda: StddevGraphBpm.__px_region_event(self)
+        )
 
         # Interactive region plot to the right to select angle of rotation in data
-        self.__rot_plot = pyqtgraph.PlotWidget()
-        self.__rot_plot.setXRange(-0.5, 0.5)
-        self.__rot_plot.setYRange(0, 180)
-        self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
-        self.__rot_plot.enableAutoRange(axis='x', enable=False)
-        self.__rot_plot.enableAutoRange(axis='y', enable=False)
-        self.__rot_plot.hideAxis('bottom')
-        self.__rot_plot.hideAxis('left')
-        self.__rot_plot.showAxis('right')
-        self.__rot_plot.setFixedWidth(64)
-
-        # Slider region allowing to select angle of rotation
-        self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__rot_region.setBounds((0, 180))
-        self.__rot_region.setRegion((0, 30))
-        self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphBpm.__rot_region_event(self))
-
-        # Label for the interactive region plot
-        self.__rot_label = QtGui.QLabel('    Rot')
-        self.__rot_label.setStyleSheet('background-color: black')
+        self.__rot_plot = SelectPlot(
+            view_min = 0,  view_max = 180,
+            val_min  = 0,  val_max  = 180,
+            init_min = 0,  init_max = 30,
+            label = 'Rot',
+            region_event = lambda: StddevGraphBpm.__rot_region_event(self)
+        )
 
         # Put it all together
-        self.__ang_plot.addItem(self.__ang_region)
-        self.__px_plot.addItem(self.__px_region)
-        self.__rot_plot.addItem(self.__rot_region)
-
-        self.__ang_layout = QtGui.QVBoxLayout()
-        self.__ang_layout.setSpacing(0)
-        self.__ang_layout.addWidget(self.__ang_plot)
-        self.__ang_layout.addWidget(self.__ang_label)
-
-        self.__px_layout = QtGui.QVBoxLayout()
-        self.__px_layout.setSpacing(0)
-        self.__px_layout.addWidget(self.__px_plot)
-        self.__px_layout.addWidget(self.__px_label)
-
-        self.__rot_layout = QtGui.QVBoxLayout()
-        self.__rot_layout.setSpacing(0)
-        self.__rot_layout.addWidget(self.__rot_plot)
-        self.__rot_layout.addWidget(self.__rot_label)
-
         self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
         self.__layout.setContentsMargins(0, 0, 0, 0)
         self.__layout.setSpacing(2)
         self.__layout.addWidget(self.__graph)
-        self.__layout.addLayout(self.__ang_layout)
-        self.__layout.addLayout(self.__px_layout)
-        self.__layout.addLayout(self.__rot_layout)
+        self.__layout.addWidget(self.__ang_plot)
+        self.__layout.addWidget(self.__px_plot)
+        self.__layout.addWidget(self.__rot_plot)
 
 
     def plot_data(self, data):
@@ -141,29 +83,26 @@ class StddevGraphBpm():
         self.__graph.clearPlots()
 
         # Select data slices by angle
-        ang0, ang1 = self.__ang_region.getRegion()
+        ang0, ang1 = self.__ang_plot.get_region()
         ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
 
         # Select data slices by distance
-        px0, px1 = self.__px_region.getRegion()
+        px0, px1 = self.__px_plot.get_region()
         px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
 
         # Select data slices by rotation
-        rot0, rot1 = self.__rot_region.getRegion()
+        rot0, rot1 = self.__rot_plot.get_region()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
         # Draw available rotation points on the plot to the right   
         unique_angs = np.unique(data[:, self.COL_ANGLE])
-        self.__ang_plot.clearPlots()
-        self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__ang_plot.plot(unique_angs)
 
         unique_pxs = np.unique(data[:, self.COL_PX])
-        self.__px_plot.clearPlots()
-        self.__px_plot.plot(np.zeros(unique_pxs.shape[0]), unique_pxs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__px_plot.plot(unique_pxs)
 
         unique_rots = np.unique(data[:, self.COL_ROT])
-        self.__rot_plot.clearPlots()
-        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__rot_plot.plot(unique_rots)
 
         # Selected rotation region has no data. Nothing else to do
         if not any(ang_select & px_select & rot_select):

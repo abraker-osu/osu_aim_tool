@@ -6,6 +6,8 @@ import numpy as np
 import random
 
 from app.misc._utils import Utils
+from app.misc._select_plot import SelectPlot
+
 
 
 class StddevGraphDx():
@@ -37,99 +39,41 @@ class StddevGraphDx():
         self.__graph.addItem(self.__dev_marker_95, ignoreBounds=True)
 
         # Interactive region plot to the right to select angle between notes in data
-        self.__ang_plot = pyqtgraph.PlotWidget()
-        self.__ang_plot.setXRange(-0.5, 0.5)
-        self.__ang_plot.setYRange(0, 180)
-        self.__ang_plot.getViewBox().setMouseEnabled(x=False, y=False)
-        self.__ang_plot.enableAutoRange(axis='x', enable=False)
-        self.__ang_plot.enableAutoRange(axis='y', enable=False)
-        self.__ang_plot.hideAxis('bottom')
-        self.__ang_plot.hideAxis('left')
-        self.__ang_plot.showAxis('right')
-        self.__ang_plot.setFixedWidth(64)
+        self.__ang_plot = SelectPlot(
+            view_min = 0, view_max = 180,
+            val_min  = 0, val_max  = 180,
+            init_min = 0, init_max = 180,
+            label = 'Angle',
+            region_event = lambda: StddevGraphDx.__angle_region_event(self)
+        )
 
-        # Slider region allowing to select angle between notes
-        self.__ang_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__ang_region.setBounds((0, 180))
-        self.__ang_region.setRegion((0, 30))
-        self.__ang_region.sigRegionChanged.connect(lambda: StddevGraphDx.__angle_region_event(self))
-
-        # Label for the interactive region plot
-        self.__ang_label = QtGui.QLabel('    Angle')
-        self.__ang_label.setStyleSheet('background-color: black')
+        # Interactive region plot to the right to select bpm of notes in data
+        self.__bpm_plot = SelectPlot(
+            view_min = 0,   view_max = 500,
+            val_min  = 0,   val_max  = 1200,
+            init_min = 170, init_max = 190,
+            label = 'BPM',
+            region_event = lambda: StddevGraphDx.__bpm_region_event(self),
+            mouse_ctrl = True
+        )
 
         # Interactive region plot to the right to select angle of rotation in data
-        self.__bpm_plot = pyqtgraph.PlotWidget()
-        self.__bpm_plot.setXRange(-0.5, 0.5)
-        self.__bpm_plot.setYRange(50, 500)
-        self.__bpm_plot.getViewBox().setMouseEnabled(x=False, y=True)
-        self.__bpm_plot.setLimits(yMin=-10, yMax=1210)
-        self.__bpm_plot.enableAutoRange(axis='x', enable=False)
-        self.__bpm_plot.enableAutoRange(axis='y', enable=False)
-        self.__bpm_plot.hideAxis('bottom')
-        self.__bpm_plot.hideAxis('left')
-        self.__bpm_plot.showAxis('right')
-        self.__bpm_plot.setFixedWidth(64)
-
-        # Slider region allowing to select bpm
-        self.__bpm_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__bpm_region.setBounds((0, 1200))
-        self.__bpm_region.setRegion((170, 190))
-        self.__bpm_region.sigRegionChanged.connect(lambda: StddevGraphDx.__bpm_region_event(self))
-
-        # Label for the interactive region plot
-        self.__bpm_label = QtGui.QLabel('    BPM')
-        self.__bpm_label.setStyleSheet('background-color: black')
-
-        # Interactive region plot to the right to select angle of rotation in data
-        self.__rot_plot = pyqtgraph.PlotWidget()
-        self.__rot_plot.setXRange(-0.5, 0.5)
-        self.__rot_plot.setYRange(0, 180)
-        self.__rot_plot.getViewBox().setMouseEnabled(x=False, y=False)
-        self.__rot_plot.enableAutoRange(axis='x', enable=False)
-        self.__rot_plot.enableAutoRange(axis='y', enable=False)
-        self.__rot_plot.hideAxis('bottom')
-        self.__rot_plot.hideAxis('left')
-        self.__rot_plot.showAxis('right')
-        self.__rot_plot.setFixedWidth(64)
-
-        # Slider region allowing to select angle of rotation
-        self.__rot_region = pyqtgraph.LinearRegionItem(values=(0, 10), orientation='horizontal')
-        self.__rot_region.setBounds((0, 180))
-        self.__rot_region.setRegion((0, 30))
-        self.__rot_region.sigRegionChanged.connect(lambda: StddevGraphDx.__rot_region_event(self))
-
-        # Label for the interactive region plot
-        self.__rot_label = QtGui.QLabel('    Rot')
-        self.__rot_label.setStyleSheet('background-color: black')
+        self.__rot_plot = SelectPlot(
+            view_min = 0,  view_max = 180,
+            val_min  = 0,  val_max  = 180,
+            init_min = 0,  init_max = 30,
+            label = 'Rot',
+            region_event = lambda: StddevGraphDx.__rot_region_event(self)
+        )
 
         # Put it all together
-        self.__ang_plot.addItem(self.__ang_region)
-        self.__bpm_plot.addItem(self.__bpm_region)
-        self.__rot_plot.addItem(self.__rot_region)
-        
-        self.__ang_layout = QtGui.QVBoxLayout()
-        self.__ang_layout.setSpacing(0)
-        self.__ang_layout.addWidget(self.__ang_plot)
-        self.__ang_layout.addWidget(self.__ang_label)
-
-        self.__bpm_layout = QtGui.QVBoxLayout()
-        self.__bpm_layout.setSpacing(0)
-        self.__bpm_layout.addWidget(self.__bpm_plot)
-        self.__bpm_layout.addWidget(self.__bpm_label)
-
-        self.__rot_layout = QtGui.QVBoxLayout()
-        self.__rot_layout.setSpacing(0)
-        self.__rot_layout.addWidget(self.__rot_plot)
-        self.__rot_layout.addWidget(self.__rot_label)
-
         self.__layout = QtGui.QHBoxLayout(self.graphs[self.__id]['widget'])
         self.__layout.setContentsMargins(0, 0, 0, 0)
         self.__layout.setSpacing(2)
         self.__layout.addWidget(self.__graph)
-        self.__layout.addLayout(self.__ang_layout)
-        self.__layout.addLayout(self.__bpm_layout)
-        self.__layout.addLayout(self.__rot_layout)
+        self.__layout.addWidget(self.__ang_plot)
+        self.__layout.addWidget(self.__bpm_plot)
+        self.__layout.addWidget(self.__rot_plot)
 
 
     def plot_data(self, data):
@@ -140,29 +84,26 @@ class StddevGraphDx():
         self.__graph.clearPlots()
 
         # Select data slices by angle
-        ang0, ang1 = self.__ang_region.getRegion()
+        ang0, ang1 = self.__ang_plot.get_region()
         ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
 
         # Select data slices by bpm
-        bpm0, bpm1 = self.__bpm_region.getRegion()
+        bpm0, bpm1 = self.__bpm_plot.get_region()
         bpm_select = ((bpm0 <= data[:, self.COL_BPM]) & (data[:, self.COL_BPM] <= bpm1))
 
         # Select data slices by rotation
-        rot0, rot1 = self.__rot_region.getRegion()
+        rot0, rot1 = self.__rot_plot.get_region()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
         # Draw available rotation points on the plot to the right
         unique_angs = np.unique(data[:, self.COL_ANGLE])
-        self.__ang_plot.clearPlots()
-        self.__ang_plot.plot(np.zeros(unique_angs.shape[0]), unique_angs, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__ang_plot.plot(unique_angs)
 
         unique_bpms = np.unique(data[:, self.COL_BPM])
-        self.__bpm_plot.clearPlots()
-        self.__bpm_plot.plot(np.zeros(unique_bpms.shape[0]), unique_bpms, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__bpm_plot.plot(unique_bpms)
 
         unique_rots = np.unique(data[:, self.COL_ROT])
-        self.__rot_plot.clearPlots()
-        self.__rot_plot.plot(np.zeros(unique_rots.shape[0]), unique_rots, pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='y')
+        self.__rot_plot.plot(unique_rots)
     
         # Selected rotation region has no data. Nothing else to do
         if not any(ang_select & bpm_select & rot_select):
