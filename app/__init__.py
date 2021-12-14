@@ -844,7 +844,8 @@ class App(QtGui.QMainWindow):
             (self.data[:, App.COL_BPM] == self.bpm) & \
             (self.data[:, App.COL_PX] == self.dx) & \
             (self.data[:, App.COL_ROT] == self.rot) & \
-            (self.data[:, App.COL_ANGLE] == self.angle)
+            (self.data[:, App.COL_ANGLE] == self.angle) & \
+            (self.data[:, App.COL_NUM] == self.notes)
 
         num_records = data_select.sum()
 
