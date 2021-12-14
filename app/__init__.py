@@ -87,6 +87,7 @@ class App(QtGui.QMainWindow):
         self.engaged = False
         self.dev_select = App.DEV_X
         self.model_compensation = False
+        self.avg_data_points = True
 
         self.selected_data_id = None
         self.data_list_ids = []
@@ -106,6 +107,7 @@ class App(QtGui.QMainWindow):
         self.selct_layout = QtGui.QHBoxLayout()
 
         self.win_selct_layout = QtGui.QVBoxLayout()
+        self.avg_chkbx = QtGui.QCheckBox('Average data points')
         self.model_chkbx = QtGui.QCheckBox('Model compensation')
 
         self.dev_selct_layout = QtGui.QVBoxLayout()
@@ -166,6 +168,8 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.ar_edit)
 
         # Add settings checkboxes
+        self.avg_chkbx.setChecked(True)
+        self.win_selct_layout.addWidget(self.avg_chkbx)
         self.win_selct_layout.addWidget(self.model_chkbx)
 
         # Add deviation select radio buttons
@@ -192,6 +196,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphSkill.__init__(self, pos='below', relative_to='StddevGraphVel', dock_name='Skill vs Angle')
 
         # Connect checkbox events
+        self.avg_chkbx.stateChanged.connect(self.__avg_chkbx_event)
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
         # Connect settings edit events
@@ -304,7 +309,9 @@ class App(QtGui.QMainWindow):
         self.monitor.pause()
 
 
-            self.data_list.hide()
+    def __avg_chkbx_event(self, state):
+        self.avg_data_points = (state == QtCore.Qt.Checked)
+        self.replot_graphs()
 
 
     def __model_chkbx_event(self, state):

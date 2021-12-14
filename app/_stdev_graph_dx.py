@@ -147,17 +147,18 @@ class StddevGraphDx():
                 self.__graph.setTitle('Aim dev-xy (px)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
 
-            # Use best N points for data display
-            num_points = min(len(stdevs), self.MAX_NUM_DATA_POINTS)
+            if self.avg_data_points:
+                # Use best N points for data display
+                num_points = min(len(stdevs), self.MAX_NUM_DATA_POINTS)
 
-            # Average overlapping data points (those that fall on same px)
-            stdevs = np.asarray([ np.sort(stdevs[pxs == px])[:num_points].mean() for px in np.unique(pxs) ])
-            pxs = np.unique(pxs)
-
-            # Get sort mapping to make points on line graph connect in proper order
-            idx_sort = np.argsort(pxs)
-            pxs = pxs[idx_sort]
-            stdevs = stdevs[idx_sort]
+                # Average overlapping data points (those that fall on same px)
+                stdevs = np.asarray([ np.sort(stdevs[pxs == px])[:num_points].mean() for px in np.unique(pxs) ])
+                pxs = np.unique(pxs)
+            
+                # Get sort mapping to make points on line graph connect in proper order
+                idx_sort = np.argsort(pxs)
+                pxs = pxs[idx_sort]
+                stdevs = stdevs[idx_sort]
 
             # Draw plot
             color = bpm_lut.map(bpm, 'qcolor')
