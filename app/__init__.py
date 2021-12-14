@@ -91,16 +91,21 @@ class App(QtGui.QMainWindow):
         self.selected_data_id = None
         self.data_list_ids = []
 
+        self.menu_bar = QtGui.QMenuBar()
+
+        self.view_menu = QtGui.QMenu("&View", self)
+
+        self.view_perf_action    = QtGui.QAction("&Show performance", self)
+        self.view_hits_action    = QtGui.QAction("&Show hits", self)
+        self.view_map_action     = QtGui.QAction("&Show map", self)
+        self.view_data_sel_action = QtGui.QAction("&Show data select", self)
+
         self.main_widget = QtGui.QWidget()
         self.main_layout = QtGui.QVBoxLayout(self.main_widget)
         
         self.selct_layout = QtGui.QHBoxLayout()
 
         self.win_selct_layout = QtGui.QVBoxLayout()
-        self.perf_chkbx = QtGui.QCheckBox('Show performance')
-        self.aim_chkbx  = QtGui.QCheckBox('Show hits')
-        self.ptrn_chkbx = QtGui.QCheckBox('Show pattern')
-        self.data_chkbx = QtGui.QCheckBox('Show data select')
         self.model_chkbx = QtGui.QCheckBox('Model compensation')
 
         self.dev_selct_layout = QtGui.QVBoxLayout()
@@ -131,6 +136,19 @@ class App(QtGui.QMainWindow):
         self.setWindowTitle('osu! Aim Tool Settings')
         self.area.setWindowTitle('osu! Aim Tool Performance Graphs')
 
+        # Set up menu bar
+        self.setMenuBar(self.menu_bar)
+        self.menu_bar.addMenu(self.view_menu)
+        self.view_menu.addAction(self.view_perf_action)
+        self.view_menu.addAction(self.view_hits_action)
+        self.view_menu.addAction(self.view_map_action)
+        self.view_menu.addAction(self.view_data_sel_action)
+
+        self.view_perf_action.triggered.connect(lambda: self.area.show())
+        self.view_hits_action.triggered.connect(lambda: self.aim_graph.show())
+        self.view_map_action.triggered.connect(lambda: (self.pattern_visual.show(), self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)))
+        self.view_data_sel_action.triggered.connect(lambda: self.data_list.show())
+
         # Connect deviation select radio buttons events
         self.xdev_radio_btn.setChecked(True)
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
@@ -148,10 +166,6 @@ class App(QtGui.QMainWindow):
         self.edit_layout.addWidget(self.ar_edit)
 
         # Add settings checkboxes
-        self.win_selct_layout.addWidget(self.perf_chkbx)
-        self.win_selct_layout.addWidget(self.aim_chkbx)
-        self.win_selct_layout.addWidget(self.ptrn_chkbx)
-        self.win_selct_layout.addWidget(self.data_chkbx)
         self.win_selct_layout.addWidget(self.model_chkbx)
 
         # Add deviation select radio buttons
@@ -178,10 +192,6 @@ class App(QtGui.QMainWindow):
         App.StddevGraphSkill.__init__(self, pos='below', relative_to='StddevGraphVel', dock_name='Skill vs Angle')
 
         # Connect checkbox events
-        self.perf_chkbx.stateChanged.connect(self.__perf_chkbx_event)
-        self.aim_chkbx.stateChanged.connect(self.__aim_chkbx_event)
-        self.ptrn_chkbx.stateChanged.connect(self.__ptrn_chkbx_event)
-        self.data_chkbx.stateChanged.connect(self.__data_chkbx_event)
         self.model_chkbx.stateChanged.connect(self.__model_chkbx_event)
 
         # Connect settings edit events
@@ -197,7 +207,7 @@ class App(QtGui.QMainWindow):
         self.action_btn.pressed.connect(self.__action_event)
 
         self.area.setWindowFlags(QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowMinimizeButtonHint)
-        self.perf_chkbx.setChecked(True)
+        self.area.show()
 
         # Switch to the dev vs vel tab
         self.graphs['StddevGraphVel']['dock'].raiseDock()
@@ -294,32 +304,6 @@ class App(QtGui.QMainWindow):
         self.monitor.pause()
 
 
-    def __perf_chkbx_event(self, state):
-        if state == QtCore.Qt.Checked:
-            self.area.show()
-        else:
-            self.area.hide()
-
-    
-    def __aim_chkbx_event(self, state):
-        if state == QtCore.Qt.Checked:
-            self.aim_graph.show()
-        else:
-            self.aim_graph.hide()
-
-
-    def __ptrn_chkbx_event(self, state):
-        if state == QtCore.Qt.Checked:
-            self.pattern_visual.show()
-            self.pattern_visual.update(self.bpm, self.dx, self.angle, self.rot, self.repeats, self.notes, self.cs, self.ar)
-        else:
-            self.pattern_visual.hide()
-
-
-    def __data_chkbx_event(self, state):
-        if state == QtCore.Qt.Checked:
-            self.data_list.show()
-        else:
             self.data_list.hide()
 
 
