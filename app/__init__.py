@@ -848,7 +848,7 @@ class App(QtGui.QMainWindow):
     def closeEvent(self, event):
         # Gracefully stop monitoring
         if self.engaged:
-            self.monitor.pause()
+            self.__action_event()
 
         # Hide any widgets to allow the app to close
         self.area.hide()
