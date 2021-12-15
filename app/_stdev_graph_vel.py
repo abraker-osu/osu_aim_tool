@@ -176,6 +176,10 @@ class StddevGraphVel():
             m_dev_y = np.std(stdevs - y_model)  # deviation of y from model
             m_dev_x = np.std(vels - x_model)    # deviation of x from model
 
+            if m_dev_x == 0:
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
+                continue
+
             # Standard error of slope @ 95% confidence interval
             m_se_95 = (m_dev_y/m_dev_x)/math.sqrt(stdevs.shape[0] - 2)*1.96
 
