@@ -59,7 +59,8 @@ class StddevGraphAngle():
             val_min  = 0,  val_max  = 512,
             init_min = 75, init_max = 125,
             label = 'Dist',
-            region_event = lambda: StddevGraphAngle.__px_region_event(self)
+            region_event = lambda: StddevGraphAngle.__px_region_event(self),
+            mouse_ctrl = True
         )
 
         # Interactive region plot to the right to select angle of rotation in data
