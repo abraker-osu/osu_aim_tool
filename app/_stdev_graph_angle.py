@@ -149,6 +149,9 @@ class StddevGraphAngle():
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (angle)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+            elif self.dev_select == self.DEV_T:
+                self.__graph.setTitle('Aim dev-t (angle)')
+                stdevs = data[data_select, self.COL_STDEV_T]
 
             if self.avg_data_points:
                 # Use best N points for data display

@@ -42,6 +42,7 @@ class App(QtGui.QMainWindow):
     DEV_X  = 0
     DEV_Y  = 1
     DEV_XY = 2
+    DEV_T  = 3
 
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
@@ -123,6 +124,7 @@ class App(QtGui.QMainWindow):
         self.xdev_radio_btn = QtGui.QRadioButton('x-dev')
         self.ydev_radio_btn = QtGui.QRadioButton('y-dev')
         self.xydev_radio_btn = QtGui.QRadioButton('xy-dev')
+        self.tdev_radio_btn = QtGui.QRadioButton('t-dev')
 
         self.edit_layout  = QtGui.QHBoxLayout()
         self.cfg_widgets = {
@@ -162,6 +164,7 @@ class App(QtGui.QMainWindow):
         self.xdev_radio_btn.toggled.connect(self.__dev_select_event)
         self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
+        self.tdev_radio_btn.toggled.connect(self.__dev_select_event)
 
         # Add setting text edit fields
         self.edit_layout.addWidget(self.cfg_widgets['bpm'])
@@ -183,6 +186,7 @@ class App(QtGui.QMainWindow):
         self.dev_selct_layout.addWidget(self.xdev_radio_btn)
         self.dev_selct_layout.addWidget(self.ydev_radio_btn)
         self.dev_selct_layout.addWidget(self.xydev_radio_btn)
+        self.dev_selct_layout.addWidget(self.tdev_radio_btn)
 
         # Build layout
         self.selct_layout.addLayout(self.win_selct_layout)
@@ -378,6 +382,8 @@ class App(QtGui.QMainWindow):
             self.dev_select = App.DEV_Y
         elif self.sender() == self.xydev_radio_btn:
             self.dev_select = App.DEV_XY
+        elif self.sender() == self.tdev_radio_btn:
+            self.dev_select = App.DEV_T
 
         self.replot_graphs()
 

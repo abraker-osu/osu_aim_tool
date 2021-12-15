@@ -77,6 +77,9 @@ class StddevGraphSkill():
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (vel)')
                 stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+            elif self.dev_select == self.DEV_T:
+                self.__graph.setTitle('Aim dev-t (vel)')
+                stdevs = data[data_select, self.COL_STDEV_T]
 
             pxs = data[data_select, self.COL_PX]
             bpms = data[data_select, self.COL_BPM]
