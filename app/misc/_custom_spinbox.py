@@ -48,10 +48,6 @@ class CustomSpinBox(QtWidgets.QSpinBox):
         self.auto_value_cache = value
         self.value_changed.emit(value)
 
-
-    def set_auto_en(self, enabled):
-        self.auto_chkbx_cache = enabled
-
     
     def set_auto_value(self, value):
         self.auto_value_cache = value

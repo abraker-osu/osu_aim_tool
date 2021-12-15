@@ -95,6 +95,9 @@ class App(QtGui.QMainWindow):
         self.selected_data_id = None
         self.data_list_ids = []
 
+        self.info_text = ''
+        self.stats_text = ''
+
         self.menu_bar  = QtGui.QMenuBar()
         self.view_menu = QtGui.QMenu("&View", self)
 
@@ -257,7 +260,13 @@ class App(QtGui.QMainWindow):
                 json.dump(self.cfg, f, indent=4)
 
         if not os.path.isdir(self.osu_path):
-            self.status_txt.setText('Invalid osu! path! Find config.json in app folder and edit it.\nThen restart the app.\nMake sure to use double backslashes for osu! path')
+            self.info_text = \
+                'Invalid osu! path! Find config.json in app folder and edit it.\n' + \
+                'Then restart the app.\n' + \
+                'Make sure to use double backslashes for osu! path\n'
+            self.stats_text = ''
+            self.status_txt.setText(self.info_text + self.stats_text)
+
             self.action_btn.setEnabled(False)
             self.view_hits_action.setEnabled(False)
             self.view_map_action.setEnabled(False)
@@ -344,12 +353,13 @@ class App(QtGui.QMainWindow):
         # Check if pattern is clipped and show warning if so
         if key in [ 'dx', 'angle', 'rot', 'repeats', 'notes' ]:
             if self.pattern_visual.is_clipped():
-                self.status_txt.setText(
-                    'Set settings and click start!\n'
+                self.info_text = \
+                    'Set settings and click start!\n' + \
                     'Warning: Pattern is being clipped to playfield border!\n'
-                )
             else:
-                self.status_txt.setText('Set settings and click start!')
+                self.info_text = 'Set settings and click start!\n'
+
+            self.status_txt.setText(self.info_text + self.stats_text)
 
         if key == 'cs':
             dev = App.OsuUtils.cs_to_px(self.cfg['cs'])
@@ -373,82 +383,93 @@ class App(QtGui.QMainWindow):
 
 
     def __action_event(self):
-        #while True:
-        # If we are waiting for replay, this means we are aborting
-        if self.engaged:
-            # We are manually aborting, so disable automation
-            self.auto_chkbx.setChecked(False)
+        while True:
+            # If we are waiting for replay, this means we are aborting
+            if self.engaged:
+                # We are manually aborting, so disable automation
+                self.auto_chkbx.setChecked(False)
 
-            # Stop monitoring
-            self.monitor.pause()
+                # Stop monitoring
+                self.monitor.pause()
 
-            # Restore GUI state to non-engaged state
-            self.action_btn.setText('Start')
+                # Restore GUI state to non-engaged state
+                self.action_btn.setText('Start')
+                self.data_list.setEnabled(True)
+                self.__set_settings_edit_enabled(True)
+
+                self.engaged = False
+                return
+
+            # Submit all unsaved settings to save and apply them
+            is_error = False
+
+            for widget in self.cfg_widgets.values():
+                # Apply all settings
+                widget.value_enter()
+
+                # Check if all settings are proper
+                is_error = is_error or widget.is_error()
+
+            if is_error:
+                return
+
+            # Check if we have user's data opened. Switch to it if we do not
+            if self.selected_data_id != self.user_id:
+                self.data_list.select_data_id(self.user_id)
+                self.replot_graphs()
+
+            # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
+            map_path = f'{self.osu_path}/Songs/aim_tool'
+
+            self.__generate_map(map_path)
+            self.__monitor_replay()
+
+            # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
+            # So if we are in replay waiting state, it means the button was pressed while waiting for replay, so we abort
+            if not self.engaged:
+                self.info_text = 'Set settings and click start!\n'
+                self.status_txt.setText(self.info_text + self.stats_text)
+                return
+
+            self.info_text = ''
+            self.stats_text = ''
+            self.status_txt.setText(self.info_text + self.stats_text)
+
+            # Otherwise, replay was successfully detected and we can update the state to reflect that
+            self.engaged = False
             self.data_list.setEnabled(True)
             self.__set_settings_edit_enabled(True)
 
-            self.engaged = False
-            return
+            # Data from map and replay -> score
+            aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
+            if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
+                if not self.auto_increase:
+                    self.info_text += 'Set settings and click start!\n'
+                    self.stats_text = ''
+                    self.status_txt.setText(self.info_text + self.stats_text)
 
-        # Submit all unsaved settings to save and apply them
-        is_error = False
+                    self.action_btn.setText('Start')
+                    return
+                else:
+                    continue
 
-        for widget in self.cfg_widgets.values():
-            # Apply all settings
-            widget.value_enter()
+            # Update deviation data and plots
+            self.__write_data(aim_x_offsets, aim_y_offsets, tap_offsets)
 
-            # Check if all settings are proper
-            is_error = is_error or widget.is_error()
-
-        if is_error:
-            return
-
-        # Check if we have user's data opened. Switch to it if we do not
-        if self.selected_data_id != self.user_id:
-            self.data_list.select_data_id(self.user_id)
             self.replot_graphs()
+            self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
+            
+            # If we are in not auto mode, we are done
+            if not self.auto_increase:
+                self.info_text += 'Set settings and click start!\n'
+                self.status_txt.setText(self.info_text + self.stats_text)
 
-        # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
-        map_path = f'{self.osu_path}/Songs/aim_tool'
+                self.action_btn.setText('Start')
+                return
 
-        self.status_txt.setText('')
-        self.__generate_map(map_path)
-        self.__monitor_replay()
-        self.status_txt.setText('')
-
-        # This needs to be after `monitor_replay`. `monitor replay` will wait until a replay is detected
-        # So if we are in replay waiting state, it means the button was pressed while waiting for replay, so we abort
-        if not self.engaged:
-            self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
-            return
-
-        # Otherwise, replay was successfully detected and we can update the state to reflect that
-        self.engaged = False
-        self.data_list.setEnabled(True)
-        self.__set_settings_edit_enabled(True)
-
-        # Data from map and replay -> score
-        aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
-        if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
-            self.status_txt.setText(self.status_txt.text() + 'Set settings and click start!')
-            self.action_btn.setText('Start')
-            return
-
-        # Update deviation data and plots
-        self.__write_data(aim_x_offsets, aim_y_offsets, tap_offsets)
-
-        self.replot_graphs()
-        self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
-        
-        # If we are in not auto mode, we are done
-        if not self.auto_increase:
-            self.status_txt.setText(self.status_txt.text() + '\nSet settings and click start!')
-            self.action_btn.setText('Start')
-            return
-
-        # Otherwise, we are in auto mode, so we need to increase the respective settings
-        for widget in self.cfg_widgets.values():
-            widget.value_increase()
+            # Otherwise, we are in auto mode, so we need to increase the respective settings
+            for widget in self.cfg_widgets.values():
+                widget.value_increase()
 
 
     def __generate_map(self, map_path):
@@ -549,8 +570,9 @@ class App(QtGui.QMainWindow):
 
 
     def __monitor_replay(self):
-        text = self.status_txt.text()
-        self.status_txt.setText(text + ('\n' if len(text) > 0 else '') + 'Open osu! and play the map! Waiting for play...')
+        self.info_text = 'Open osu! and play the map! Waiting for play...\n'
+        self.status_txt.setText(self.info_text + self.stats_text)
+
         self.action_btn.setText('ABORT')
 
         # Resumes *.osr file monitoring and updates state
@@ -571,41 +593,47 @@ class App(QtGui.QMainWindow):
         print('replay mods:', self.replay.mods.value)
 
         # Check if mods are valid
-        if self.ar > 10:
+        if self.cfg["ar"] > 10:
             has_dt = (self.replay.mods.value & Mod.DoubleTime) > 0
             has_nc = (self.replay.mods.value & Mod.Nightcore) > 0
 
             if not (has_dt or has_nc):
-                self.status_txt.setText('AR >10 requires DT or NC mod enabled!\n')
+                self.info_text = 'AR >10 requires DT or NC mod enabled!\n'
+                self.status_txt.setText(self.info_text + self.stats_text)
                 return None, None, None
 
             has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore)) > 0
             if has_other_mods:
-                self.status_txt.setText('AR >10 requires ONLY DT or NC mod enabled!\n')
+                self.info_text = 'AR >10 requires ONLY DT or NC mod enabled!\n'
+                self.status_txt.setText(self.info_text + self.stats_text)
+                
                 return None, None, None
         else:
             if self.replay.mods.value != 0:
-                self.status_txt.setText('AR <10 requires nomod!\n')
+                self.info_text = 'AR <10 requires nomod!\n'
+                self.status_txt.setText(self.info_text + self.stats_text)
                 return None, None, None
 
         # Read beatmap
         try: map_data = StdMapData.get_map_data(beatmap)
         except TypeError as e:
-            self.status_txt.setText('Error reading beatmap!\n')
+            self.info_text = 'Error reading beatmap!\n'
+            self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
             return None, None, None
 
         # Read replay
         try: replay_data = StdReplayData.get_replay_data(self.replay)
         except Exception as e:
-            self.status_txt.setText('Error reading replay!\n')
+            self.info_text = 'Error reading replay!\n'
+            self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
             return None, None, None
 
         # Process score data
         settings = StdScoreData.Settings()
-        settings.ar_ms = App.OsuUtils.ar_to_ms(self.ar)
-        settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cs)
+        settings.ar_ms = App.OsuUtils.ar_to_ms(self.cfg["ar"])
+        settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cfg["cs"])
         settings.pos_hit_range = 100        # ms point of late hit window
         settings.neg_hit_range = 100        # ms point of early hit window
         settings.pos_hit_miss_range = 100   # ms point of late miss window
@@ -620,7 +648,9 @@ class App(QtGui.QMainWindow):
         # Too many misses tends to falsely lower the deviation. Disallow plays with >10% misses
         print(f'num total hits: {num_total}   num: misses {num_misses} ({100 * num_misses/num_total:.2f}%)')
         if num_misses/num_total > 0.1:
-            self.status_txt.setText('Invalid play. Too many misses.')
+            self.info_text = ''
+            self.stats_text = '\nInvalid play. Too many misses.'
+            self.status_txt.setText(self.info_text + self.stats_text)
             return None, None, None
 
         aim_x_offsets = score_data['replay_x'].values - score_data['map_x'].values
@@ -659,10 +689,10 @@ class App(QtGui.QMainWindow):
         # Angles are selected with a bit of error margin since lower spacing introduces pixel-angle uncertainty
         # Allow `dx = 0` through because all angles would be 0
         # Allow `notes = 2` through because all angles would be 180
-        angle_select = (np.abs(angles - self.angle) < 3) | (self.dx == 0) | (self.notes == 2)
+        angle_select = (np.abs(angles - self.cfg["angle"]) < 3) | (self.cfg["dx"] == 0) | (self.cfg["notes"] == 2)
 
         # Make sure only points that are within the set spacing are recorded
-        spacing_select = (np.abs(spacings[1:] - self.dx) < 3)
+        spacing_select = (np.abs(spacings[1:] - self.cfg["dx"]) < 3)
 
         aim_x_offsets = aim_x_offsets[:-1][angle_select & spacing_select]
         aim_y_offsets = aim_y_offsets[:-1][angle_select & spacing_select]
@@ -673,9 +703,10 @@ class App(QtGui.QMainWindow):
             aim_x_offsets = score_data["replay_y"].values - score_data["map_y"].values
             aim_y_offsets = score_data["replay_x"].values - score_data["map_x"].values
 
-            self.status_txt.setText('Data calculation error!\n')
+            self.stats_text = '\nData calculation error!'
+            self.status_txt.setText(self.info_text + self.stats_text)
+            
             print('Non of the angles match')
-
             print('Debug info:')
             print()
             print(f'    aim_x_offsets = {aim_x_offsets}')
@@ -705,7 +736,9 @@ class App(QtGui.QMainWindow):
             hit_theta_x = score_data["replay_y"].values - score_data["map_y"].values
             hit_theta_y = score_data["replay_x"].values - score_data["map_x"].values
 
-            self.status_txt.setText('Data calculation error!\n')
+            self.stats_text = '\nData calculation error!'
+            self.status_txt.setText(self.info_text + self.stats_text)
+
             print('Data calculation error!')
             print('Debug info:')
             print()
@@ -755,19 +788,19 @@ class App(QtGui.QMainWindow):
             min_stddev_xy_curr_idx = np.argmax(stddev_xy_curr)
 
             # Print current record along with worst one
-            text = \
-                f'Total number of records: {num_records + 1}\n' \
-                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}\n' \
+            self.stats_text = \
+                f'\nTotal number of records: {num_records + 1}\n' \
+                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}   notes: {self.cfg["notes"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f} (worst: {stddev_xy_curr[min_stddev_xy_curr_idx]:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  worst: ({stddev_x_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_y_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_t_curr[min_stddev_xy_curr_idx]:.2f})\n'
         else:
             # Nothing recorded yet, print just current record
-            text = \
-                f'Total number of records: {num_records + 1}\n' \
-                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}\n' \
+            self.stats_text = \
+                f'\nTotal number of records: {num_records + 1}\n' \
+                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}   notes: {self.cfg["notes"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f}  aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})\n'
 
-        self.status_txt.setText(text)
-        print(text)
+        self.status_txt.setText(self.info_text + self.stats_text)
+        print(self.stats_text)
     
         # Update data and save to file
         self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.cfg['bpm'], self.cfg['dx'], self.cfg['angle'], self.cfg['rot'], self.cfg['notes'] ]), axis=0)

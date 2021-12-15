@@ -74,4 +74,4 @@ class ValueEdit(QtWidgets.QWidget):
 
     def value_increase(self):
         if hasattr(self.value, 'auto_value_cache'):
-            self.value.set_value(self.value.value() + self.value.auto_value_cache)
+            self.set_value(self.value.value() + self.value.auto_value_cache)
