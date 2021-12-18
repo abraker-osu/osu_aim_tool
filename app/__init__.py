@@ -215,8 +215,6 @@ class App(QtGui.QMainWindow):
         # Connect settings edit events
         for widget in self.cfg_widgets.values():
             widget.value_changed.connect(lambda data: self.__setting_value_changed_event(*data))
-            #widget.auto_state_changed.connect(self.__setting_auto_state_changed_event)
-            #widget.auto_value_changed.connect(self.__setting_auto_value_changed_event)
 
         self.action_btn.pressed.connect(self.__action_event)
 
@@ -283,6 +281,8 @@ class App(QtGui.QMainWindow):
             'rot'     : 0,
             'notes'   : 0,
             'repeats' : 60,
+            'cs'      : 4,
+            'ar'      : 8,
         }
 
         for key in self.cfg_widgets:
@@ -290,27 +290,7 @@ class App(QtGui.QMainWindow):
             except KeyError:
                 self.cfg_widgets[key].set_value(default_cfg[key])
 
-        # Load saved settings
-        try: self.cfg_widgets['cs'].set_value(self.cfg['cs'])
-        except KeyError: self.cfg_widgets['cs'].set_value(4)
-
-        try: self.cfg_widgets['ar'].set_value(self.cfg['ar'])
-        except KeyError: self.cfg_widgets['ar'].set_value(8)
-
         return True
-
-
-    def __get_auto_cfg(self, key):
-        try:
-            return {
-                'enable' : self.cfg_widgets[key].value.auto_chkbx_cache,
-                'value'  : self.cfg_widgets[key].value.auto_value_cache,
-            }
-        except:
-            return {
-                'enable' : False,
-                'value'  : 0,
-            }
 
 
     def __record_results(self, replay_path):
