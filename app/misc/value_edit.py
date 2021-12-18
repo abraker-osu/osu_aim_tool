@@ -20,7 +20,7 @@ class ValueEdit(QtWidgets.QWidget):
             self.value.setDecimals(1)
         else:
             self.value = CustomSpinBox(self)
-            self.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
+            self.value.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
 
         self.verticalLayout.addWidget(self.value)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
