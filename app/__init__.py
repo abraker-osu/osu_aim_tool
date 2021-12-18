@@ -50,15 +50,15 @@ class App(QtGui.QMainWindow):
     from .misc._osu_utils import OsuUtils
 
     # Left column
-    from ._stdev_graph_bpm import StddevGraphBpm
-    from ._stdev_graph_dx import StddevGraphDx
-    from ._stdev_graph_num_notes import StddevGraphNumNotes
-    from ._stdev_graph_angle import StddevGraphAngle
-    from ._stdev_graph_vel import StddevGraphVel
-    from ._stdev_graph_skill import StddevGraphSkill
-    from ._aim_graph import AimGraph
-    from ._pattern_visual import PatternVisual
-    from ._data_list import DataList
+    from .graphs._stdev_graph_bpm import StddevGraphBpm
+    from .graphs._stdev_graph_dx import StddevGraphDx
+    from .graphs._stdev_graph_num_notes import StddevGraphNumNotes
+    from .graphs._stdev_graph_angle import StddevGraphAngle
+    from .graphs._stdev_graph_vel import StddevGraphVel
+    from .graphs._stdev_graph_skill import StddevGraphSkill
+    from .views._aim_graph import AimGraph
+    from .views._pattern_visual import PatternVisual
+    from .views._data_list import DataList
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)

@@ -116,7 +116,7 @@ class StddevGraphVel():
         self.__rot_plot.plot(unique_rots)
 
         # Colored gradient r->g->b multiple plots at different angles
-        unique_angs = np.unique(data[ang_select & rot_select, self.COL_ANGLE])
+        unique_angs = np.unique(data[ang_select & rot_select & px_select, self.COL_ANGLE])
         if unique_angs.shape[0] == 0:
             # Data selection empty
             return
