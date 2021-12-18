@@ -28,6 +28,8 @@ class PatternVisual():
         self.ar    = None
         self.t     = None
 
+        self.replay_data = None
+
         self.pattern_cache = False
         self.is_clip = False
 
@@ -45,7 +47,7 @@ class PatternVisual():
         self.visual.showGrid(True, True)
         self.visual.setXRange(0, 540)
         self.visual.setYRange(-410, 0)
-        self.visual.getViewBox().setMouseEnabled(x=False, y=False)
+        #self.visual.getViewBox().setMouseEnabled(x=False, y=False)
         self.visual.enableAutoRange(axis='x', enable=False)
         self.visual.enableAutoRange(axis='y', enable=False)
 
@@ -62,6 +64,7 @@ class PatternVisual():
         self.timeline_marker.sigPositionChanged.connect(self.__time_changed_event)
 
         self.hitobject_plot = HitobjectPlot()
+        self.cursor_plot    = self.visual.plot(pen=None, symbol='o', symbolPen='y', symbolBrush=None, symbolSize=2, pxMode=True)
 
         self.timeline.addItem(self.timeline_marker, ignoreBounds=True)
         self.timeline.addItem(self.hitobject_plot)
@@ -80,7 +83,7 @@ class PatternVisual():
         return self.is_clip
 
 
-    def update(self, bpm=None, dx=None, angle=None, rot=None, num=None, notes=None, cs=None, ar=None):
+    def set_map(self, bpm=None, dx=None, angle=None, rot=None, num=None, notes=None, cs=None, ar=None):
         if bpm == None:   bpm = self.bpm
         if dx == None:    dx = self.dx
         if angle == None: angle = self.angle
@@ -101,10 +104,16 @@ class PatternVisual():
 
         if self.pattern_cache == False:
             self.__generate_pattern()
-            self.__draw()
+            self.__draw_map_data()
             self.visual.update()
-                
-                
+
+
+    def set_replay(self, replay_data):
+        self.replay_data = replay_data
+        
+        self.__draw_replay_data()
+        self.visual.update()
+
 
     def __generate_pattern(self):
         _self = [ self.bpm, self.dx, self.angle, self.rot, self.num, self.notes ]
@@ -122,7 +131,7 @@ class PatternVisual():
         self.pattern_cache = True
 
 
-    def __draw(self):
+    def __draw_map_data(self):
         if type(self.data_x) == type(None): return
         if type(self.data_y) == type(None): return
         if type(self.data_t) == type(None): return
@@ -143,6 +152,36 @@ class PatternVisual():
         self.plot_approach.setData(self.data_x[ar_select], self.data_y[ar_select], symbolSize=sizes)
 
 
+    def __draw_replay_data(self):
+        if type(self.replay_data) == type(None): return
+
+        replay_data_t = np.asarray(self.replay_data['time'])/1000
+        replay_data_x = np.asarray(self.replay_data['x'])
+        replay_data_y = -np.asarray(self.replay_data['y'])
+        #replay_data_k1 = np.asarray(self.replay_data['k1'])
+        #replay_data_k2 = np.asarray(self.replay_data['k2'])
+        #replay_data_m1 = np.asarray(self.replay_data['m1'])
+        #replay_data_m2 = np.asarray(self.replay_data['m2'])
+
+        if len(replay_data_t) != len(replay_data_x) != len(replay_data_y):
+            raise AssertionError('len(replay_data_t) != len(replay_data_x) != len(replay_data_y)')
+
+        select_time = (replay_data_t >= self.t - 0.05) & (replay_data_t <= self.t)
+        
+        #color_map = {
+        #   0 :  (255, 255, 0, 100),  # Yellow
+        #   1 :  (  0, 255, 0, 200),  # Green
+        #   2 :  (255,   0, 0, 200),  # Red
+        #}
+
+        #colors = [
+        #    color_map[key] for key in self.replay_data_k[select_time]
+        #]
+
+        self.cursor_plot.setData(replay_data_x[select_time], replay_data_y[select_time], symbolPen=(255, 255, 0, 100))
+
+
     def __time_changed_event(self):
         self.t = self.timeline_marker.getPos()[0]
-        self.__draw()
+        self.__draw_map_data()
+        self.__draw_replay_data()

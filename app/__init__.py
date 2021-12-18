@@ -106,7 +106,7 @@ class App(QtGui.QMainWindow):
         self.view_hits_action     = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
         self.view_map_action      = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
             self.pattern_visual.show(), 
-            self.pattern_visual.update(self.cfg["bpm"], self.cfg["dx"], self.cfg["angle"], self.cfg["rot"], self.cfg["repeats"], self.cfg["notes"], self.cfg["cs"], self.cfg["ar"]))
+            self.pattern_visual.set_map(self.cfg["bpm"], self.cfg["dx"], self.cfg["angle"], self.cfg["rot"], self.cfg["repeats"], self.cfg["notes"], self.cfg["cs"], self.cfg["ar"]))
         )
         self.view_data_sel_action = QtGui.QAction("&Show data select", self.view_menu, triggered=lambda: self.data_list.show())
 
@@ -329,7 +329,7 @@ class App(QtGui.QMainWindow):
             json.dump(self.cfg, f, indent=4)
 
         if key in [ 'bpm', 'dx', 'angle', 'rot', 'notes', 'cs', 'ar' ]:
-            self.pattern_visual.update(**{ key : self.cfg[key] })
+            self.pattern_visual.set_map(**{ key : self.cfg[key] })
 
         if key in [ 'bpm', 'dx' ]:
             App.StddevGraphVel.update_vel(self, **{ key : self.cfg[key] })
@@ -427,7 +427,7 @@ class App(QtGui.QMainWindow):
             self.__set_settings_edit_enabled(True)
 
             # Data from map and replay -> score
-            aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
+            replay_data, aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
             if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
                 if not self.auto_increase:
                     self.info_text += 'Set settings and click start!\n'
@@ -444,6 +444,7 @@ class App(QtGui.QMainWindow):
 
             self.replot_graphs()
             self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
+            self.pattern_visual.set_replay(replay_data)
             
             # If we are in not auto mode, we are done
             if not self.auto_increase:
@@ -739,7 +740,7 @@ class App(QtGui.QMainWindow):
             print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
             return None, None, None
 
-        return aim_x_offsets, aim_y_offsets, tap_offsets
+        return replay_data, aim_x_offsets, aim_y_offsets, tap_offsets
 
 
     def __write_data(self, aim_offsets_x, aim_offsets_y, tap_offsets):
