@@ -5,7 +5,10 @@ from pyqtgraph.Qt import QtCore
 import numpy as np
 import math
 
+from osu_analysis import StdMapData
+
 from app.misc._osu_utils import OsuUtils
+from app.misc._hitobject_plot import HitobjectPlot
 
 
 class PatternVisual():
@@ -34,6 +37,7 @@ class PatternVisual():
         self.layout = QtGui.QVBoxLayout(self.main_widget)
         self.visual = pyqtgraph.PlotWidget(title='Pattern visualization')
         self.timeline = pyqtgraph.PlotWidget()
+
         self.layout.addWidget(self.visual)
         self.layout.addWidget(self.timeline)
 
@@ -48,6 +52,7 @@ class PatternVisual():
         self.plot_approach = self.visual.plot(pen=None, symbol='o', symbolPen=(100, 100, 255, 200), symbolBrush=None, symbolSize=100, pxMode=False)
         
         self.timeline.setFixedHeight(64)
+        self.timeline.getViewBox().setMouseEnabled(y=False)
         self.timeline.hideAxis('left')
         self.timeline.setXRange(-1, 4)
 
@@ -56,7 +61,10 @@ class PatternVisual():
         self.timeline_marker.setBounds((-10000, None))
         self.timeline_marker.sigPositionChanged.connect(self.__time_changed_event)
 
+        self.hitobject_plot = HitobjectPlot()
+
         self.timeline.addItem(self.timeline_marker, ignoreBounds=True)
+        self.timeline.addItem(self.hitobject_plot)
         self.__time_changed_event()
 
 
@@ -96,6 +104,7 @@ class PatternVisual():
             self.__draw()
             self.visual.update()
                 
+                
 
     def __generate_pattern(self):
         _self = [ self.bpm, self.dx, self.angle, self.rot, self.num, self.notes ]
@@ -107,6 +116,8 @@ class PatternVisual():
         self.data_x = pattern[:, 0]
         self.data_y = -pattern[:, 1]
         self.data_t = pattern[:, 2]
+        
+        self.hitobject_plot.setMap(self.data_t, self.data_t, np.full_like(self.data_t, StdMapData.TYPE_SLIDER))
 
         self.pattern_cache = True
 
