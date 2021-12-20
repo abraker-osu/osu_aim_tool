@@ -44,7 +44,7 @@ class StddevGraphBpm():
             val_min  = 0, val_max  = 180,
             init_min = 0, init_max = 180,
             label = 'Angle',
-            region_event = lambda: StddevGraphBpm.__angle_region_event(self)
+            region_event = lambda: StddevGraphBpm.__region_event(self)
         )
 
         # Interactive region plot to the right to select distance between notes in data
@@ -53,7 +53,7 @@ class StddevGraphBpm():
             val_min  = 0,  val_max  = 512,
             init_min = 75, init_max = 125,
             label = 'Dist',
-            region_event = lambda: StddevGraphBpm.__px_region_event(self),
+            region_event = lambda: StddevGraphBpm.__region_event(self),
             mouse_ctrl = True
         )
 
@@ -63,7 +63,17 @@ class StddevGraphBpm():
             val_min  = 0,  val_max  = 180,
             init_min = 0,  init_max = 30,
             label = 'Rot',
-            region_event = lambda: StddevGraphBpm.__rot_region_event(self)
+            region_event = lambda: StddevGraphBpm.__region_event(self)
+        )
+
+        # Interactive region plot to the right to select number of notes in data
+        self.__num_plot = SelectPlot(
+            view_min = 0,  view_max = 2000,
+            val_min  = 0,  val_max  = 2000,
+            init_min = 0,  init_max = 120,
+            label = '# Notes',
+            region_event = lambda: StddevGraphBpm.__region_event(self),
+            mouse_ctrl = True
         )
 
         # Put it all together
@@ -74,6 +84,7 @@ class StddevGraphBpm():
         self.__layout.addWidget(self.__ang_plot)
         self.__layout.addWidget(self.__px_plot)
         self.__layout.addWidget(self.__rot_plot)
+        self.__layout.addWidget(self.__num_plot)
 
 
     def plot_data(self, data):
@@ -95,6 +106,10 @@ class StddevGraphBpm():
         rot0, rot1 = self.__rot_plot.get_region()
         rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
 
+        # Select data slices by number of notes
+        num0, num1 = self.__num_plot.get_region()
+        num_select = ((num0 <= data[:, self.COL_NUM]) & (data[:, self.COL_NUM] <= num1))
+
         # Draw available rotation points on the plot to the right   
         unique_angs = np.unique(data[:, self.COL_ANGLE])
         self.__ang_plot.plot(unique_angs)
@@ -105,12 +120,15 @@ class StddevGraphBpm():
         unique_rots = np.unique(data[:, self.COL_ROT])
         self.__rot_plot.plot(unique_rots)
 
+        unique_nums = np.unique(data[:, self.COL_NUM])
+        self.__num_plot.plot(unique_nums)
+
         # Selected rotation region has no data. Nothing else to do
-        if not any(ang_select & px_select & rot_select):
+        if not any(ang_select & px_select & rot_select & num_select):
             return
 
         # Colored gradient r->g->b multiple plots at different osu!px
-        unique_pxs = np.unique(data[rot_select & px_select & ang_select, self.COL_PX])
+        unique_pxs = np.unique(data[rot_select & px_select & ang_select & num_select, self.COL_PX])
 
         px_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_pxs), max(unique_pxs), 3),
@@ -178,18 +196,8 @@ class StddevGraphBpm():
                 self.__graph.plot(x=bpms, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{px} osu!px')
 
     
-    def __angle_region_event(self):
-        # When the selection on angle plot changes, reprocess main graph
-        StddevGraphBpm.plot_data(self, self.data)
-
-
-    def __px_region_event(self):
-        # When the selection on distance plot changes, reprocess main graph
-        StddevGraphBpm.plot_data(self, self.data)
-
-
-    def __rot_region_event(self):
-        # When the selection on rotation plot changes, reprocess main graph
+    def __region_event(self):
+        # When the selection plot changes, reprocess main graph
         StddevGraphBpm.plot_data(self, self.data)
 
 
