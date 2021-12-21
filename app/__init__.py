@@ -132,7 +132,7 @@ class App(QtGui.QMainWindow):
             'dx'      : App.ValueEdit(0, 512,  'dx',      'Spacing'),
             'angle'   : App.ValueEdit(0, 180,  'angle',   'Note deg'),
             'rot'     : App.ValueEdit(0, 360,  'rot',     'Rot deg'),
-            'notes'   : App.ValueEdit(3, 100,  'notes',   '# Notes'),
+            'notes'   : App.ValueEdit(3, 2000, 'notes',   '# Notes'),
             'repeats' : App.ValueEdit(1, 1000, 'repeats', '# Repeats'),
             'cs'      : App.ValueEdit(0, 10,   'cs',      'CS', is_float=True),
             'ar'      : App.ValueEdit(0, 11,   'ar',      'AR', is_float=True),
