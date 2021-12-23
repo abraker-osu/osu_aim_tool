@@ -21,6 +21,8 @@ from osu_analysis import ReplayIO
 from osu_analysis import ReplayIO
 from osu_analysis import Mod
 
+from app.config import AppConfig
+
 
 
 class App(QtGui.QMainWindow):
@@ -64,7 +66,7 @@ class App(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         os.makedirs('data', exist_ok=True)
 
-        self.__load_user_val()
+        self.user_id = AppConfig.cfg['id']
 
         self.__init_gui()
         self.__build_layout()
@@ -73,12 +75,39 @@ class App(QtGui.QMainWindow):
         self.data_list.load_data_list()
         self.data_list.select_data_id(self.user_id)
 
-        if self.__load_settings():    
+        if os.path.isdir(AppConfig.cfg['osu_dir']):
+            default_cfg = {
+                'bpm'     : 60,
+                'dx'      : 100,
+                'angle'   : 0,
+                'rot'     : 0,
+                'notes'   : 0,
+                'repeats' : 60,
+                'cs'      : 4,
+                'ar'      : 8,
+            }
+
+            for key in self.cfg_widgets:
+                try: self.cfg_widgets[key].set_value(AppConfig.cfg[key])
+                except KeyError:
+                    self.cfg_widgets[key].set_value(default_cfg[key])
+
             try:
-                self.monitor = App.Monitor(self.osu_path)
+                self.monitor = App.Monitor(AppConfig.cfg['osu_dir'])
                 self.monitor.create_replay_monitor('back_and_forth_monitor', self.__record_results)
             except Exception as e:
                 self.status_txt.setText(str(e) + ' Is osu! path correct?')
+        else:
+            self.info_text = \
+                'Invalid osu! path! Find config.json in app folder and edit it.\n' + \
+                'Then restart the app.\n' + \
+                'Make sure to use double backslashes for osu! path\n'
+            self.stats_text = ''
+            self.status_txt.setText(self.info_text + self.stats_text)
+
+            self.action_btn.setEnabled(False)
+            self.view_hits_action.setEnabled(False)
+            self.view_map_action.setEnabled(False)
 
         self.replot_graphs()
         self.show()
@@ -225,74 +254,6 @@ class App(QtGui.QMainWindow):
         self.graphs['StddevGraphVel']['dock'].raiseDock()
 
 
-    def __check_config_file(self):
-        # Load osu_dir setting
-        try:
-            with open('config.json') as f:
-                cfg = json.load(f)
-        except FileNotFoundError:
-            cfg = { 'osu_dir' : '' }
-            with open('config.json', 'w') as f:
-                json.dump(cfg, f, indent=4)
-
-
-    def __load_user_val(self):
-        self.__check_config_file()
-        with open('config.json') as f:
-            cfg = json.load(f)
-
-        if not 'id' in cfg:
-            cfg['id'] = random.randint(100, 1000000)
-                    
-            with open('config.json', 'w') as f:
-                json.dump(cfg, f, indent=4)
-
-        self.user_id = cfg['id']
-
-
-    def __load_settings(self):
-        self.__check_config_file()
-        with open('config.json') as f:
-            self.cfg = json.load(f)
-
-        try: self.osu_path = self.cfg['osu_dir']
-        except KeyError:
-            self.cfg['osu_dir'] = ''
-            with open('config.json', 'w') as f:
-                json.dump(self.cfg, f, indent=4)
-
-        if not os.path.isdir(self.osu_path):
-            self.info_text = \
-                'Invalid osu! path! Find config.json in app folder and edit it.\n' + \
-                'Then restart the app.\n' + \
-                'Make sure to use double backslashes for osu! path\n'
-            self.stats_text = ''
-            self.status_txt.setText(self.info_text + self.stats_text)
-
-            self.action_btn.setEnabled(False)
-            self.view_hits_action.setEnabled(False)
-            self.view_map_action.setEnabled(False)
-            return False
-
-        default_cfg = {
-            'bpm'     : 60,
-            'dx'      : 100,
-            'angle'   : 0,
-            'rot'     : 0,
-            'notes'   : 0,
-            'repeats' : 60,
-            'cs'      : 4,
-            'ar'      : 8,
-        }
-
-        for key in self.cfg_widgets:
-            try: self.cfg_widgets[key].set_value(self.cfg[key])
-            except KeyError:
-                self.cfg_widgets[key].set_value(default_cfg[key])
-
-        return True
-
-
     def __record_results(self, replay_path):
         time.sleep(2)
 
@@ -320,19 +281,13 @@ class App(QtGui.QMainWindow):
 
 
     def __setting_value_changed_event(self, key, value):
-        with open('config.json') as f:
-            self.cfg = json.load(f)
-        
-        self.cfg[key] = value
-
-        with open('config.json', 'w') as f:
-            json.dump(self.cfg, f, indent=4)
+        AppConfig.update_value(key, value)
 
         if key in [ 'bpm', 'dx', 'angle', 'rot', 'notes', 'cs', 'ar' ]:
-            self.pattern_visual.set_map(**{ key : self.cfg[key] })
+            self.pattern_visual.set_map(**{ key : value })
 
         if key in [ 'bpm', 'dx' ]:
-            App.StddevGraphVel.update_vel(self, **{ key : self.cfg[key] })
+            App.StddevGraphVel.update_vel(self, **{ key : value })
 
         # Check if pattern is clipped and show warning if so
         if key in [ 'dx', 'angle', 'rot', 'repeats', 'notes' ]:
@@ -346,7 +301,7 @@ class App(QtGui.QMainWindow):
             self.status_txt.setText(self.info_text + self.stats_text)
 
         if key == 'cs':
-            dev = App.OsuUtils.cs_to_px(self.cfg['cs'])
+            dev = App.OsuUtils.cs_to_px(value)
 
             App.StddevGraphBpm.set_dev(self, dev)
             App.StddevGraphDx.set_dev(self, dev)
