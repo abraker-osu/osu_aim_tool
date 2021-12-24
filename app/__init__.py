@@ -131,11 +131,21 @@ class App(QtGui.QMainWindow):
         self.menu_bar  = QtGui.QMenuBar()
         self.view_menu = QtGui.QMenu("&View", self)
 
-        self.view_perf_action     = QtGui.QAction("&Show performance", self.view_menu, triggered=lambda: self.area.show())
-        self.view_hits_action     = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
-        self.view_map_action      = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
-            self.pattern_visual.show(), 
-            self.pattern_visual.set_map(self.cfg["bpm"], self.cfg["dx"], self.cfg["angle"], self.cfg["rot"], self.cfg["repeats"], self.cfg["notes"], self.cfg["cs"], self.cfg["ar"]))
+        self.view_perf_action = QtGui.QAction("&Show performance", self.view_menu, triggered=lambda: self.area.show())
+        self.view_hits_action = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
+        self.view_map_action  = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
+                self.pattern_visual.show(), 
+                self.pattern_visual.set_map(
+                    AppConfig.cfg["bpm"], 
+                    AppConfig.cfg["dx"], 
+                    AppConfig.cfg["angle"],
+                    AppConfig.cfg["rot"], 
+                    AppConfig.cfg["repeats"], 
+                    AppConfig.cfg["notes"], 
+                    AppConfig.cfg["cs"], 
+                    AppConfig.cfg["ar"]
+                )
+            )
         )
         self.view_data_sel_action = QtGui.QAction("&Show data select", self.view_menu, triggered=lambda: self.data_list.show())
 
@@ -416,10 +426,10 @@ class App(QtGui.QMainWindow):
 
     def __generate_map(self, map_path):
         # Handle DT/NC vs nomod setting
-        rate_multiplier = 1.0 if (self.cfg["ar"] <= 10) else 1.5
+        rate_multiplier = 1.0 if (AppConfig.cfg["ar"] <= 10) else 1.5
         
-        ar = min(self.cfg["ar"], 10)
-        ar = ar if (self.cfg["ar"] <= 10) else App.OsuUtils.ms_to_ar(App.OsuUtils.ar_to_ms(self.cfg["ar"])*rate_multiplier)
+        ar = min(AppConfig.cfg["ar"], 10)
+        ar = ar if (AppConfig.cfg["ar"] <= 10) else App.OsuUtils.ms_to_ar(App.OsuUtils.ar_to_ms(AppConfig.cfg["ar"])*rate_multiplier)
 
         beatmap_data = textwrap.dedent(
             f"""\
@@ -448,7 +458,7 @@ class App(QtGui.QMainWindow):
             Artist:abraker
             ArtistUnicode:abraker
             Creator:abraker
-            Version:aim__bpm-{self.cfg["bpm"]}_dx-{self.cfg["dx"]}_rot-{self.cfg["rot"]}_deg-{self.cfg["angle"]}
+            Version:aim__bpm-{AppConfig.cfg["bpm"]}_dx-{AppConfig.cfg["dx"]}_rot-{AppConfig.cfg["rot"]}_deg-{AppConfig.cfg["angle"]}
             Source:
             Tags:
             BeatmapID:0
@@ -456,9 +466,9 @@ class App(QtGui.QMainWindow):
 
             [Difficulty]
             HPDrainRate:8
-            CircleSize:{self.cfg["cs"]}
+            CircleSize:{AppConfig.cfg["cs"]}
             OverallDifficulty:10
-            ApproachRate:{self.cfg["ar"]}
+            ApproachRate:{AppConfig.cfg["ar"]}
             SliderMultiplier:1.4
             SliderTickRate:1
 
@@ -467,7 +477,7 @@ class App(QtGui.QMainWindow):
         )
 
         # Generate notes
-        pattern, _ = App.OsuUtils.generate_pattern2(self.cfg["rot"]*math.pi/180, self.cfg["dx"], 60/self.cfg["bpm"]*rate_multiplier, self.cfg["angle"]*math.pi/180, self.cfg["notes"], self.cfg["repeats"])
+        pattern, _ = App.OsuUtils.generate_pattern2(AppConfig.cfg["rot"]*math.pi/180, AppConfig.cfg["dx"], 60/AppConfig.cfg["bpm"]*rate_multiplier, AppConfig.cfg["angle"]*math.pi/180, AppConfig.cfg["notes"], AppConfig.cfg["repeats"])
         audio_offset = -48  # ms
 
         for note in pattern:
@@ -535,7 +545,7 @@ class App(QtGui.QMainWindow):
         print('replay mods:', self.replay.mods.value)
 
         # Check if mods are valid
-        if self.cfg["ar"] > 10:
+        if AppConfig.cfg["ar"] > 10:
             has_dt = (self.replay.mods.value & Mod.DoubleTime) > 0
             has_nc = (self.replay.mods.value & Mod.Nightcore) > 0
 
@@ -574,8 +584,8 @@ class App(QtGui.QMainWindow):
 
         # Process score data
         settings = StdScoreData.Settings()
-        settings.ar_ms = App.OsuUtils.ar_to_ms(self.cfg["ar"])
-        settings.hitobject_radius = App.OsuUtils.cs_to_px(self.cfg["cs"])
+        settings.ar_ms = App.OsuUtils.ar_to_ms(AppConfig.cfg["ar"])
+        settings.hitobject_radius = App.OsuUtils.cs_to_px(AppConfig.cfg["cs"])
         settings.pos_hit_range = 100        # ms point of late hit window
         settings.neg_hit_range = 100        # ms point of early hit window
         settings.pos_hit_miss_range = 100   # ms point of late miss window
@@ -631,10 +641,10 @@ class App(QtGui.QMainWindow):
         # Angles are selected with a bit of error margin since lower spacing introduces pixel-angle uncertainty
         # Allow `dx = 0` through because all angles would be 0
         # Allow `notes = 2` through because all angles would be 180
-        angle_select = (np.abs(angles - self.cfg["angle"]) < 3) | (self.cfg["dx"] == 0) | (self.cfg["notes"] == 2)
+        angle_select = (np.abs(angles - AppConfig.cfg["angle"]) < 3) | (AppConfig.cfg["dx"] == 0) | (AppConfig.cfg["notes"] == 2)
 
         # Make sure only points that are within the set spacing are recorded
-        spacing_select = (np.abs(spacings[1:] - self.cfg["dx"]) < 3)
+        spacing_select = (np.abs(spacings[1:] - AppConfig.cfg["dx"]) < 3)
 
         aim_x_offsets = aim_x_offsets[:-1][angle_select & spacing_select]
         aim_y_offsets = aim_y_offsets[:-1][angle_select & spacing_select]
@@ -710,11 +720,11 @@ class App(QtGui.QMainWindow):
 
         # Find record based on bpm and spacing
         data_select = \
-            (self.data[:, App.COL_BPM] == self.cfg["bpm"]) & \
-            (self.data[:, App.COL_PX] == self.cfg["dx"]) & \
-            (self.data[:, App.COL_ROT] == self.cfg["rot"]) & \
-            (self.data[:, App.COL_ANGLE] == self.cfg["angle"]) & \
-            (self.data[:, App.COL_NUM] == self.cfg["notes"])
+            (self.data[:, App.COL_BPM] == AppConfig.cfg["bpm"]) & \
+            (self.data[:, App.COL_PX] == AppConfig.cfg["dx"]) & \
+            (self.data[:, App.COL_ROT] == AppConfig.cfg["rot"]) & \
+            (self.data[:, App.COL_ANGLE] == AppConfig.cfg["angle"]) & \
+            (self.data[:, App.COL_NUM] == AppConfig.cfg["notes"])
 
         num_records = data_select.sum()
 
@@ -732,20 +742,20 @@ class App(QtGui.QMainWindow):
             # Print current record along with worst one
             self.stats_text = \
                 f'\nTotal number of records: {num_records + 1}\n' \
-                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}   notes: {self.cfg["notes"]}\n' \
+                f'ar: {AppConfig.cfg["ar"]}   bpm: {AppConfig.cfg["bpm"]}   dx: {AppConfig.cfg["dx"]}   angle: {AppConfig.cfg["angle"]}   rot: {AppConfig.cfg["rot"]}   notes: {AppConfig.cfg["notes"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f} (worst: {stddev_xy_curr[min_stddev_xy_curr_idx]:.2f})   aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})  worst: ({stddev_x_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_y_curr[min_stddev_xy_curr_idx]:.2f}, {stddev_t_curr[min_stddev_xy_curr_idx]:.2f})\n'
         else:
             # Nothing recorded yet, print just current record
             self.stats_text = \
                 f'\nTotal number of records: {num_records + 1}\n' \
-                f'ar: {self.cfg["ar"]}   bpm: {self.cfg["bpm"]}   dx: {self.cfg["dx"]}   angle: {self.cfg["angle"]}   rot: {self.cfg["rot"]}   notes: {self.cfg["notes"]}\n' \
+                f'ar: {AppConfig.cfg["ar"]}   bpm: {AppConfig.cfg["bpm"]}   dx: {AppConfig.cfg["dx"]}   angle: {AppConfig.cfg["angle"]}   rot: {AppConfig.cfg["rot"]}   notes: {AppConfig.cfg["notes"]}\n' \
                 f'aim stddev-xy: {stddev_xy:.2f}  aim stddev (x, y, t): ({stddev_x:.2f}, {stddev_y:.2f}, {stddev_t:.2f})\n'
 
         self.status_txt.setText(self.info_text + self.stats_text)
         print(self.stats_text)
     
         # Update data and save to file
-        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, self.cfg['bpm'], self.cfg['dx'], self.cfg['angle'], self.cfg['rot'], self.cfg['notes'] ]), axis=0)
+        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, AppConfig.cfg['bpm'], AppConfig.cfg['dx'], AppConfig.cfg['angle'], AppConfig.cfg['rot'], AppConfig.cfg['notes'] ]), axis=0)
         np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
 
         # Now reopen it so it can be used
