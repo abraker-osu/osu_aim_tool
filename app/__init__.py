@@ -552,19 +552,19 @@ class App(QtGui.QMainWindow):
             if not (has_dt or has_nc):
                 self.info_text = 'AR >10 requires DT or NC mod enabled!\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
-                return None, None, None
+                return None, None, None, None
 
             has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore)) > 0
             if has_other_mods:
                 self.info_text = 'AR >10 requires ONLY DT or NC mod enabled!\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
                 
-                return None, None, None
+                return None, None, None, None
         else:
             if self.replay.mods.value != 0:
                 self.info_text = 'AR <10 requires nomod!\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
-                return None, None, None
+                return None, None, None, None
 
         # Read beatmap
         try: map_data = StdMapData.get_map_data(beatmap)
@@ -572,7 +572,7 @@ class App(QtGui.QMainWindow):
             self.info_text = 'Error reading beatmap!\n'
             self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
-            return None, None, None
+            return None, None, None, None
 
         # Read replay
         try: replay_data = StdReplayData.get_replay_data(self.replay)
@@ -580,7 +580,7 @@ class App(QtGui.QMainWindow):
             self.info_text = 'Error reading replay!\n'
             self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
-            return None, None, None
+            return None, None, None, None
 
         # Process score data
         settings = StdScoreData.Settings()
@@ -603,7 +603,7 @@ class App(QtGui.QMainWindow):
             self.info_text = ''
             self.stats_text = '\nInvalid play. Too many misses.'
             self.status_txt.setText(self.info_text + self.stats_text)
-            return None, None, None
+            return None, None, None, None
 
         aim_x_offsets = score_data['replay_x'].values - score_data['map_x'].values
         aim_y_offsets = score_data['replay_y'].values - score_data['map_y'].values
@@ -674,7 +674,7 @@ class App(QtGui.QMainWindow):
             print(f'    set dx = {self.dx}')
             print(f'    set notes = {self.notes}')
             print(f'    set ang = {self.angle}')
-            return None, None, None
+            return None, None, None, None
 
         # Filter out nans that happen due to misc reasons (usually due to empty slices or div by zero)
         nan_filter = ~np.isnan(aim_x_offsets) & ~np.isnan(aim_y_offsets)
@@ -703,7 +703,7 @@ class App(QtGui.QMainWindow):
             print(f'    hit_thetas = {np.arctan2(hit_theta_x, hit_theta_y)}')
             print()
             print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
-            return None, None, None
+            return None, None, None, None
 
         return replay_data, aim_x_offsets, aim_y_offsets, tap_offsets
 
