@@ -37,6 +37,7 @@ class PatternVisual(QtGui.QWidget):
         self.map_data_y = None
         self.map_data_t = None
 
+        self.map_md5 = None
         self.ar_ms = None
         self.cs_px = None
 
@@ -109,7 +110,7 @@ class PatternVisual(QtGui.QWidget):
         self.__time_changed_event()
 
 
-    def set_map(self, data_x, data_y, data_t, cs, ar):
+    def set_map(self, data_x, data_y, data_t, cs, ar, md5=None):
         if type(data_x) == type(None): return
         if type(data_y) == type(None): return
         if type(data_t) == type(None): return
@@ -124,6 +125,7 @@ class PatternVisual(QtGui.QWidget):
 
         self.cs_px = OsuUtils.cs_to_px(cs)
         self.ar_ms = OsuUtils.ar_to_ms(ar)/1000
+        self.map_md5 = md5
 
         self.__draw_map_data()
         
@@ -224,11 +226,13 @@ class PatternVisual(QtGui.QWidget):
         map_data_x = presses['x']
         map_data_y = -presses['y'] 
 
-        self.set_map(map_data_x,map_data_y, map_data_t, beatmap.difficulty.cs, beatmap.difficulty.ar)
+        self.set_map(map_data_x, map_data_y, map_data_t, beatmap.difficulty.cs, beatmap.difficulty.ar, beatmap.metadata.beatmap_md5)
 
 
     def __open_replay(self):
-        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open replay',  AppConfig.cfg['osu_dir'], 'osu! replay files (*.osr)')
+        name_filter = 'osu! replay files (*.osu)' if self.map_md5 == None else f'osu! replay files ({self.map_md5}-*.osr)'
+
+        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open replay',  AppConfig.cfg['osu_dir'], name_filter)
         file_name = file_name[0]
 
         if len(file_name) == 0:
