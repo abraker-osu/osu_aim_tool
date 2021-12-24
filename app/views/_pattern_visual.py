@@ -5,8 +5,9 @@ from pyqtgraph.Qt import QtCore
 import numpy as np
 import math
 
-from osu_analysis import StdMapData
+from osu_analysis import BeatmapIO, ReplayIO, StdMapData, StdReplayData, Gamemode
 
+from app.misc._utils import Utils
 from app.misc._osu_utils import OsuUtils
 from app.misc._hitobject_plot import HitobjectPlot
 from app.config import AppConfig
@@ -194,3 +195,55 @@ class PatternVisual(QtGui.QWidget):
         self.t = self.timeline_marker.getPos()[0]
         self.__draw_map_data()
         self.__draw_replay_data()
+
+
+    def __open_map(self):
+        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open file',  AppConfig.cfg['osu_dir'], 'osu! map files (*.osu)')
+        file_name = file_name[0]
+
+        if len(file_name) == 0:
+            return
+
+        try: beatmap = BeatmapIO.open_beatmap(file_name)
+        except Exception as e:
+            print(Utils.get_traceback(e, 'Error opening map'))
+            return
+
+        if beatmap.gamemode != Gamemode.OSU:
+            print(f'{Gamemode(beatmap.gamemode)} gamemode is not supported')
+            return
+
+        try: map_data = StdMapData.get_map_data(beatmap)
+        except Exception as e:
+            print(Utils.get_traceback(e, 'Error reading map'))
+            return
+
+        presses = StdMapData.get_presses(map_data)
+
+        map_data_t = presses['time']/1000
+        map_data_x = presses['x']
+        map_data_y = -presses['y'] 
+
+        self.set_map(map_data_x,map_data_y, map_data_t, beatmap.difficulty.cs, beatmap.difficulty.ar)
+
+
+    def __open_replay(self):
+        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open replay',  AppConfig.cfg['osu_dir'], 'osu! replay files (*.osr)')
+        file_name = file_name[0]
+
+        if len(file_name) == 0:
+            return
+
+        try: self.replay = ReplayIO.open_replay(file_name)
+        except Exception as e:
+            print(Utils.get_traceback(e, 'Error opening replay'))
+            return
+
+        try: replay_data = StdReplayData.get_replay_data(self.replay)
+        except Exception as e:
+            print(Utils.get_traceback(e, 'Error reading replay'))
+            return
+
+        self.set_replay(replay_data)
+
+        
