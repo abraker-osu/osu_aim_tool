@@ -5,7 +5,7 @@ from pyqtgraph.Qt import QtCore
 import math
 import numpy as np
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 
 
 class StddevGraphSkill():
@@ -88,7 +88,7 @@ class StddevGraphSkill():
             vels = pxs*bpms/60
 
             # Calc linear regression
-            m, b = Utils.linear_regresion(vels, stdevs)
+            m, b = MathUtils.linear_regresion(vels, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 plot_data[i, 0] = np.nan
                 continue

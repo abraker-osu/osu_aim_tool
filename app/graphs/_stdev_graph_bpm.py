@@ -5,7 +5,7 @@ import math
 import numpy as np
 import random
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 from app.misc._select_plot import SelectPlot
 
 
@@ -183,7 +183,7 @@ class StddevGraphBpm():
             # Draw plot
             color = px_lut.map(px, 'qcolor')
             
-            m, b = Utils.linear_regresion(bpms, stdevs)
+            m, b = MathUtils.linear_regresion(bpms, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 # Linear regression failed, just plot the points
                 self.__graph.plot(x=bpms, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{px} osu!px')

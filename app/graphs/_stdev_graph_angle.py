@@ -6,7 +6,7 @@ import math
 import random
 import numpy as np
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 from app.misc._select_plot import SelectPlot
 
 
@@ -170,7 +170,7 @@ class StddevGraphAngle():
             # Draw plot
             color = bpm_lut.map(bpm, 'qcolor')
 
-            m, b = Utils.linear_regresion(angles, stdevs)
+            m, b = MathUtils.linear_regresion(angles, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue

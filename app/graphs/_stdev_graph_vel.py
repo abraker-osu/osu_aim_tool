@@ -5,7 +5,7 @@ from pyqtgraph.Qt import QtCore
 import math
 import numpy as np
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 from app.misc._select_plot import SelectPlot
 
 
@@ -165,7 +165,7 @@ class StddevGraphVel():
             color = angle_lut.map(angle, 'qcolor')
 
             # Calc linear regression
-            m, b = Utils.linear_regresion(vels, stdevs)
+            m, b = MathUtils.linear_regresion(vels, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color)
                 continue

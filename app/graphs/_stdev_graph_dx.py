@@ -5,7 +5,7 @@ import math
 import numpy as np
 import random
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 from app.misc._select_plot import SelectPlot
 
 
@@ -166,7 +166,7 @@ class StddevGraphDx():
             # Draw plot
             color = bpm_lut.map(bpm, 'qcolor')
 
-            m, b = Utils.linear_regresion(pxs, stdevs)
+            m, b = MathUtils.linear_regresion(pxs, stdevs)
             if type(m) == type(None) or type(b) == type(None):
                 self.__graph.plot(x=pxs, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue

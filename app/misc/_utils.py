@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 
-class Utils():
+class MathUtils():
 
     @staticmethod
     def normal_distr(x, avg, std):
@@ -23,7 +23,7 @@ class Utils():
 
     @staticmethod
     def calc_err(x_data, y_data, r, t_min, y=0):
-        curve_fit = Utils.softplus_func(x_data, r, t_min, y)
+        curve_fit = MathUtils.softplus_func(x_data, r, t_min, y)
         return np.sum(np.abs(y_data - curve_fit))
 
 

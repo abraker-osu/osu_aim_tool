@@ -5,7 +5,7 @@ import math
 import numpy as np
 import random
 
-from app.misc._utils import Utils
+from app.misc._utils import MathUtils
 from app.misc._select_plot import SelectPlot
 
 
