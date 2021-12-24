@@ -2,6 +2,22 @@ import math
 import numpy as np
 
 
+class Utils():
+
+    @staticmethod
+    def get_traceback(e, msg):
+        traceback_str = ''
+        traceback_str += f'{msg}: {type(e).__name__} due to "{e}"\n'
+
+        tb_curr = e.__traceback__
+        while tb_curr != None:
+            traceback_str += f'    File "{tb_curr.tb_frame.f_code.co_filename}", line {tb_curr.tb_lineno} in {tb_curr.tb_frame.f_code.co_name}\n'
+            tb_curr = tb_curr.tb_next
+
+        return traceback_str
+
+
+
 class MathUtils():
 
     @staticmethod
