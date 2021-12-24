@@ -370,7 +370,7 @@ class App(QtGui.QMainWindow):
                 self.replot_graphs()
 
             # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
-            map_path = f'{self.osu_path}/Songs/aim_tool'
+            map_path = f'{AppConfig.cfg["osu_dir"]}/Songs/aim_tool'
 
             self.__generate_map(map_path)
             self.__monitor_replay()
