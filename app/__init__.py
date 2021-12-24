@@ -135,16 +135,7 @@ class App(QtGui.QMainWindow):
         self.view_hits_action = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
         self.view_map_action  = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
                 self.pattern_visual.show(), 
-                self.pattern_visual.set_map(
-                    AppConfig.cfg["bpm"], 
-                    AppConfig.cfg["dx"], 
-                    AppConfig.cfg["angle"],
-                    AppConfig.cfg["rot"], 
-                    AppConfig.cfg["repeats"], 
-                    AppConfig.cfg["notes"], 
-                    AppConfig.cfg["cs"], 
-                    AppConfig.cfg["ar"]
-                )
+                self.__update_generated_map()
             )
         )
         self.view_data_sel_action = QtGui.QAction("&Show data select", self.view_menu, triggered=lambda: self.data_list.show())
@@ -293,22 +284,22 @@ class App(QtGui.QMainWindow):
     def __setting_value_changed_event(self, key, value):
         AppConfig.update_value(key, value)
 
-        if key in [ 'bpm', 'dx', 'angle', 'rot', 'notes', 'cs', 'ar' ]:
-            self.pattern_visual.set_map(**{ key : value })
+        if key in [ 'bpm', 'dx', 'angle', 'repeats', 'rot', 'notes', 'cs', 'ar' ]:
+            is_clipped = self.__update_generated_map()
+            
+            # Check if pattern is clipped and show warning if so
+            if key in [ 'dx', 'angle', 'rot', 'repeats', 'notes' ]:
+                if is_clipped:
+                    self.info_text = \
+                        'Set settings and click start!\n' + \
+                        'Warning: Pattern is being clipped to playfield border!\n'
+                else:
+                    self.info_text = 'Set settings and click start!\n'
+    
+                self.status_txt.setText(self.info_text + self.stats_text)
 
         if key in [ 'bpm', 'dx' ]:
             App.StddevGraphVel.update_vel(self, **{ key : value })
-
-        # Check if pattern is clipped and show warning if so
-        if key in [ 'dx', 'angle', 'rot', 'repeats', 'notes' ]:
-            if self.pattern_visual.is_clipped():
-                self.info_text = \
-                    'Set settings and click start!\n' + \
-                    'Warning: Pattern is being clipped to playfield border!\n'
-            else:
-                self.info_text = 'Set settings and click start!\n'
-
-            self.status_txt.setText(self.info_text + self.stats_text)
 
         if key == 'cs':
             dev = App.OsuUtils.cs_to_px(value)
@@ -785,6 +776,25 @@ class App(QtGui.QMainWindow):
         App.StddevGraphVel.plot_data(self, self.data)
         App.StddevGraphSkill.plot_data(self, self.data)
 
+
+    def __update_generated_map(self):
+        bpm   = AppConfig.cfg['bpm']
+        dx    = AppConfig.cfg['dx']
+        angle = AppConfig.cfg['angle']
+        rot   = AppConfig.cfg['rot']
+        num   = AppConfig.cfg['repeats']
+        notes = AppConfig.cfg['notes']
+
+        pattern, is_clip = App.OsuUtils.generate_pattern2(rot*math.pi/180, dx, 60/bpm, angle*math.pi/180, notes, num)
+
+        data_x = pattern[:, 0]
+        data_y = -pattern[:, 1]
+        data_t = pattern[:, 2]
+
+        self.pattern_visual.set_map(data_x, data_y, data_t, AppConfig.cfg['cs'], AppConfig.cfg['ar'])
+
+        return is_clip
+        
 
     def __set_settings_edit_enabled(self, enabled):
         for widget in self.cfg_widgets.values():
