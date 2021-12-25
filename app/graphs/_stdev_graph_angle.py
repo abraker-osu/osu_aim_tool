@@ -155,7 +155,16 @@ class StddevGraphAngle():
             elif self.dev_select == self.DEV_T:
                 self.__graph.setTitle('Aim dev-t (angle)')
                 stdevs = data[data_select, DataRec.COL_STDEV_T]
-
+            elif self.dev_select == self.AVG_X:
+                self.__graph.setTitle('Aim avg-x (bpm)')
+                stdevs = data[data_select, DataRec.COL_AVG_X]
+            elif self.dev_select == self.AVG_Y:
+                self.__graph.setTitle('Aim avg-y (bpm)')
+                stdevs = data[data_select, DataRec.COL_AVG_Y]
+            elif self.dev_select == self.AVG_T:
+                self.__graph.setTitle('Aim avg-t (bpm)')
+                stdevs = data[data_select, DataRec.COL_AVG_T]
+                
             if self.avg_data_points:
                 # Use best N points for data display
                 num_points = min(len(stdevs), self.MAX_NUM_DATA_POINTS)

@@ -27,6 +27,8 @@ from app.config import AppConfig
 
 class App(QtGui.QMainWindow):
 
+    data_file_loaded = QtCore.pyqtSignal(int)
+
     SAVE_FILE = lambda x: f'data/stdev_data_{int(x)}.npy'
 
     MAX_NUM_DATA_POINTS = 5  # Maximum number of data point records to average
@@ -61,6 +63,9 @@ class App(QtGui.QMainWindow):
     DEV_Y  = 1
     DEV_XY = 2
     DEV_T  = 3
+    AVG_X  = 4
+    AVG_Y  = 5
+    AVG_T  = 6
 
     from .misc._dock_patch import updateStylePatched
     from .misc.value_edit import ValueEdit
@@ -88,6 +93,7 @@ class App(QtGui.QMainWindow):
         self.__build_layout()
 
         self.DataVer = App.DataV2
+        self.data_file_loaded.connect(self.__data_file_load_handler)
 
         if not self.load_data_file(self.user_id):
             return
@@ -176,6 +182,11 @@ class App(QtGui.QMainWindow):
         self.xydev_radio_btn = QtGui.QRadioButton('xy-dev')
         self.tdev_radio_btn = QtGui.QRadioButton('t-dev')
 
+        self.avg_selct_layout = QtGui.QVBoxLayout()
+        self.xavg_radio_btn = QtGui.QRadioButton('x-avg')
+        self.yavg_radio_btn = QtGui.QRadioButton('y-avg')
+        self.tavg_radio_btn = QtGui.QRadioButton('t-avg')
+
         self.edit_layout  = QtGui.QHBoxLayout()
         self.cfg_widgets = {
             'bpm'     : App.ValueEdit(1, 1200, 'bpm',     'BPM'),
@@ -215,6 +226,9 @@ class App(QtGui.QMainWindow):
         self.ydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.xydev_radio_btn.toggled.connect(self.__dev_select_event)
         self.tdev_radio_btn.toggled.connect(self.__dev_select_event)
+        self.xavg_radio_btn.toggled.connect(self.__dev_select_event)
+        self.yavg_radio_btn.toggled.connect(self.__dev_select_event)
+        self.tavg_radio_btn.toggled.connect(self.__dev_select_event)
 
         # Add setting text edit fields
         self.edit_layout.addWidget(self.cfg_widgets['bpm'])
@@ -238,9 +252,15 @@ class App(QtGui.QMainWindow):
         self.dev_selct_layout.addWidget(self.xydev_radio_btn)
         self.dev_selct_layout.addWidget(self.tdev_radio_btn)
 
+        # Add average select radio buttons
+        self.avg_selct_layout.addWidget(self.xavg_radio_btn)
+        self.avg_selct_layout.addWidget(self.yavg_radio_btn)
+        self.avg_selct_layout.addWidget(self.tavg_radio_btn)
+
         # Build layout
         self.selct_layout.addLayout(self.win_selct_layout)
         self.selct_layout.addLayout(self.dev_selct_layout)
+        self.selct_layout.addLayout(self.avg_selct_layout)
 
         self.main_layout.addLayout(self.selct_layout)
         self.main_layout.addLayout(self.edit_layout)
@@ -341,6 +361,14 @@ class App(QtGui.QMainWindow):
             self.dev_select = App.DEV_XY
         elif self.sender() == self.tdev_radio_btn and self.tdev_radio_btn.isChecked():
             self.dev_select = App.DEV_T
+        elif self.sender() == self.xavg_radio_btn and self.xavg_radio_btn.isChecked():
+            self.dev_select = App.AVG_X
+        elif self.sender() == self.yavg_radio_btn and self.yavg_radio_btn.isChecked():
+            self.dev_select = App.AVG_Y
+        elif self.sender() == self.tavg_radio_btn and self.tavg_radio_btn.isChecked():
+            self.dev_select = App.AVG_T
+        else:
+            return
 
         self.replot_graphs()
 
@@ -808,6 +836,8 @@ class App(QtGui.QMainWindow):
             if num_cols == self.DataV1.NUM_COLS:
                 print('Data file v1 detected!')
                 self.DataVer = self.DataV1
+                self.data_file_loaded.emit(self.DataVer.NUM_COLS)
+                
                 self.data_file = data_file
                 self.data = data
                 return True
@@ -815,6 +845,8 @@ class App(QtGui.QMainWindow):
             if num_cols == self.DataV2.NUM_COLS:
                 print('Data file v2 detected!')
                 self.DataVer = self.DataV2
+                self.data_file_loaded.emit(self.DataVer.NUM_COLS)
+
                 self.data_file = data_file
                 self.data = data
                 return True
@@ -829,8 +861,11 @@ class App(QtGui.QMainWindow):
             
             self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
             self.data = np.load(self.data_file, allow_pickle=False)
+            self.DataVer = self.DataV2
 
             print(f'Loaded data file containing {self.data.shape[1]} columns.')
+
+            self.data_file_loaded.emit(self.DataVer.NUM_COLS)
             return True
 
 
@@ -865,6 +900,27 @@ class App(QtGui.QMainWindow):
     def __set_settings_edit_enabled(self, enabled):
         for widget in self.cfg_widgets.values():
             widget.setEnabled(enabled)
+
+
+    def __data_file_load_handler(self, num_cols):
+        if num_cols == self.DataV1.NUM_COLS:
+            self.xavg_radio_btn.hide()
+            self.yavg_radio_btn.hide()
+            self.tavg_radio_btn.hide()
+
+            is_checked = [
+                self.xavg_radio_btn.isChecked(),
+                self.yavg_radio_btn.isChecked(),
+                self.tavg_radio_btn.isChecked()
+            ]
+
+            if True in is_checked:
+                self.xdev_radio_btn.setChecked(True)
+
+        elif num_cols == self.DataV2.NUM_COLS:
+            self.xavg_radio_btn.show()
+            self.yavg_radio_btn.show()
+            self.tavg_radio_btn.show()
 
 
     def closeEvent(self, event):
