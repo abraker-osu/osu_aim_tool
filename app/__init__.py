@@ -333,13 +333,13 @@ class App(QtGui.QMainWindow):
 
 
     def __dev_select_event(self):
-        if self.sender() == self.xdev_radio_btn:
+        if self.sender() == self.xdev_radio_btn and self.xdev_radio_btn.isChecked():
             self.dev_select = App.DEV_X
-        elif self.sender() == self.ydev_radio_btn:
+        elif self.sender() == self.ydev_radio_btn and self.ydev_radio_btn.isChecked():
             self.dev_select = App.DEV_Y
-        elif self.sender() == self.xydev_radio_btn:
+        elif self.sender() == self.xydev_radio_btn and self.xydev_radio_btn.isChecked():
             self.dev_select = App.DEV_XY
-        elif self.sender() == self.tdev_radio_btn:
+        elif self.sender() == self.tdev_radio_btn and self.tdev_radio_btn.isChecked():
             self.dev_select = App.DEV_T
 
         self.replot_graphs()
