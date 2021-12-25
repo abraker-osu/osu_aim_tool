@@ -91,36 +91,38 @@ class StddevGraphBpm():
         if data.shape[0] == 0:
             return
 
+        DataRec = self.DataVer
+
         # Clear plots for redraw
         self.__graph.clearPlots()
 
         # Select data slices by angle
         ang0, ang1 = self.__ang_plot.get_region()
-        ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
+        ang_select = ((ang0 <= data[:, DataRec.COL_ANGLE]) & (data[:, DataRec.COL_ANGLE] <= ang1))
 
         # Select data slices by distance
         px0, px1 = self.__px_plot.get_region()
-        px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
+        px_select = ((px0 <= data[:, DataRec.COL_PX]) & (data[:, DataRec.COL_PX] <= px1))
 
         # Select data slices by rotation
         rot0, rot1 = self.__rot_plot.get_region()
-        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+        rot_select = ((rot0 <= data[:, DataRec.COL_ROT]) & (data[:, DataRec.COL_ROT] <= rot1))
 
         # Select data slices by number of notes
         num0, num1 = self.__num_plot.get_region()
-        num_select = ((num0 <= data[:, self.COL_NUM]) & (data[:, self.COL_NUM] <= num1))
+        num_select = ((num0 <= data[:, DataRec.COL_NUM]) & (data[:, DataRec.COL_NUM] <= num1))
 
         # Draw available rotation points on the plot to the right   
-        unique_angs = np.unique(data[:, self.COL_ANGLE])
+        unique_angs = np.unique(data[:, DataRec.COL_ANGLE])
         self.__ang_plot.plot(unique_angs)
 
-        unique_pxs = np.unique(data[:, self.COL_PX])
+        unique_pxs = np.unique(data[:, DataRec.COL_PX])
         self.__px_plot.plot(unique_pxs)
 
-        unique_rots = np.unique(data[:, self.COL_ROT])
+        unique_rots = np.unique(data[:, DataRec.COL_ROT])
         self.__rot_plot.plot(unique_rots)
 
-        unique_nums = np.unique(data[:, self.COL_NUM])
+        unique_nums = np.unique(data[:, DataRec.COL_NUM])
         self.__num_plot.plot(unique_nums)
 
         # Selected rotation region has no data. Nothing else to do
@@ -128,7 +130,7 @@ class StddevGraphBpm():
             return
 
         # Colored gradient r->g->b multiple plots at different osu!px
-        unique_pxs = np.unique(data[rot_select & px_select & ang_select & num_select, self.COL_PX])
+        unique_pxs = np.unique(data[rot_select & px_select & ang_select & num_select, DataRec.COL_PX])
 
         px_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_pxs), max(unique_pxs), 3),
@@ -145,27 +147,27 @@ class StddevGraphBpm():
         # Adds a plot for every unique osu!px recorded
         for px in unique_pxs:
             # Extract data
-            px_select = (data[:, self.COL_PX] == px)
+            px_select = (data[:, DataRec.COL_PX] == px)
             data_select = px_select & ang_select & rot_select & num_select
             if not any(px_select):
                 # Selected region has no data. Nothing else to do
                 continue
 
-            bpms = data[data_select, self.COL_BPM]
+            bpms = data[data_select, DataRec.COL_BPM]
 
             # Determine data selected by osu!px
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (bpm)')
-                stdevs = data[data_select, self.COL_STDEV_X]
+                stdevs = data[data_select, DataRec.COL_STDEV_X]
             elif self.dev_select == self.DEV_Y:
                 self.__graph.setTitle('Aim dev-y (bpm)')
-                stdevs = data[data_select, self.COL_STDEV_Y]
+                stdevs = data[data_select, DataRec.COL_STDEV_Y]
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (bpm)')
-                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                stdevs = (data[data_select, DataRec.COL_STDEV_X]**2 + data[data_select, DataRec.COL_STDEV_Y]**2)**0.5
             elif self.dev_select == self.DEV_T:
                 self.__graph.setTitle('Aim dev-t (bpm)')
-                stdevs = data[data_select, self.COL_STDEV_T]
+                stdevs = data[data_select, DataRec.COL_STDEV_T]
             
             if self.avg_data_points:
                 # Use best N points for data display

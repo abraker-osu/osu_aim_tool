@@ -86,28 +86,30 @@ class StddevGraphAngle():
         if data.shape[0] == 0:
             return
 
+        DataRec = self.DataVer
+
         # Clear plots for redraw
         self.__graph.clearPlots()
 
         # Select data slices by bpm
         bpm0, bpm1 = self.__bpm_plot.get_region()
-        bpm_select = ((bpm0 <= data[:, self.COL_BPM]) & (data[:, self.COL_BPM] <= bpm1))
+        bpm_select = ((bpm0 <= data[:, DataRec.COL_BPM]) & (data[:, DataRec.COL_BPM] <= bpm1))
 
         # Select data slices by distance
         px0, px1 = self.__px_plot.get_region()
-        px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
+        px_select = ((px0 <= data[:, DataRec.COL_PX]) & (data[:, DataRec.COL_PX] <= px1))
 
         # Select data slices by rotation
         rot0, rot1 = self.__rot_plot.get_region()
-        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+        rot_select = ((rot0 <= data[:, DataRec.COL_ROT]) & (data[:, DataRec.COL_ROT] <= rot1))
 
-        unique_bpms = np.unique(data[:, self.COL_BPM])
+        unique_bpms = np.unique(data[:, DataRec.COL_BPM])
         self.__bpm_plot.plot(unique_bpms)
 
-        unique_pxs = np.unique(data[:, self.COL_PX])
+        unique_pxs = np.unique(data[:, DataRec.COL_PX])
         self.__px_plot.plot(unique_pxs)
 
-        unique_rots = np.unique(data[:, self.COL_ROT])
+        unique_rots = np.unique(data[:, DataRec.COL_ROT])
         self.__rot_plot.plot(unique_rots)
 
         # Selected rotation region has no data. Nothing else to do
@@ -115,7 +117,7 @@ class StddevGraphAngle():
             return
 
         # Colored gradient r->g->b multiple plots at different osu!px
-        unique_bpms = np.unique(data[bpm_select & px_select & rot_select, self.COL_BPM])
+        unique_bpms = np.unique(data[bpm_select & px_select & rot_select, DataRec.COL_BPM])
 
         bpm_lut = pyqtgraph.ColorMap(
             np.linspace(min(unique_bpms), max(unique_bpms), 3),
@@ -132,27 +134,27 @@ class StddevGraphAngle():
         # Adds a plot for every unique BPM recorded
         for bpm in unique_bpms:
             # Determine data selected by BPM
-            bpm_select = (data[:, self.COL_BPM] == bpm)
+            bpm_select = (data[:, DataRec.COL_BPM] == bpm)
             data_select = bpm_select & px_select & rot_select
             if not any(data_select):
                 # Selected region has no data. Nothing else to do
                 continue
 
-            angles = data[data_select, self.COL_ANGLE]
+            angles = data[data_select, DataRec.COL_ANGLE]
 
             # Determine data selected by osu!px
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (angle)')
-                stdevs = data[data_select, self.COL_STDEV_X]
+                stdevs = data[data_select, DataRec.COL_STDEV_X]
             elif self.dev_select == self.DEV_Y:
                 self.__graph.setTitle('Aim dev-y (angle)')
-                stdevs = data[data_select, self.COL_STDEV_Y]
+                stdevs = data[data_select, DataRec.COL_STDEV_Y]
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (angle)')
-                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                stdevs = (data[data_select, DataRec.COL_STDEV_X]**2 + data[data_select, DataRec.COL_STDEV_Y]**2)**0.5
             elif self.dev_select == self.DEV_T:
                 self.__graph.setTitle('Aim dev-t (angle)')
-                stdevs = data[data_select, self.COL_STDEV_T]
+                stdevs = data[data_select, DataRec.COL_STDEV_T]
 
             if self.avg_data_points:
                 # Use best N points for data display

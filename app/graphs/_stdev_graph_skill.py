@@ -45,11 +45,13 @@ class StddevGraphSkill():
         if data.shape[0] == 0:
             return
 
+        DataRec = self.DataVer
+
         # Clear plots for redraw
         self.__graph.clearPlots()
 
         # Colored gradient r->g->b multiple plots at different angles
-        unique_angs = np.unique(data[:, self.COL_ANGLE])
+        unique_angs = np.unique(data[:, DataRec.COL_ANGLE])
         if unique_angs.shape[0] == 0:
             # Data selection empty
             return
@@ -60,7 +62,7 @@ class StddevGraphSkill():
         # Adds a plot for every unique BPM recorded
         for angle, i in zip(unique_angs, range(data.shape[0])):
             # Determine data selected by angle
-            ang_select = (data[:, self.COL_ANGLE] == angle)
+            ang_select = (data[:, DataRec.COL_ANGLE] == angle)
             data_select = ang_select
             if not any(data_select):
                 # Selected region has no data. Nothing else to do
@@ -70,19 +72,19 @@ class StddevGraphSkill():
             # Extract relavent data
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (vel)')
-                stdevs = data[data_select, self.COL_STDEV_X]
+                stdevs = data[data_select, DataRec.COL_STDEV_X]
             elif self.dev_select == self.DEV_Y:
                 self.__graph.setTitle('Aim dev-y (vel)')
-                stdevs = data[data_select, self.COL_STDEV_Y]
+                stdevs = data[data_select, DataRec.COL_STDEV_Y]
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (vel)')
-                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                stdevs = (data[data_select, DataRec.COL_STDEV_X]**2 + data[data_select, DataRec.COL_STDEV_Y]**2)**0.5
             elif self.dev_select == self.DEV_T:
                 self.__graph.setTitle('Aim dev-t (vel)')
-                stdevs = data[data_select, self.COL_STDEV_T]
+                stdevs = data[data_select, DataRec.COL_STDEV_T]
 
-            pxs = data[data_select, self.COL_PX]
-            bpms = data[data_select, self.COL_BPM]
+            pxs = data[data_select, DataRec.COL_PX]
+            bpms = data[data_select, DataRec.COL_BPM]
 
             # Velocity
             vels = pxs*bpms/60

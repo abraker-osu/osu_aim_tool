@@ -90,33 +90,35 @@ class StddevGraphVel():
         if data.shape[0] == 0:
             return
 
+        DataRec = self.DataVer
+
         # Clear plots for redraw
         self.__graph.clearPlots()
         self.__text.setText(f'')
 
         # Select data slices by angle
         ang0, ang1 = self.__ang_plot.get_region()
-        ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
+        ang_select = ((ang0 <= data[:, DataRec.COL_ANGLE]) & (data[:, DataRec.COL_ANGLE] <= ang1))
 
         # Select data slices by distance
         px0, px1 = self.__px_plot.get_region()
-        px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
+        px_select = ((px0 <= data[:, DataRec.COL_PX]) & (data[:, DataRec.COL_PX] <= px1))
 
         # Select data slices by rotation
         rot0, rot1 = self.__rot_plot.get_region()
-        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+        rot_select = ((rot0 <= data[:, DataRec.COL_ROT]) & (data[:, DataRec.COL_ROT] <= rot1))
 
-        unique_angs = np.unique(data[:, self.COL_ANGLE])
+        unique_angs = np.unique(data[:, DataRec.COL_ANGLE])
         self.__ang_plot.plot(unique_angs)
 
-        unique_pxs = np.unique(data[:, self.COL_PX])
+        unique_pxs = np.unique(data[:, DataRec.COL_PX])
         self.__px_plot.plot(unique_pxs)
 
-        unique_rots = np.unique(data[:, self.COL_ROT])
+        unique_rots = np.unique(data[:, DataRec.COL_ROT])
         self.__rot_plot.plot(unique_rots)
 
         # Colored gradient r->g->b multiple plots at different angles
-        unique_angs = np.unique(data[ang_select & rot_select & px_select, self.COL_ANGLE])
+        unique_angs = np.unique(data[ang_select & rot_select & px_select, DataRec.COL_ANGLE])
         if unique_angs.shape[0] == 0:
             # Data selection empty
             return
@@ -135,7 +137,7 @@ class StddevGraphVel():
         # Adds a plot for every unique BPM recorded
         for angle in unique_angs:
             # Determine data selected by angle
-            ang_select = (data[:, self.COL_ANGLE] == angle)
+            ang_select = (data[:, DataRec.COL_ANGLE] == angle)
             data_select = ang_select & px_select & rot_select
             if not any(data_select):
                 # Selected region has no data. Nothing else to do
@@ -144,19 +146,19 @@ class StddevGraphVel():
             # Extract relavent data
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (vel)')
-                stdevs = data[data_select, self.COL_STDEV_X]
+                stdevs = data[data_select, DataRec.COL_STDEV_X]
             elif self.dev_select == self.DEV_Y:
                 self.__graph.setTitle('Aim dev-y (vel)')
-                stdevs = data[data_select, self.COL_STDEV_Y]
+                stdevs = data[data_select, DataRec.COL_STDEV_Y]
             elif self.dev_select == self.DEV_XY:
                 self.__graph.setTitle('Aim dev-xy (vel)')
-                stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+                stdevs = (data[data_select, DataRec.COL_STDEV_X]**2 + data[data_select, DataRec.COL_STDEV_Y]**2)**0.5
             elif self.dev_select == self.DEV_T:
                 self.__graph.setTitle('Aim dev-t (vel)')
-                stdevs = data[data_select, self.COL_STDEV_T]
+                stdevs = data[data_select, DataRec.COL_STDEV_T]
 
-            pxs = data[data_select, self.COL_PX]
-            bpms = data[data_select, self.COL_BPM]
+            pxs = data[data_select, DataRec.COL_PX]
+            bpms = data[data_select, DataRec.COL_BPM]
 
             # Velocity
             vels = pxs*bpms/60

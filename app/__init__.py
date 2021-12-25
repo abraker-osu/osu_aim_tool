@@ -31,15 +31,31 @@ class App(QtGui.QMainWindow):
 
     MAX_NUM_DATA_POINTS = 5  # Maximum number of data point records to average
 
-    COL_STDEV_X = 0  # Deviation along x-axis
-    COL_STDEV_Y = 1  # Deviation along y-axis
-    COL_STDEV_T = 2  # Deviation along hit time
-    COL_BPM     = 3  # BPM of the pattern (60/s)
-    COL_PX      = 4  # Distance between notes in the pattern (osu!px)
-    COL_ANGLE   = 5  # Angle between notes in the pattern (deg)
-    COL_ROT     = 6  # Rotation of pattern (deg)
-    COL_NUM     = 7  # Number of notes in the pattern before pattern reverses
-    NUM_COLS    = 8
+    class DataV1():
+        COL_STDEV_X = 0  # Deviation along x-axis
+        COL_STDEV_Y = 1  # Deviation along y-axis
+        COL_STDEV_T = 2  # Deviation along hit time
+        COL_BPM     = 3  # BPM of the pattern (60/s)
+        COL_PX      = 4  # Distance between notes in the pattern (osu!px)
+        COL_ANGLE   = 5  # Angle between notes in the pattern (deg)
+        COL_ROT     = 6  # Rotation of pattern (deg)
+        COL_NUM     = 7  # Number of notes in the pattern before pattern reverses
+        NUM_COLS    = 8
+
+    class DataV2():
+        COL_STDEV_X = 0   # Deviation along x-axis
+        COL_AVG_X   = 1   # Average along x-axis
+        COL_STDEV_Y = 2   # Deviation along y-axis
+        COL_AVG_Y   = 3   # Average along y-axis
+        COL_STDEV_T = 4   # Deviation along hit time
+        COL_AVG_T   = 5   # Average along hit time
+        COL_BPM     = 6   # BPM of the pattern (60/s)
+        COL_PX      = 7   # Distance between notes in the pattern (osu!px)
+        COL_ANGLE   = 8   # Angle between notes in the pattern (deg)
+        COL_ROT     = 9   # Rotation of pattern (deg)
+        COL_NUM     = 10  # Number of notes in the pattern before pattern reverses
+        COL_CS      = 11  # Circle size of pattern (osu!px)
+        NUM_COLS    = 12
 
     DEV_X  = 0
     DEV_Y  = 1
@@ -71,7 +87,11 @@ class App(QtGui.QMainWindow):
         self.__init_gui()
         self.__build_layout()
 
-        self.load_data_file(self.user_id)
+        self.DataVer = App.DataV2
+
+        if not self.load_data_file(self.user_id):
+            return
+
         self.data_list.load_data_list()
         self.data_list.select_data_id(self.user_id)
 
@@ -705,6 +725,10 @@ class App(QtGui.QMainWindow):
         stddev_y = np.std(aim_offsets_y)
         stddev_t = np.std(tap_offsets)
 
+        mean_x = np.mean(aim_offsets_x)
+        mean_y = np.mean(aim_offsets_y)
+        mean_t = np.mean(tap_offsets)
+
         stddev_xy = (stddev_x**2 + stddev_y**2)**0.5
 
         # Close data file for writing
@@ -712,20 +736,20 @@ class App(QtGui.QMainWindow):
 
         # Find record based on bpm and spacing
         data_select = \
-            (self.data[:, App.COL_BPM] == AppConfig.cfg["bpm"]) & \
-            (self.data[:, App.COL_PX] == AppConfig.cfg["dx"]) & \
-            (self.data[:, App.COL_ROT] == AppConfig.cfg["rot"]) & \
-            (self.data[:, App.COL_ANGLE] == AppConfig.cfg["angle"]) & \
-            (self.data[:, App.COL_NUM] == AppConfig.cfg["notes"])
+            (self.data[:, self.DataVer.COL_BPM] == AppConfig.cfg["bpm"]) & \
+            (self.data[:, self.DataVer.COL_PX] == AppConfig.cfg["dx"]) & \
+            (self.data[:, self.DataVer.COL_ROT] == AppConfig.cfg["rot"]) & \
+            (self.data[:, self.DataVer.COL_ANGLE] == AppConfig.cfg["angle"]) & \
+            (self.data[:, self.DataVer.COL_NUM] == AppConfig.cfg["notes"])
 
         num_records = data_select.sum()
 
         # Print play/record info
         if num_records != 0:
             # Get current records
-            stddev_x_curr = self.data[data_select, App.COL_STDEV_X]
-            stddev_y_curr = self.data[data_select, App.COL_STDEV_Y]
-            stddev_t_curr = self.data[data_select, App.COL_STDEV_T]
+            stddev_x_curr = self.data[data_select, self.DataVer.COL_STDEV_X]
+            stddev_y_curr = self.data[data_select, self.DataVer.COL_STDEV_Y]
+            stddev_t_curr = self.data[data_select, self.DataVer.COL_STDEV_T]
 
             # Calculate stdev-xy for each data point and figure out which one is largest
             stddev_xy_curr = (stddev_x_curr**2 + stddev_y_curr**2)**0.5
@@ -747,7 +771,21 @@ class App(QtGui.QMainWindow):
         print(self.stats_text)
     
         # Update data and save to file
-        self.data = np.insert(self.data, 0, np.asarray([ stddev_x, stddev_y, stddev_t, AppConfig.cfg['bpm'], AppConfig.cfg['dx'], AppConfig.cfg['angle'], AppConfig.cfg['rot'], AppConfig.cfg['notes'] ]), axis=0)
+        if self.DataVer.NUM_COLS == App.DataV1.NUM_COLS:
+            data = [ stddev_x, stddev_y, stddev_t, AppConfig.cfg['bpm'], AppConfig.cfg['dx'], AppConfig.cfg['angle'], AppConfig.cfg['rot'], AppConfig.cfg['notes'] ]
+            assert(len(data) == self.DataVer.NUM_COLS)
+
+            self.data = np.insert(self.data, 0, np.asarray(data), axis=0)
+
+        elif self.DataVer.NUM_COLS == App.DataV2.NUM_COLS:
+            data = [ stddev_x, mean_x, stddev_y, mean_y, stddev_t, mean_t, AppConfig.cfg['bpm'], AppConfig.cfg['dx'], AppConfig.cfg['angle'], AppConfig.cfg['rot'], AppConfig.cfg['notes'], AppConfig.cfg['cs'] ]
+            assert(len(data) == self.DataVer.NUM_COLS)
+
+            self.data = np.insert(self.data, 0, np.asarray([ stddev_x, mean_x, stddev_y, mean_y, stddev_t, mean_t, AppConfig.cfg['bpm'], AppConfig.cfg['dx'], AppConfig.cfg['angle'], AppConfig.cfg['rot'], AppConfig.cfg['notes'], AppConfig.cfg['cs'] ]), axis=0)
+        
+        else:
+            raise Exception(f'Unknown data version with {self.DataVer.NUM_COLS} columns')
+
         np.save(App.SAVE_FILE(self.user_id), self.data, allow_pickle=False)
 
         # Now reopen it so it can be used
@@ -757,16 +795,43 @@ class App(QtGui.QMainWindow):
 
     def load_data_file(self, user_id):
         try: 
-            self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
-            self.data = np.load(self.data_file, allow_pickle=False)
+            data_file = open(App.SAVE_FILE(user_id), 'rb+')
+            data = np.load(data_file, allow_pickle=False)
+
+            num_cols = data.shape[1]
+            print(f'Loaded data file containing {data.shape[1]} columns.')
+
+            if num_cols < 8:
+                print('Invalid data file!')
+                return False
+
+            if num_cols == self.DataV1.NUM_COLS:
+                print('Data file v1 detected!')
+                self.DataVer = self.DataV1
+                self.data_file = data_file
+                self.data = data
+                return True
+
+            if num_cols == self.DataV2.NUM_COLS:
+                print('Data file v2 detected!')
+                self.DataVer = self.DataV2
+                self.data_file = data_file
+                self.data = data
+                return True
+
+            return False
+
         except FileNotFoundError:
             print('Data file not found. Creating...')
 
             self.data = np.asarray([])
-            np.save(App.SAVE_FILE(user_id), np.empty((0, App.NUM_COLS)), allow_pickle=False)
+            np.save(App.SAVE_FILE(user_id), np.empty((0, self.DataVer.NUM_COLS)), allow_pickle=False)
             
             self.data_file = open(App.SAVE_FILE(user_id), 'rb+')
             self.data = np.load(self.data_file, allow_pickle=False)
+
+            print(f'Loaded data file containing {self.data.shape[1]} columns.')
+            return True
 
 
     def replot_graphs(self):

@@ -91,36 +91,38 @@ class StddevGraphNumNotes():
         if data.shape[0] == 0:
             return
 
+        DataRec = self.DataVer
+
         # Clear plots for redraw
         self.__graph.clearPlots()
 
         # Select data slices by angle
         ang0, ang1 = self.__ang_plot.get_region()
-        ang_select = ((ang0 <= data[:, self.COL_ANGLE]) & (data[:, self.COL_ANGLE] <= ang1))
+        ang_select = ((ang0 <= data[:, DataRec.COL_ANGLE]) & (data[:, DataRec.COL_ANGLE] <= ang1))
 
         # Select data slices by distance
         px0, px1 = self.__px_plot.get_region()
-        px_select = ((px0 <= data[:, self.COL_PX]) & (data[:, self.COL_PX] <= px1))
+        px_select = ((px0 <= data[:, DataRec.COL_PX]) & (data[:, DataRec.COL_PX] <= px1))
 
         # Select data slices by bpm
         bpm0, bpm1 = self.__bpm_plot.get_region()
-        bpm_select = ((bpm0 <= data[:, self.COL_BPM]) & (data[:, self.COL_BPM] <= bpm1))
+        bpm_select = ((bpm0 <= data[:, DataRec.COL_BPM]) & (data[:, DataRec.COL_BPM] <= bpm1))
 
         # Select data slices by rotation
         rot0, rot1 = self.__rot_plot.get_region()
-        rot_select = ((rot0 <= data[:, self.COL_ROT]) & (data[:, self.COL_ROT] <= rot1))
+        rot_select = ((rot0 <= data[:, DataRec.COL_ROT]) & (data[:, DataRec.COL_ROT] <= rot1))
 
         # Draw available rotation points on the plot to the right   
-        unique_angs = np.unique(data[:, self.COL_ANGLE])
+        unique_angs = np.unique(data[:, DataRec.COL_ANGLE])
         self.__ang_plot.plot(unique_angs)
 
-        unique_pxs = np.unique(data[:, self.COL_PX])
+        unique_pxs = np.unique(data[:, DataRec.COL_PX])
         self.__px_plot.plot(unique_pxs)
 
-        unique_bpms = np.unique(data[:, self.COL_BPM])
+        unique_bpms = np.unique(data[:, DataRec.COL_BPM])
         self.__bpm_plot.plot(unique_bpms)
 
-        unique_rots = np.unique(data[:, self.COL_ROT])
+        unique_rots = np.unique(data[:, DataRec.COL_ROT])
         self.__rot_plot.plot(unique_rots)
 
         # Selected rotation region has no data. Nothing else to do
@@ -136,18 +138,18 @@ class StddevGraphNumNotes():
         # Determine data selected by osu!px
         if self.dev_select == self.DEV_X:
             self.__graph.setTitle('Aim dev-x (bpm)')
-            stdevs = data[data_select, self.COL_STDEV_X]
+            stdevs = data[data_select, DataRec.COL_STDEV_X]
         elif self.dev_select == self.DEV_Y:
             self.__graph.setTitle('Aim dev-y (bpm)')
-            stdevs = data[data_select, self.COL_STDEV_Y]
+            stdevs = data[data_select, DataRec.COL_STDEV_Y]
         elif self.dev_select == self.DEV_XY:
             self.__graph.setTitle('Aim dev-xy (bpm)')
-            stdevs = (data[data_select, self.COL_STDEV_X]**2 + data[data_select, self.COL_STDEV_Y]**2)**0.5
+            stdevs = (data[data_select, DataRec.COL_STDEV_X]**2 + data[data_select, DataRec.COL_STDEV_Y]**2)**0.5
         elif self.dev_select == self.DEV_T:
             self.__graph.setTitle('Aim dev-t (bpm)')
-            stdevs = data[data_select, self.COL_STDEV_T]
+            stdevs = data[data_select, DataRec.COL_STDEV_T]
 
-        num_notes = data[data_select, self.COL_NUM]
+        num_notes = data[data_select, DataRec.COL_NUM]
 
         if self.avg_data_points:
             # Average all displayed data points
