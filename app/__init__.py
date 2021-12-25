@@ -302,6 +302,7 @@ class App(QtGui.QMainWindow):
             App.StddevGraphVel.update_vel(self, **{ key : value })
 
         if key == 'cs':
+            self.aim_graph.set_cs(value)
             dev = App.OsuUtils.cs_to_px(value)
 
             App.StddevGraphBpm.set_dev(self, dev)
