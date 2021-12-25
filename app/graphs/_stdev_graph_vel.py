@@ -143,9 +143,6 @@ class StddevGraphVel():
                 # Selected region has no data. Nothing else to do
                 continue
 
-
-            print(self.dev_select)
-
             # Extract relavent data
             if self.dev_select == self.DEV_X:
                 self.__graph.setTitle('Aim dev-x (vel)')
