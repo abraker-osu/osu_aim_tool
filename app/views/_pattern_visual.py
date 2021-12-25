@@ -10,6 +10,7 @@ from osu_analysis import BeatmapIO, ReplayIO, StdMapData, StdReplayData, Gamemod
 from app.misc._utils import Utils
 from app.misc._osu_utils import OsuUtils
 from app.misc._hitobject_plot import HitobjectPlot
+from app.misc._timing_plot import TimingPlot
 from app.config import AppConfig
 
 
@@ -73,6 +74,11 @@ class PatternVisual(QtGui.QWidget):
         self.timeline = pyqtgraph.PlotWidget()
         self.timeline_marker = pyqtgraph.InfiniteLine(angle=90, movable=True)
         self.hitobject_plot = HitobjectPlot()
+        self.k1_timing_plot = TimingPlot()
+        self.k2_timing_plot = TimingPlot()
+        self.m1_timing_plot = TimingPlot()
+        self.m2_timing_plot = TimingPlot()
+
         self.cursor_plot = self.visual.plot(pen=None, symbol='o', symbolPen='y', symbolBrush=None, symbolSize=2, pxMode=True)
 
 
@@ -101,12 +107,17 @@ class PatternVisual(QtGui.QWidget):
         self.timeline.getViewBox().setMouseEnabled(y=False)
         self.timeline.hideAxis('left')
         self.timeline.setXRange(-1, 4)
+        self.timeline.setYRange(-5, 5)
 
         self.timeline_marker.setBounds((-10000, None))
         self.timeline_marker.sigPositionChanged.connect(self.__time_changed_event)
 
         self.timeline.addItem(self.timeline_marker, ignoreBounds=True)
         self.timeline.addItem(self.hitobject_plot)
+        self.timeline.addItem(self.k1_timing_plot)
+        self.timeline.addItem(self.k2_timing_plot)
+        self.timeline.addItem(self.m1_timing_plot)
+        self.timeline.addItem(self.m2_timing_plot)
         self.__time_changed_event()
 
 
@@ -163,34 +174,72 @@ class PatternVisual(QtGui.QWidget):
 
         sizes = OsuUtils.approach_circle_to_radius(self.cs_px, self.ar_ms, map_data_t[ar_select] - self.t)
         self.plot_approach.setData(map_data_x[ar_select], map_data_y[ar_select], symbolSize=sizes)
-
-        self.hitobject_plot.setMap(map_data_t, map_data_t, np.full_like(map_data_t, StdMapData.TYPE_SLIDER))
-
         self.visual.update()
 
+        self.hitobject_plot.setMap(map_data_t, map_data_t, np.full_like(map_data_t, StdMapData.TYPE_SLIDER))
+        self.timeline.update()
+        
 
     def __draw_replay_data(self):
         if type(self.replay_data) == type(None):
             return
 
         replay_data_t = self.replay_data[:, self.REPLAY_T]
-        replay_data_x = self.replay_data[:, self.REPLAY_X]
-        replay_data_y = self.replay_data[:, self.REPLAY_Y]
 
         select_time = (replay_data_t >= self.t - 0.05) & (replay_data_t <= self.t)
+        replay_data_x = self.replay_data[select_time, self.REPLAY_X]
+        replay_data_y = self.replay_data[select_time, self.REPLAY_Y]
         
-        #color_map = {
-        #   0 :  (255, 255, 0, 100),  # Yellow
-        #   1 :  (  0, 255, 0, 200),  # Green
-        #   2 :  (255,   0, 0, 200),  # Red
-        #}
-
-        #colors = [
-        #    color_map[key] for key in self.replay_data_k[select_time]
-        #]
-
-        self.cursor_plot.setData(replay_data_x[select_time], replay_data_y[select_time], symbolPen=(255, 255, 0, 100))
+        self.cursor_plot.setData(replay_data_x, replay_data_y, symbolPen=(255, 255, 0, 100))
         self.visual.update()
+
+        k1_press_select = self.replay_data[:, self.REPLAY_K1] == StdReplayData.PRESS
+        k2_press_select = self.replay_data[:, self.REPLAY_K2] == StdReplayData.PRESS
+        m1_press_select = self.replay_data[:, self.REPLAY_M1] == StdReplayData.PRESS
+        m2_press_select = self.replay_data[:, self.REPLAY_M2] == StdReplayData.PRESS
+
+        k1_release_select = self.replay_data[:, self.REPLAY_K1] == StdReplayData.RELEASE
+        k2_release_select = self.replay_data[:, self.REPLAY_K2] == StdReplayData.RELEASE
+        m1_release_select = self.replay_data[:, self.REPLAY_M1] == StdReplayData.RELEASE
+        m2_release_select = self.replay_data[:, self.REPLAY_M2] == StdReplayData.RELEASE        
+
+        self.timeline.removeItem(self.k1_timing_plot)
+        self.k1_timing_plot = TimingPlot()
+        self.k1_timing_plot.setTimings(
+            self.replay_data[k1_press_select, self.REPLAY_T], 
+            self.replay_data[k1_release_select, self.REPLAY_T], 
+            y_pos=-4, color=(255, 100, 100, 150)
+        )
+        self.timeline.addItem(self.k1_timing_plot)
+
+        self.timeline.removeItem(self.m1_timing_plot)
+        self.m1_timing_plot = TimingPlot()
+        self.m1_timing_plot.setTimings(
+            self.replay_data[m1_press_select, self.REPLAY_T], 
+            self.replay_data[m1_release_select, self.REPLAY_T], 
+            y_pos=-2, color=(255, 100, 255, 150)
+        )
+        self.timeline.addItem(self.m1_timing_plot)
+
+        self.timeline.removeItem(self.k2_timing_plot)
+        self.k2_timing_plot = TimingPlot()
+        self.k2_timing_plot.setTimings(
+            self.replay_data[k2_press_select, self.REPLAY_T], 
+            self.replay_data[k2_release_select, self.REPLAY_T], 
+            y_pos=2, color=(71, 185, 255, 150)
+        )
+        self.timeline.addItem(self.k2_timing_plot)
+
+        self.timeline.removeItem(self.m2_timing_plot)
+        self.m2_timing_plot = TimingPlot()
+        self.m2_timing_plot.setTimings(
+            self.replay_data[m2_press_select, self.REPLAY_T], 
+            self.replay_data[m2_release_select, self.REPLAY_T], 
+            y_pos=4, color=(100, 255, 100, 150)
+        )
+        self.timeline.addItem(self.m2_timing_plot)
+
+        self.timeline.update()
 
 
     def __time_changed_event(self):
