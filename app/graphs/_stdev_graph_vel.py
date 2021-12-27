@@ -187,6 +187,8 @@ class StddevGraphVel():
             m_dev_y = np.std(stdevs - y_model)  # deviation of y from model
             m_dev_x = np.std(vels - x_model)    # deviation of x from model
 
+            x_mean = np.mean(vels)
+
             if m_dev_x == 0:
                 self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
                 continue
@@ -194,7 +196,11 @@ class StddevGraphVel():
             # Standard error of slope @ 95% confidence interval
             m_se_95 = (m_dev_y/m_dev_x)/math.sqrt(stdevs.shape[0] - 2)*1.96
 
-            label = f'∠={angle:.2f}  n={stdevs.shape[0]}  σ={m_dev_y:.2f}  m={m:.5f}±{m_se_95:.5f}  b={b:.2f}'
+            # Standard error of y-intercept @ 95% confidence interval
+            b_se_95 = 2*m_se_95*x_mean
+
+            label = f'∠={angle:.2f}  n={stdevs.shape[0]}  σ={m_dev_y:.2f}  m={m:.5f}±{m_se_95:.5f}  b={b:.2f}±{b_se_95:.2f}'
+            print(label)
 
             if self.model_compensation:
                 self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
