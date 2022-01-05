@@ -87,7 +87,7 @@ class App(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         os.makedirs('data', exist_ok=True)
 
-        self.user_id = AppConfig.cfg['id']
+        self.user_id = int(AppConfig.cfg['id'])
 
         self.__init_gui()
         self.__build_layout()
