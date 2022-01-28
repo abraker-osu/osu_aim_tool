@@ -508,7 +508,7 @@ class App(QtGui.QMainWindow):
             HPDrainRate:8
             CircleSize:{AppConfig.cfg["cs"]}
             OverallDifficulty:10
-            ApproachRate:{AppConfig.cfg["ar"]}
+            ApproachRate:{ar}
             SliderMultiplier:1.4
             SliderTickRate:1
 
