@@ -34,8 +34,8 @@ class AimGraph():
     def __init__(self):
         self.main_widget = QtGui.QWidget()
         self.main_widget.setWindowTitle('Aim visualization')
-        self.main_widget.setSizePolicy(QtGui.QSizePolicy.Policy.Maximum, QtGui.QSizePolicy.Policy.Maximum)
-        self.main_widget.setMaximumSize(QtCore.QSize(AimGraph.SIZE, AimGraph.SIZE))
+        self.main_widget.setSizePolicy(int(QtGui.QSizePolicy.Policy.Maximum), int(QtGui.QSizePolicy.Policy.Maximum))
+        self.main_widget.setMaximumSize(QtCore.QSize(int(AimGraph.SIZE), int(AimGraph.SIZE)))
 
         self.main_layout = QtGui.QGridLayout(self.main_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -43,7 +43,7 @@ class AimGraph():
         
         self.win_hits = pyqtgraph.PlotWidget(show=False, title='Hit visualization')
         self.win_hits.setWindowTitle('osu! Aim Tool Hit Visualization')
-        self.win_hits.setFixedSize(AimGraph.SIZE, AimGraph.SIZE + 32)
+        self.win_hits.setFixedSize(int(AimGraph.SIZE), int(AimGraph.SIZE + 32))
 
         # Scatter plot for aim data
         self.plot_hits = self.win_hits.plot(title='Hit scatter')
@@ -66,7 +66,7 @@ class AimGraph():
         self.dev_x.enableAutoRange(axis='y', enable=True)
         self.dev_x.hideAxis('left')
         self.dev_x.showAxis('bottom')
-        self.dev_x.setFixedHeight(64 + 4*AimGraph.SCALE)
+        self.dev_x.setFixedHeight(int(64 + 4*AimGraph.SCALE))
         self.dev_x.setXRange(-AimGraph.SIZE/2, AimGraph.SIZE/2)
 
         # Y-axis deviation histogram
@@ -77,7 +77,7 @@ class AimGraph():
         self.dev_y.hideAxis('bottom')
         self.dev_y.hideAxis('left')
         self.dev_y.showAxis('right')
-        self.dev_y.setFixedWidth(64 + 4*AimGraph.SCALE)
+        self.dev_y.setFixedWidth(int(64 + 4*AimGraph.SCALE))
         self.dev_y.setYRange(-AimGraph.SIZE/2, AimGraph.SIZE/2)
 
         # Covariance vectors scaled to 95% confidence interval
@@ -96,7 +96,7 @@ class AimGraph():
 
         # Cov area metrics
         self.cov_area_metrics = pyqtgraph.TextItem('', anchor=(0, 0), )
-        self.cov_area_metrics.setPos(-AimGraph.SIZE/2, AimGraph.SIZE/2)
+        self.cov_area_metrics.setPos(int(-AimGraph.SIZE/2), int(AimGraph.SIZE/2))
         self.win_hits.addItem(self.cov_area_metrics)
 
         self.main_layout.addWidget(self.win_hits, 0, 0)
