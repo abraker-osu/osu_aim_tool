@@ -32,7 +32,7 @@ class Monitor(watchdog.observers.Observer):
 
 
     def create_replay_monitor(self, name, callback):
-        replay_path = f'{self.osu_path}/data/r'
+        replay_path = f'{self.osu_path}/Dta/r'
         if not os.path.exists(replay_path):
             raise Exception(f'"{replay_path}" does not exist!')
 
@@ -42,7 +42,7 @@ class Monitor(watchdog.observers.Observer):
                     if '.osr' in event.src_path:
                         callback(event.src_path)
 
-        print(f'Created file creation monitor for {self.osu_path}/data/r')
+        print(f'Created file creation monitor for {self.osu_path}/Data/r')
         self.monitors[name] = self.schedule(EventHandler(), replay_path, recursive=False)
 
 

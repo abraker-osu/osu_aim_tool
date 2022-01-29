@@ -281,7 +281,7 @@ class PatternVisual(QtGui.QWidget):
     def __open_replay(self):
         name_filter = 'osu! replay files (*.osu)' if self.map_md5 == None else f'osu! replay files ({self.map_md5}-*.osr)'
 
-        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open replay',  f'{AppConfig.cfg["osu_dir"]}/data/r', name_filter)
+        file_name = QtGui.QFileDialog.getOpenFileName(self, 'Open replay',  f'{AppConfig.cfg["osu_dir"]}/Data/r', name_filter)
         file_name = file_name[0]
 
         if len(file_name) == 0:
