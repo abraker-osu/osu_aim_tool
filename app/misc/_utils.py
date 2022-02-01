@@ -6,8 +6,7 @@ class Utils():
 
     @staticmethod
     def get_traceback(e, msg):
-        traceback_str = ''
-        traceback_str += f'{msg}: {type(e).__name__} due to "{e}"\n'
+        traceback_str = f'{msg}: {type(e).__name__} due to "{e}"\n'
 
         tb_curr = e.__traceback__
         while tb_curr != None:
