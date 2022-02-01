@@ -32,7 +32,7 @@ class Monitor(watchdog.observers.Observer):
 
 
     def create_replay_monitor(self, name, callback):
-        replay_path = f'{self.osu_path}/Dta/r'
+        replay_path = f'{self.osu_path}/Data/r'
         if not os.path.exists(replay_path):
             raise Exception(f'"{replay_path}" does not exist!')
 
