@@ -68,7 +68,7 @@ class App(QtGui.QMainWindow):
     AVG_T  = 6
 
     from .misc._dock_patch import updateStylePatched
-    from .misc.value_edit import ValueEdit
+    from .widgets.value_edit import ValueEdit
     from .misc.monitor import Monitor
     from .misc._osu_utils import OsuUtils
 

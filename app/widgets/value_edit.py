@@ -8,12 +8,10 @@ class ValueEdit(QtWidgets.QWidget):
     value_changed = QtCore.pyqtSignal(tuple)
     auto_value_changed = QtCore.pyqtSignal(tuple)
 
-    def __init__(self, minimum, maximum, key, name, is_float=False, parent=None):
+    def __init__(self, minimum, maximum, key, name, is_vertical=True, is_float=False, parent=None):
         QtWidgets.QWidget.__init__(self, parent=parent)        
 
         self.key = key
-
-        self.verticalLayout = QtWidgets.QVBoxLayout(self)
 
         if is_float:
             self.value = QtWidgets.QDoubleSpinBox(self)
@@ -22,13 +20,16 @@ class ValueEdit(QtWidgets.QWidget):
             self.value = CustomSpinBox(self)
             self.value.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
 
-        self.verticalLayout.addWidget(self.value)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-
-        self.verticalLayout.addLayout(self.horizontalLayout)
         self.name_label = QtWidgets.QLabel(name)
         self.name_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
-        self.horizontalLayout.addWidget(self.name_label)
+
+        if is_vertical:
+            self.main_layout = QtWidgets.QVBoxLayout(self)
+        else:
+            self.main_layout = QtWidgets.QHBoxLayout(self)
+            
+        self.main_layout.addWidget(self.value)
+        self.main_layout.addWidget(self.name_label)
         
         self.resize(self.sizeHint())
 
