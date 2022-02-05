@@ -27,7 +27,7 @@ class StddevGraphBpm():
         self.__graph.getPlotItem().getAxis('bottom').enableAutoSIPrefix(False)
         self.__graph.enableAutoRange(axis='x', enable=False)
         self.__graph.enableAutoRange(axis='y', enable=False)
-        self.__graph.setLimits(xMin=0, xMax=1200, yMin=-10, yMax=200)
+        self.__graph.setLimits(xMin=0, xMax=1200, yMin=-100, yMax=200)
         self.__graph.setRange(xRange=[-10, 500], yRange=[-10, 20])
         self.__graph.setLabel('left', 'deviation', units='σ', unitPrefix='')
         self.__graph.setLabel('bottom', 'bpm', units='1/(60*s)', unitPrefix='')
