@@ -79,6 +79,8 @@ class App(QtGui.QMainWindow):
     from .graphs._stdev_graph_angle import StddevGraphAngle
     from .graphs._stdev_graph_vel import StddevGraphVel
     from .graphs._stdev_graph_skill import StddevGraphSkill
+    from .graphs._stdev_graph_tap_dev import StddevGraphTapDev
+
     from .views._aim_graph import AimGraph
     from .views._pattern_visual import PatternVisual
     from .views._data_list import DataList
@@ -276,6 +278,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphAngle.__init__(self, pos='below', relative_to='StddevGraphNumNotes', dock_name='Deviation vs Angle')
         App.StddevGraphVel.__init__(self, pos='below', relative_to='StddevGraphAngle', dock_name='Deviation vs Velocity')
         App.StddevGraphSkill.__init__(self, pos='below', relative_to='StddevGraphVel', dock_name='Skill vs Angle')
+        App.StddevGraphTapDev.__init__(self, pos='below', relative_to='StddevGraphSkill', dock_name='Tap Deviation vs Aim mean')
 
         # Connect checkbox events
         self.avg_chkbx.stateChanged.connect(self.__avg_chkbx_event)
@@ -409,7 +412,7 @@ class App(QtGui.QMainWindow):
                 self.data_list.select_data_id(self.user_id)
                 self.replot_graphs()
 
-            # Generates and saves the beatmap. Then monitor for new replay in the /data/r folder
+            # Generates and saves the beatmap. Then monitor for new replay in the /Data/r folder
             map_path = f'{AppConfig.cfg["osu_dir"]}/Songs/aim_tool'
 
             self.__generate_map(map_path)
@@ -876,6 +879,7 @@ class App(QtGui.QMainWindow):
         App.StddevGraphAngle.plot_data(self, self.data)
         App.StddevGraphVel.plot_data(self, self.data)
         App.StddevGraphSkill.plot_data(self, self.data)
+        App.StddevGraphTapDev.plot_data(self, self.data)
 
 
     def __update_generated_map(self):

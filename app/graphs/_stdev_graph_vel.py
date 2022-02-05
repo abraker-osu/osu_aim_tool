@@ -134,6 +134,8 @@ class StddevGraphVel():
             )
         )
 
+        print()
+
         # Adds a plot for every unique BPM recorded
         for angle in unique_angs:
             # Determine data selected by angle
