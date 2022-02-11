@@ -47,6 +47,7 @@ class AimGraph():
 
         # Scatter plot for aim data
         self.plot_hits = self.win_hits.plot(title='Hit scatter')
+        self.plot_misses = self.win_hits.plot(title='Hit scatter')
         self.win_hits.hideAxis('left')
         self.win_hits.hideAxis('bottom')
         self.win_hits.setXRange(-AimGraph.SIZE/2, AimGraph.SIZE/2)
@@ -139,8 +140,11 @@ class AimGraph():
         scaled_aim_x_offsets = aim_x_offsets*AimGraph.SCALE
         scaled_aim_y_offsets = aim_y_offsets*AimGraph.SCALE
 
+        is_miss = np.sqrt(scaled_aim_x_offsets**2 + scaled_aim_y_offsets**2) > self.circle_item.radius
+
         # Plot aim data scatter plot
-        self.plot_hits.setData(scaled_aim_x_offsets, scaled_aim_y_offsets, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
+        self.plot_hits.setData(scaled_aim_x_offsets[~is_miss], scaled_aim_y_offsets[~is_miss], pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(100, 100, 255, 200))
+        self.plot_misses.setData(scaled_aim_x_offsets[is_miss], scaled_aim_y_offsets[is_miss], pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=(200, 50, 50, 200))
 
         angle_lambda1, angle_lambda2, scaled_x_dev, scaled_y_dev = self.calc_cov_area(scaled_aim_x_offsets, scaled_aim_y_offsets)
 
