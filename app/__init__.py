@@ -629,23 +629,27 @@ class App(QtGui.QMainWindow):
         # Process score data
         settings = StdScoreData.Settings()
         settings.ar_ms = App.OsuUtils.ar_to_ms(AppConfig.cfg["ar"])
-        settings.hitobject_radius = App.OsuUtils.cs_to_px(AppConfig.cfg["cs"])
+        settings.hitobject_radius = App.OsuUtils.cs_to_px(AppConfig.cfg["cs"])*0.5
         settings.pos_hit_range = 100        # ms point of late hit window
         settings.neg_hit_range = 100        # ms point of early hit window
         settings.pos_hit_miss_range = 100   # ms point of late miss window
-        settings.neg_hit_miss_range = 100   # ms point of early miss window
+        settings.neg_hit_miss_range = 100   # ms point of early miss window'
 
         score_data = StdScoreData.get_score_data(replay_data, map_data, settings)
 
-        hit_types_miss = score_data['type'] == StdScoreData.TYPE_MISS
+        miss_not_aim = ( \
+            (score_data['type'].values == StdScoreData.TYPE_MISS) & \
+            (score_data['action'].values != StdScoreData.ACTION_PRESS)
+        )
+
         num_total = score_data['type'].values.shape[0]
-        num_misses = score_data['type'].values[hit_types_miss].shape[0]
+        num_misses = np.count_nonzero(miss_not_aim)
 
         # Too many misses tends to falsely lower the deviation. Disallow plays with >10% misses
-        print(f'num total hits: {num_total}   num: misses {num_misses} ({100 * num_misses/num_total:.2f}%)')
+        print(f'num total hits: {num_total}   num misses (not aim) {num_misses} ({100 * num_misses/num_total:.2f}%)')
         if num_misses/num_total > 0.1:
             self.info_text = ''
-            self.stats_text = '\nInvalid play. Too many misses.'
+            self.stats_text = '\nInvalid play. Too many non miss-aims.'
             self.status_txt.setText(self.info_text + self.stats_text)
             return None, None, None, None
 
