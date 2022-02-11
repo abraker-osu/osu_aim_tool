@@ -184,20 +184,18 @@ class StddevGraphAngle():
             if self.dev_select not in [ self.DEV_X, self.DEV_Y, self.DEV_XY ]:
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue
-            
+
             a, b, c = MathUtils.exp_regresion(angles, stdevs)
             if None in (a, b, c):
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue
 
             y_model = a + b*np.exp(c*angles)
-            label = f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  a={a:.5f}  b={b:.2f}  c={c:.2f}'
+            label = f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  a={a:.2f}  b={b:.2f}  c={c:.5f}'
             print(f'angle fit (y = a + be^(cx)): {label}')
  
             if self.model_compensation:
-                
                 self.__graph.plot(x=angles, y=stdevs - y_model, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=label)
-
                 self.__graph.plot(x=[0, max(angles)], y=[0, 0], pen=(100, 100, 0, 150))
             else:
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=label)
