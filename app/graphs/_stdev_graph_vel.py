@@ -192,6 +192,7 @@ class StddevGraphVel():
             x_mean = np.mean(vels)
 
             if m_dev_x == 0:
+                label = f'∠={angle:.2f}  n={stdevs.shape[0]}'
                 self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
                 continue
 
