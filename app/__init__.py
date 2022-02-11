@@ -597,15 +597,16 @@ class App(QtGui.QMainWindow):
                 self.status_txt.setText(self.info_text + self.stats_text)
                 return None, None, None, None
 
-            has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore)) > 0
+            has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore | Mod.Relax | Mod.NoFail)) > 0
             if has_other_mods:
-                self.info_text = 'AR >10 requires ONLY DT or NC mod enabled!\n'
+                self.info_text = 'AR >10 requires DT or NC mod enabled. Other supported mods: RX, NF\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
                 
                 return None, None, None, None
         else:
-            if self.replay.mods.value != 0:
-                self.info_text = 'AR <10 requires nomod!\n'
+            has_other_mods = (self.replay.mods.value & ~(Mod.Relax | Mod.NoFail)) > 0
+            if has_other_mods:
+                self.info_text = 'AR <10 Must not have DT or NC enabled. Other supported mods: RX, NF\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
                 return None, None, None, None
 
