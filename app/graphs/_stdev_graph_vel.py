@@ -202,7 +202,7 @@ class StddevGraphVel():
             b_se_95 = 2*m_se_95*x_mean
 
             label = f'∠={angle:.2f}  n={stdevs.shape[0]}  σ={m_dev_y:.2f}  m={m:.5f}±{m_se_95:.5f}  b={b:.2f}±{b_se_95:.2f}'
-            print(label)
+            print(f'velocity fit (y = mx+b): {label}')
 
             if self.model_compensation:
                 self.__graph.plot(x=vels, y=stdevs - y_model, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
