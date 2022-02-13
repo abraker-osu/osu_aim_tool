@@ -585,8 +585,6 @@ class App(QtGui.QMainWindow):
     def __get_data(self, map_path):
         beatmap = BeatmapIO.open_beatmap(f'{map_path}/map.osu')
 
-        print('replay mods:', self.replay.mods.value)
-
         # Check if mods are valid
         if AppConfig.cfg["ar"] > 10:
             has_dt = (self.replay.mods.value & Mod.DoubleTime) > 0
@@ -630,23 +628,39 @@ class App(QtGui.QMainWindow):
         settings = StdScoreData.Settings()
         settings.ar_ms = App.OsuUtils.ar_to_ms(AppConfig.cfg["ar"])
         settings.hitobject_radius = App.OsuUtils.cs_to_px(AppConfig.cfg["cs"])*0.5
-        settings.pos_hit_range = 100        # ms point of late hit window
-        settings.neg_hit_range = 100        # ms point of early hit window
+        
+        settings.neg_hit_miss_range = 100   # ms point of early miss window
+        settings.neg_hit_range      = 100   # ms point of early hit window
+        settings.pos_hit_range      = 100   # ms point of late hit window
         settings.pos_hit_miss_range = 100   # ms point of late miss window
-        settings.neg_hit_miss_range = 100   # ms point of early miss window'
+        
+        if (self.replay.mods.value & Mod.Relax) > 0:
+            settings.require_tap_press   = False
+            settings.require_tap_hold    = False
+            settings.require_tap_release = False
+
+        if (self.replay.mods.value & Mod.Autopilot) > 0:
+            settings.require_aim_press   = False
+            settings.require_aim_hold    = False
+            settings.require_aim_release = False
 
         score_data = StdScoreData.get_score_data(replay_data, map_data, settings)
+        print(score_data)
 
-        miss_not_aim = ( \
-            (score_data['type'].values == StdScoreData.TYPE_MISS) & \
-            (score_data['action'].values != StdScoreData.ACTION_PRESS)
-        )
+        if (self.replay.mods.value & Mod.Relax) > 0:
+            num_misses = 0
+        else:
+            miss_not_aim = ( \
+                (score_data['type'].values == StdScoreData.TYPE_MISS) & \
+                (score_data['action'].values != StdScoreData.ACTION_PRESS)
+            )
+
+            num_misses = np.count_nonzero(miss_not_aim)
 
         num_total = score_data['type'].values.shape[0]
-        num_misses = np.count_nonzero(miss_not_aim)
-
+        
         # Too many misses tends to falsely lower the deviation. Disallow plays with >10% misses
-        print(f'num total hits: {num_total}   num misses (not aim) {num_misses} ({100 * num_misses/num_total:.2f}%)')
+        print(f'num total hits: {num_total}   num tap misses {num_misses} ({100 * num_misses/num_total:.2f}%)')
         if num_misses/num_total > 0.1:
             self.info_text = ''
             self.stats_text = '\nInvalid play. Too many non miss-aims.'
