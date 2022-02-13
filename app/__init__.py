@@ -639,6 +639,9 @@ class App(QtGui.QMainWindow):
             settings.require_tap_hold    = False
             settings.require_tap_release = False
 
+            settings.pos_hit_range      = 0   # ms point of late hit window
+            settings.pos_hit_miss_range = 0   # ms point of late miss window
+
         if (self.replay.mods.value & Mod.Autopilot) > 0:
             settings.require_aim_press   = False
             settings.require_aim_hold    = False
