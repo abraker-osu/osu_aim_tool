@@ -196,6 +196,11 @@ class StddevGraphVel():
                 self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
                 continue
 
+            if stdevs.shape[0] < 3:
+                label = f'∠={angle:.2f}  n={stdevs.shape[0]}'
+                self.__graph.plot(x=vels, y=stdevs, pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=color, name=label)
+                continue
+
             # Standard error of slope @ 95% confidence interval
             m_se_95 = (m_dev_y/m_dev_x)/math.sqrt(stdevs.shape[0] - 2)*1.96
 
