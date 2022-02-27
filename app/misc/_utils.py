@@ -35,6 +35,14 @@ class MathUtils():
 
         return freq
 
+    @staticmethod
+    def r_squared(y_data, y_model):
+        y_data_mean = np.mean(y_data)
+        ss_res = np.sum((y_data - y_model)**2)
+        ss_tot = np.sum((y_data - y_data_mean)**2)
+
+        return 1 - (ss_res/ss_tot)
+
 
     @staticmethod
     def calc_err(x_data, y_data, r, t_min, y=0):
@@ -48,56 +56,19 @@ class MathUtils():
         lin[lin < 100] = np.log(np.exp(lin[lin < 100]) + np.exp(y))
         return lin
 
-    
+
     @staticmethod
     def linear_regresion(x, y):
-        # Model processing. Needs at least 2 points.
-        if y.shape[0] < 2:
-            return None, None
+        x_avg = np.mean(x)
+        y_avg = np.mean(y)
 
-        # Split data in half on x-axis and figure out if the data is increasing or decreasing
-        left_half = x < np.median(x)
-        right_half = x >= np.median(x)
-
-        # If one of halves is empty, return None
-        if not (any(left_half) and any(right_half)):
-            return None, None
-
-        y_left_avg = np.mean(y[x < np.median(x)])
-        y_right_avg = np.mean(y[x >= np.median(x)])
-
-        # Model linear curve
-        # Visual example of how this works: https://i.imgur.com/k7H8bLe.png
-        # 1) Take points on y-axis and x-axis, and split them into half - resulting in two groups
-        avg_x = np.mean(x)
-        avg_y = np.mean(y)
-
-        if y_left_avg < y_right_avg:
-            # Positive slope
-            g1 = (x < avg_x) & (y < avg_y)    # Group 1 select
-            g2 = (x >= avg_x) & (y >= avg_y)  # Group 2 select
-        else:
-            # Negative slope
-            g1 = (x < avg_x) & (y >= avg_y)   # Group 1 select
-            g2 = (x >= avg_x) & (y < avg_y)   # Group 2 select
+        ss_xx = np.sum((x - x_avg)**2)
+        ss_xy = np.sum((x - x_avg)*(y - y_avg))
         
-        # Check if follows model by having positive linear slope
-        if(not any(g1) or not any(g2)):
-            return None, None
-
-        # 2) Take the center of gravity for each of the two groups
-        #    Those become points p1 and p2 to fit a line through
-        p1x = np.mean(x[g1])
-        p1y = np.mean(y[g1])
-
-        p2x = np.mean(x[g2])
-        p2y = np.mean(y[g2])
-
-        # 3) Calculate slope and y-intercept
-        m = (p1y - p2y)/(p1x - p2x)
-        b = p1y - m*p1x
-
-        return m, b
+        b = ss_xy/ss_xx          # slope
+        c = y_avg - (b * x_avg)  # y-intercept
+        
+        return b, c
 
 
     def exp_regresion(x, y):
@@ -143,3 +114,22 @@ class MathUtils():
         b = mat_dot[1][0]
 
         return a, b, c
+
+
+    @staticmethod
+    def softplus_regression(x, y):
+        a, b, c = MathUtils.exp_regresion(x, y)
+        exp_model = lambda a, b, c, x: a + b*np.exp(c*x)
+
+        exp_180 = exp_model(a, b, c, 180)
+        exp_90  = exp_model(a, b, c, 90)
+        exp_0   = exp_model(a, b, c, 0)
+
+        a_ln  = np.exp(exp_0  - exp_180) - 1
+        b0_ln = np.exp(exp_90 - exp_180) - 1
+        b1_ln = np.exp(exp_0  - exp_90)  - 1
+        b_ln  = (1/90)*np.log(b0_ln/b1_ln)
+
+        return a_ln, b_ln, exp_180
+
+
