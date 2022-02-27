@@ -185,24 +185,52 @@ class StddevGraphAngle():
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                 continue
 
-            a, b, c = MathUtils.exp_regresion(angles, stdevs)
-            if None in (a, b, c):
-                self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
-                continue
 
-            y_model = a + b*np.exp(c*angles)
-            label = f'{bpm} bpm   σ = {np.std(stdevs - y_model):.2f}  a={a:.2f}  b={b:.2f}  c={c:.5f}'
-            print(f'angle fit (y = a + be^(cx)): {label}')
- 
+            if self.dev_select in [ self.DEV_X, self.DEV_Y, self.DEV_XY ]:
+                a, b, c = MathUtils.exp_regresion(angles, stdevs)
+                if None in (a, b, c):
+                    self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
+                    continue
+
+                y_model = a + b*np.exp(c*angles)
+                y_ground = stdevs - y_model
+
+                r_sq = MathUtils.r_squared(stdevs, y_model)
+                snr = (np.var(stdevs, ddof=1) / np.mean(np.var(np.lib.stride_tricks.sliding_window_view(stdevs, 5), ddof=1, axis=1)))
+                
+                x_model = np.linspace(min(angles), max(angles), 100)
+                y_model = a + b*np.exp(c*x_model)
+                
+                label = f'{bpm} bpm  r² = {r_sq:.4f}  snr={snr:.4f}  a={a:.2f}  b={b:.2f}  c={c:.5f}'
+                print(f'angle fit (y = a + be^(cx)): {label}')
+            
+
+            '''
+            if self.dev_select in [ self.DEV_X, self.DEV_Y, self.DEV_XY ]:
+                b, c = MathUtils.linear_regresion(angles, stdevs)
+                if None in (b, c):
+                    self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
+                    continue
+
+                y_model = b*angles + c
+                y_ground = stdevs - y_model
+
+                r_sq = MathUtils.r_squared(stdevs, y_model)
+                snr = np.std(stdevs) / np.std(stdevs - y_model)
+
+                x_model = np.linspace(min(angles), max(angles), 100)
+                y_model = b*x_model + c
+                
+                label = f'{bpm} bpm  r² = {r_sq:.4f}  snr={snr:.4f}  b={b:.4f}  c={c:.5f}'
+                print(f'angle fit (y = bx + c): {label}')
+            ''' 
+
             if self.model_compensation:
-                self.__graph.plot(x=angles, y=stdevs - y_model, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=label)
+                self.__graph.plot(x=angles, y=y_ground, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=label)
                 self.__graph.plot(x=[0, max(angles)], y=[0, 0], pen=(100, 100, 0, 150))
             else:
                 self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=label)
-                
-                x = np.linspace(min(angles), max(angles), 100)
-                y = a + b*np.exp(c*x)
-                self.__graph.plot(x=x, y=y, pen=(100, 100, 0, 150))  
+                self.__graph.plot(x=x_model, y=y_model, pen=(100, 100, 0, 150))  
 
 
     def __bpm_region_event(self):
