@@ -196,7 +196,8 @@ class StddevGraphAngle():
                 y_ground = stdevs - y_model
 
                 r_sq = MathUtils.r_squared(stdevs, y_model)
-                snr = (np.var(stdevs, ddof=1) / np.mean(np.var(np.lib.stride_tricks.sliding_window_view(stdevs, 5), ddof=1, axis=1)))
+                avg_win = min(5, stdevs.shape[0])
+                snr = (np.var(stdevs, ddof=1) / np.mean(np.var(np.lib.stride_tricks.sliding_window_view(stdevs, avg_win), ddof=1, axis=1)))
                 
                 x_model = np.linspace(min(angles), max(angles), 100)
                 y_model = a + b*np.exp(c*x_model)
