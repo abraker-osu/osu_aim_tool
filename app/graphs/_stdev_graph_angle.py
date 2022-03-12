@@ -187,8 +187,13 @@ class StddevGraphAngle():
 
 
             if self.dev_select in [ self.DEV_X, self.DEV_Y, self.DEV_XY ]:
-                a, b, c = MathUtils.exp_regresion(angles, stdevs)
-                if None in (a, b, c):
+                try:
+                    a, b, c = MathUtils.exp_regresion(angles, stdevs)
+                    if None in (a, b, c):
+                        self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
+                        continue
+                except np.linalg.LinAlgError:
+                    # Happens if there is perfect y=x correlation; most likely with 2 data points when collecting data
                     self.__graph.plot(x=angles, y=stdevs, symbol='o', symbolPen=None, symbolSize=5, pen=None, symbolBrush=color, name=f'{bpm} bpm')
                     continue
 
