@@ -1,6 +1,5 @@
 import pyqtgraph
 import numpy as np
-import math
 from pyqtgraph import QtCore, QtGui
 
 
@@ -22,6 +21,10 @@ class TimingPlot(pyqtgraph.GraphItem):
                 self.pos = None
                 return
         except ValueError: 
+            return
+
+        if len(start_times) != len(end_times):
+            print(f'Warning: start_times and end_times are NOT the same length: {len(start_times)} != {len(end_times)}')
             return
 
         self.pen = pyqtgraph.mkPen(width=width, color=color)
