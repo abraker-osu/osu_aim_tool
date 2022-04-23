@@ -92,6 +92,7 @@ class App(QtGui.QMainWindow):
     from .graphs._stdev_graph_tap_dev import StddevGraphTapDev
 
     from .views._aim_graph import AimGraph
+    from .views._offset_graph import HitOffsetGraph
     from .views._pattern_visual import PatternVisual
     from .views._data_list import DataList
 
@@ -169,9 +170,10 @@ class App(QtGui.QMainWindow):
         self.menu_bar  = QtGui.QMenuBar()
         self.view_menu = QtGui.QMenu("&View", self)
 
-        self.view_perf_action = QtGui.QAction("&Show performance", self.view_menu, triggered=lambda: self.area.show())
-        self.view_hits_action = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
-        self.view_map_action  = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
+        self.view_perf_action     = QtGui.QAction("&Show performance", self.view_menu, triggered=lambda: self.area.show())
+        self.view_hits_action     = QtGui.QAction("&Show hits",        self.view_menu, triggered=lambda: self.aim_graph.show())
+        self.view_offsets_action  = QtGui.QAction("&Show offsets",     self.view_menu, triggered=lambda: self.offset_graph.show())
+        self.view_map_action      = QtGui.QAction("&Show map",         self.view_menu, triggered=lambda: (
                 self.pattern_visual.show(), 
                 self.__update_generated_map()
             )
@@ -216,6 +218,7 @@ class App(QtGui.QMainWindow):
 
         self.area = DockArea()
         self.aim_graph = App.AimGraph()
+        self.offset_graph = App.HitOffsetGraph()
         self.pattern_visual = App.PatternVisual()
         self.data_list = App.DataList(self)
         
@@ -229,6 +232,7 @@ class App(QtGui.QMainWindow):
         self.menu_bar.addMenu(self.view_menu)
         self.view_menu.addAction(self.view_perf_action)
         self.view_menu.addAction(self.view_hits_action)
+        self.view_menu.addAction(self.view_offsets_action)
         self.view_menu.addAction(self.view_map_action)
         self.view_menu.addAction(self.view_data_sel_action)
 
@@ -445,7 +449,7 @@ class App(QtGui.QMainWindow):
             self.__set_settings_edit_enabled(True)
 
             # Data from map and replay -> score
-            replay_data, aim_x_offsets, aim_y_offsets, tap_offsets = self.__get_data(map_path)
+            replay_data, aim_x_offsets, aim_y_offsets, tap_offsets, hit_offsets, hit_timings = self.__get_data(map_path)
             if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
                 if not self.auto_increase:
                     self.info_text += 'Set settings and click start!\n'
@@ -462,6 +466,7 @@ class App(QtGui.QMainWindow):
 
             self.replot_graphs()
             self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
+            self.offset_graph.plot_data(hit_timings, hit_offsets)
             self.pattern_visual.set_replay(replay_data)
             
             # If we are in not auto mode, we are done
@@ -593,6 +598,7 @@ class App(QtGui.QMainWindow):
 
 
     def __get_data(self, map_path):
+        invalid_data = None, None, None, None, None, None
         beatmap = BeatmapIO.open_beatmap(f'{map_path}/map.osu')
 
         # Check if mods are valid
@@ -603,20 +609,20 @@ class App(QtGui.QMainWindow):
             if not (has_dt or has_nc):
                 self.info_text = 'AR >10 requires DT or NC mod enabled!\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
-                return None, None, None, None
+                return invalid_data
 
             has_other_mods = (self.replay.mods.value & ~(Mod.DoubleTime | Mod.Nightcore | Mod.Relax | Mod.NoFail | Mod.Hidden)) > 0
             if has_other_mods:
                 self.info_text = 'AR >10 requires DT or NC mod enabled. Other supported mods: RX, NF, HD\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
                 
-                return None, None, None, None
+                return invalid_data
         else:
             has_other_mods = (self.replay.mods.value & ~(Mod.Relax | Mod.NoFail | Mod.Hidden)) > 0
             if has_other_mods:
                 self.info_text = 'AR <10 Must not have DT or NC enabled. Other supported mods: RX, NF, HD\n'
                 self.status_txt.setText(self.info_text + self.stats_text)
-                return None, None, None, None
+                return invalid_data
 
         # Read beatmap
         try: map_data = StdMapData.get_map_data(beatmap)
@@ -624,7 +630,7 @@ class App(QtGui.QMainWindow):
             self.info_text = 'Error reading beatmap!\n'
             self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
-            return None, None, None, None
+            return invalid_data
 
         # Read replay
         try: replay_data = StdReplayData.get_replay_data(self.replay)
@@ -632,7 +638,7 @@ class App(QtGui.QMainWindow):
             self.info_text = 'Error reading replay!\n'
             self.status_txt.setText(self.info_text + self.stats_text)
             print(e)
-            return None, None, None, None
+            return invalid_data
 
         # Process score data
         settings = StdScoreData.Settings()
@@ -643,6 +649,8 @@ class App(QtGui.QMainWindow):
         settings.neg_hit_range      = 100   # ms point of early hit window
         settings.pos_hit_range      = 100   # ms point of late hit window
         settings.pos_hit_miss_range = 100   # ms point of late miss window
+
+        self.offset_graph.set_window(-settings.neg_hit_miss_range, settings.pos_hit_miss_range)
         
         if (self.replay.mods.value & Mod.Relax) > 0:
             settings.require_tap_press   = False
@@ -678,7 +686,7 @@ class App(QtGui.QMainWindow):
             self.info_text = ''
             self.stats_text = '\nInvalid play. Too many non miss-aims.'
             self.status_txt.setText(self.info_text + self.stats_text)
-            return None, None, None, None
+            return invalid_data
 
         aim_x_offsets = score_data['replay_x'].values - score_data['map_x'].values
         aim_y_offsets = score_data['replay_y'].values - score_data['map_y'].values
@@ -749,7 +757,7 @@ class App(QtGui.QMainWindow):
             print(f'    set dx = {self.dx}')
             print(f'    set notes = {self.notes}')
             print(f'    set ang = {self.angle}')
-            return None, None, None, None
+            return invalid_data
 
         # Filter out nans that happen due to misc reasons (usually due to empty slices or div by zero)
         nan_filter = ~np.isnan(aim_x_offsets) & ~np.isnan(aim_y_offsets)
@@ -778,9 +786,16 @@ class App(QtGui.QMainWindow):
             print(f'    hit_thetas = {np.arctan2(hit_theta_x, hit_theta_y)}')
             print()
             print(f'    map_thetas = {np.arctan2(y_map_vecs, x_map_vecs)}')
-            return None, None, None, None
+            return invalid_data
 
-        return replay_data, aim_x_offsets, aim_y_offsets, tap_offsets
+        return (
+            replay_data, 
+            aim_x_offsets, 
+            aim_y_offsets,
+            tap_offsets,
+            score_data['replay_t'].values - score_data['map_t'].values, 
+            score_data['map_t'].values
+        )
 
 
     def __write_data(self, aim_offsets_x, aim_offsets_y, tap_offsets):
@@ -967,6 +982,7 @@ class App(QtGui.QMainWindow):
         # Hide any widgets to allow the app to close
         self.area.hide()
         self.aim_graph.hide()
+        self.offset_graph.hide()
         self.pattern_visual.hide()
         self.data_list.hide()
 
