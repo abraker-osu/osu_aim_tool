@@ -17,6 +17,9 @@ class ValueEdit(QtWidgets.QWidget):
             self.value = QtWidgets.QDoubleSpinBox(self)
             self.value.setDecimals(1)
             self.value.setSingleStep(0.1)
+   
+            self.value.valueChanged.connect(self.value_enter)
+            self.value.textChanged.connect(self.__value_edit)
         else:
             self.value = CustomSpinBox(self)
             self.value.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
@@ -33,9 +36,7 @@ class ValueEdit(QtWidgets.QWidget):
         self.main_layout.addWidget(self.name_label)
         
         self.resize(self.sizeHint())
-
-        self.value.valueChanged.connect(self.value_enter)
-        self.value.textChanged.connect(self.__value_edit)
+        
         self.value.setValue(0)
         self.value.setMaximum(maximum)
         self.value.setMinimum(minimum)
@@ -50,7 +51,7 @@ class ValueEdit(QtWidgets.QWidget):
 
 
     def get_value(self):
-        return self.value.value()
+        return round(self.value.value(), 1)
 
 
     def is_error(self):
