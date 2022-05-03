@@ -177,12 +177,18 @@ class HitOffsetGraph(QtGui.QWidget):
             (data['type'] == StdScoreData.TYPE_HITP)
         data = data[hits]
 
+        avg = self.__offset_avg_line.getPos()[1]
+        dev = self.__offset_std_line_pos.getPos()[1] - avg
+
         self.hit_metrics.setText(
             f'''
             num free misses: {num_free_misses}
             num press misses: {num_press_misses}
             num release misses: {num_release_misses}
             num hold misses: {num_hold_misses}
+
+            µ: {avg:.2f} ms
+            2σ: {dev:.2f} ms
             '''
         )
 
