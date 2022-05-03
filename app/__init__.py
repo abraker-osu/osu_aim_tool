@@ -449,7 +449,7 @@ class App(QtGui.QMainWindow):
             self.__set_settings_edit_enabled(True)
 
             # Data from map and replay -> score
-            replay_data, aim_x_offsets, aim_y_offsets, tap_offsets, hit_offsets, hit_timings = self.__get_data(map_path)
+            replay_data, aim_x_offsets, aim_y_offsets, tap_offsets, score_data = self.__get_data(map_path)
             if type(aim_x_offsets) == type(None) or type(aim_y_offsets) == type(None) or type(tap_offsets) == type(None):
                 if not self.auto_increase:
                     self.info_text += 'Set settings and click start!\n'
@@ -466,7 +466,7 @@ class App(QtGui.QMainWindow):
 
             self.replot_graphs()
             self.aim_graph.plot_data(aim_x_offsets, aim_y_offsets)
-            self.offset_graph.plot_data(hit_timings, hit_offsets)
+            self.offset_graph.plot_data(score_data)
             self.pattern_visual.set_replay(replay_data)
             
             # If we are in not auto mode, we are done
@@ -793,8 +793,7 @@ class App(QtGui.QMainWindow):
             aim_x_offsets, 
             aim_y_offsets,
             tap_offsets,
-            score_data['replay_t'].values - score_data['map_t'].values, 
-            score_data['map_t'].values
+            score_data
         )
 
 
