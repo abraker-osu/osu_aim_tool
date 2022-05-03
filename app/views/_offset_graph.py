@@ -188,7 +188,7 @@ class HitOffsetGraph(QtGui.QWidget):
             num hold misses: {num_hold_misses}
 
             µ: {avg:.2f} ms
-            2σ: {dev:.2f} ms
+            2σ: ±{dev:.2f} ms    ({10*dev/2:.2f} UR)
             '''
         )
 
