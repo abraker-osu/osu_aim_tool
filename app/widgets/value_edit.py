@@ -16,13 +16,13 @@ class ValueEdit(QtWidgets.QWidget):
         if is_float:
             self.value = QtWidgets.QDoubleSpinBox(self)
             self.value.setDecimals(1)
-            self.value.setSingleStep(0.1)
-   
-            self.value.valueChanged.connect(self.value_enter)
-            self.value.textChanged.connect(self.__value_edit)
+            self.value.setSingleStep(0.1)            
         else:
             self.value = CustomSpinBox(self)
             self.value.value_changed.connect(lambda value: self.auto_value_changed.emit((self.key, value)))
+            
+        self.value.textChanged.connect(self.__value_edit)
+        self.value.valueChanged.connect(self.value_enter)
 
         self.name_label = QtWidgets.QLabel(name)
         self.name_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
