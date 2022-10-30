@@ -1,5 +1,9 @@
 # osu! aim tool
 
+### PLEASE READ
+
+This is the old tool used for player data collection. The new tool can be found here: https://github.com/abraker-osu/osu-play-analyzer
+
 ### What is this?
 
 This is a tool made figure out how BPM, note distance, and angle affect the ability to hit notes precisely. Set the settings, hit "Start", and it will automaticaly generate a map for you in your osu! folder and waits for a new play to be made. Once it detects a new play, it will update the data accordingly.
